@@ -1,0 +1,73 @@
+# SwiftFormat configuration for CLARITY Pulse
+
+# Swift version
+--swiftversion 5.10
+
+# Indentation
+--indent 4
+--tabwidth 4
+--smarttabs enabled
+
+# Spacing
+--trimwhitespace always
+--insertlines enabled
+--nospaceoperators ...,..<
+
+# Braces
+--allman false
+--elseposition same-line
+--guardelse same-line
+
+# Arguments & Parameters
+--wraparguments before-first
+--wrapparameters before-first
+--wrapcollections before-first
+--wrapconditions before-first
+--closingparen balanced
+--wrapreturntype preserve
+--wrapternary default
+
+# Closures
+--trailingclosures enabled
+--stripunusedargs closure-only
+
+# Organization
+--organizetypes actor,class,enum,struct,extension
+--extensionacl on-declarations
+--modifierorder override,acl,setterACL,dynamic,mutators,lazy,final,required,static,class
+--groupedextension enabled
+# Rules (not options)
+--enable sortedImports
+
+# Self
+--self init-only
+--selfrequired 
+
+# Headers
+--header strip
+
+# Line length
+--maxwidth 120
+
+# Redundancy
+--redundanttype inferred
+# Rules to enable
+--enable redundantInit,redundantLet,redundantBackticks
+
+# Numbers
+--decimalgrouping 3,6
+--binarygrouping 4,8
+--octalgrouping 4,8
+--hexgrouping 4,8
+--exponentcase lowercase
+--hexliteralcase uppercase
+
+# Misc
+--acronyms ID,URL,UUID,API,DTO,UI,MCP,AI,PAT,JSON,HTTP,HTTPS
+--linebreaks lf
+--xcodeindentation enabled
+--fragment false
+--conflictmarkers enabled
+
+# Disable rules
+--disable blankLinesAroundMark,unusedArguments,wrapMultilineStatementBraces

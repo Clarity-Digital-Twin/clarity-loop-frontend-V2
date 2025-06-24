@@ -1,0 +1,65 @@
+name: Claude Code Assistant
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  issues:
+    types: [opened, assigned]
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  claude-response:
+    if: |
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'issues' && contains(github.event.issue.body, '@claude')) ||
+      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: anthropics/claude-code-action@beta
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          trigger_phrase: "@claude"
+          timeout_minutes: "60"
+          max_turns: "10"
+          allowed_tools: |
+            Bash(npm install)
+            Bash(npm run test)
+            Bash(npm run build)
+            Bash(xcodebuild)
+            Bash(swift)
+            Edit
+            Replace
+            NotebookEditCell
+          custom_instructions: |
+            You are working on CLARITY Pulse - an iOS health app built with SwiftUI.
+            
+            Key project context:
+            - iOS 17+ SwiftUI app with HealthKit integration
+            - Clean Architecture with MVVM pattern
+            - 98.9% test success rate (489/494 tests passing)
+            - Focus on production-ready code quality
+            
+            When implementing features:
+            1. Follow SwiftUI best practices and iOS Human Interface Guidelines
+            2. Maintain existing architecture patterns
+            3. Add comprehensive tests for new functionality
+            4. Ensure HealthKit privacy compliance
+            5. Optimize for performance and memory usage
+            
+            Always commit changes incrementally with clear messages. 

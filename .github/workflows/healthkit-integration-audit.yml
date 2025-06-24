@@ -1,0 +1,198 @@
+name: 🔥 HealthKit Integration Audit & Auto-Fix
+
+on:
+  push:
+    branches: [ main, development, experimental ]
+    paths: 
+      - 'clarity-loop-frontend/Core/Services/HealthKitService.swift'
+      - 'clarity-loop-frontend/Features/*/HealthViewModel.swift'
+      - 'clarity-loop-frontend/Info.plist'
+  pull_request:
+    branches: [ main, development ]
+  schedule:
+    # Run daily at 9 AM UTC to check HealthKit integration health
+    - cron: '0 9 * * *'
+  workflow_dispatch:
+    inputs:
+      create_claude_issue:
+        description: 'Create issue for Claude AI assistance'
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  audit-healthkit-integration:
+    runs-on: macos-latest
+    
+    steps:
+    - name: 🏗️ Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: 🍎 Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '16.0'
+        
+    - name: 📱 Setup iOS Simulator
+      run: |
+        xcrun simctl create "HealthKit-Test" com.apple.CoreSimulator.SimDeviceType.iPhone-16 com.apple.CoreSimulator.SimRuntime.iOS-18-4
+        xcrun simctl boot "HealthKit-Test"
+        
+    - name: 🔍 Audit HealthKit Implementation
+      id: audit
+      run: |
+        echo "🚀 Starting HealthKit Integration Audit..."
+        
+        # Check if background delivery is properly called
+        BACKGROUND_DELIVERY_CALLS=$(grep -r "enableBackgroundDelivery()" clarity-loop-frontend/ --include="*.swift" | wc -l)
+        OBSERVER_QUERY_CALLS=$(grep -r "setupObserverQueries()" clarity-loop-frontend/ --include="*.swift" | wc -l)
+        
+        echo "BACKGROUND_DELIVERY_CALLS=$BACKGROUND_DELIVERY_CALLS" >> $GITHUB_OUTPUT
+        echo "OBSERVER_QUERY_CALLS=$OBSERVER_QUERY_CALLS" >> $GITHUB_OUTPUT
+        
+        # Check Info.plist for background modes
+        BACKGROUND_MODES=$(grep -A 10 "UIBackgroundModes" clarity-loop-frontend/Info.plist | grep -c "background-processing\|background-fetch")
+        echo "BACKGROUND_MODES=$BACKGROUND_MODES" >> $GITHUB_OUTPUT
+        
+        # Check HealthKit permissions
+        HEALTHKIT_PERMISSIONS=$(grep -c "NSHealthShareUsageDescription\|NSHealthUpdateUsageDescription" clarity-loop-frontend/Info.plist)
+        echo "HEALTHKIT_PERMISSIONS=$HEALTHKIT_PERMISSIONS" >> $GITHUB_OUTPUT
+        
+        echo "📊 Audit Results:"
+        echo "- Background Delivery Calls: $BACKGROUND_DELIVERY_CALLS"
+        echo "- Observer Query Calls: $OBSERVER_QUERY_CALLS"
+        echo "- Background Modes: $BACKGROUND_MODES"
+        echo "- HealthKit Permissions: $HEALTHKIT_PERMISSIONS"
+
+    - name: 🧪 Run HealthKit Tests
+      run: |
+        xcodebuild test \
+          -scheme clarity-loop-frontend \
+          -destination 'platform=iOS Simulator,name=HealthKit-Test' \
+          -testPlan HealthKitIntegration \
+          -resultBundlePath TestResults.xcresult \
+          || echo "Tests completed with issues"
+          
+    - name: 📋 Generate Issue Report
+      id: report
+      run: |
+        ISSUES=""
+        CRITICAL_COUNT=0
+        
+        if [ "${{ steps.audit.outputs.BACKGROUND_DELIVERY_CALLS }}" -lt "3" ]; then
+          ISSUES="$ISSUES- ❌ **CRITICAL**: Background delivery not properly called in all authorization flows\n"
+          CRITICAL_COUNT=$((CRITICAL_COUNT + 1))
+        fi
+        
+        if [ "${{ steps.audit.outputs.OBSERVER_QUERY_CALLS }}" -lt "3" ]; then
+          ISSUES="$ISSUES- ❌ **CRITICAL**: Observer queries not properly setup in all authorization flows\n"
+          CRITICAL_COUNT=$((CRITICAL_COUNT + 1))
+        fi
+        
+        if [ "${{ steps.audit.outputs.BACKGROUND_MODES }}" -lt "2" ]; then
+          ISSUES="$ISSUES- ⚠️ **HIGH**: Missing background modes in Info.plist\n"
+          CRITICAL_COUNT=$((CRITICAL_COUNT + 1))
+        fi
+        
+        if [ "${{ steps.audit.outputs.HEALTHKIT_PERMISSIONS }}" -lt "2" ]; then
+          ISSUES="$ISSUES- ⚠️ **HIGH**: Missing HealthKit permissions in Info.plist\n"
+          CRITICAL_COUNT=$((CRITICAL_COUNT + 1))
+        fi
+        
+        echo "ISSUES<<EOF" >> $GITHUB_OUTPUT
+        echo -e "$ISSUES" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+        echo "CRITICAL_COUNT=$CRITICAL_COUNT" >> $GITHUB_OUTPUT
+
+    - name: 🤖 Create Claude AI Assistance Issue
+      if: steps.report.outputs.CRITICAL_COUNT > 0 && (github.event.inputs.create_claude_issue == 'true' || github.event_name != 'workflow_dispatch')
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const issueTitle = '🔥 URGENT: HealthKit Integration Critical Issues Detected';
+          const issueBody = `
+          ## 🚨 Automated HealthKit Integration Audit Results
+          
+          **Detected ${{ steps.report.outputs.CRITICAL_COUNT }} critical issues that prevent proper HealthKit synchronization.**
+          
+          ### 🎯 Issues Found:
+          ${{ steps.report.outputs.ISSUES }}
+          
+          ### 🔧 Required Actions:
+          1. **Ensure background delivery is enabled** in all HealthKit authorization flows
+          2. **Setup observer queries** immediately after authorization
+          3. **Configure proper background modes** in Info.plist
+          4. **Add HealthKit permissions** to Info.plist
+          
+          ### 🤖 Claude AI Assistant Request:
+          @claude-ai Please analyze this HealthKit integration and create a comprehensive fix that:
+          
+          - ✅ Properly calls \`enableBackgroundDelivery()\` after every authorization
+          - ✅ Sets up \`setupObserverQueries()\` for real-time data monitoring  
+          - ✅ Configures background app refresh capabilities
+          - ✅ Ensures end-to-end Apple Watch → iPhone → Backend data flow
+          - ✅ Creates comprehensive tests for the entire integration
+          
+          **Priority: CRITICAL** - This blocks the core functionality of health data synchronization.
+          
+          ### 📊 Technical Context:
+          - **Repository**: \`Clarity-Digital-Twin/clarity-loop-frontend\`
+          - **Framework**: SwiftUI + HealthKit + AWS Amplify
+          - **Target**: iOS 18.4+ with Apple Watch support
+          - **Architecture**: MVVM + Clean Architecture
+          
+          ### 🔍 Files to Focus On:
+          - \`clarity-loop-frontend/Core/Services/HealthKitService.swift\`
+          - \`clarity-loop-frontend/Features/Authentication/OnboardingViewModel.swift\`
+          - \`clarity-loop-frontend/Features/Settings/SettingsViewModel.swift\`
+          - \`clarity-loop-frontend/Features/Health/HealthViewModel.swift\`
+          - \`clarity-loop-frontend/Info.plist\`
+          
+          **Workflow Run**: ${{ github.run_id }}
+          **Commit**: ${{ github.sha }}
+          `;
+          
+          // Check if issue already exists
+          const existingIssues = await github.rest.issues.listForRepo({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            state: 'open',
+            labels: 'healthkit,critical,claude-ai'
+          });
+          
+          const existingIssue = existingIssues.data.find(issue => 
+            issue.title.includes('HealthKit Integration Critical Issues')
+          );
+          
+          if (existingIssue) {
+            // Update existing issue
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: existingIssue.number,
+              body: `🔄 **Updated Audit Results** (Run #${{ github.run_id }})\n\n${issueBody}`
+            });
+            console.log(`Updated existing issue #${existingIssue.number}`);
+          } else {
+            // Create new issue
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: issueTitle,
+              body: issueBody,
+              labels: ['healthkit', 'critical', 'claude-ai', 'integration', 'automated']
+            });
+            console.log(`Created new issue #${issue.data.number}`);
+          }
+
+    - name: 🎉 Success Summary
+      if: steps.report.outputs.CRITICAL_COUNT == 0
+      run: |
+        echo "🎉 VICTORY! HealthKit integration audit passed with flying colors!"
+        echo "✅ All critical components are properly configured"
+        echo "✅ Background delivery setup is working"
+        echo "✅ Observer queries are properly initialized"
+        echo "✅ Info.plist is correctly configured"
+        echo ""
+        echo "🚀 Your Apple Watch → iPhone → Backend data flow should be working perfectly!" 

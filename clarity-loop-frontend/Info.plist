@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+   Property List.plist
+   clarity-loop-frontend
+
+   Created by Raymond Jung on 6/7/25.
+   Copyright (c) 2025 ___ORGANIZATIONNAME___. All rights reserved.
+-->
+<plist version="1.0">
+<dict>
+	<!-- HealthKit Privacy Permissions -->
+	<key>NSHealthShareUsageDescription</key>
+	<string>CLARITY Pulse accesses your health data to provide personalized health insights, track your wellness progress, and sync with your healthcare providers. Your health data is encrypted and protected according to HIPAA standards.</string>
+	
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>CLARITY Pulse may update your health data to provide accurate wellness tracking and health insights. All data modifications are logged and can be reviewed in your health history.</string>
+	
+	<!-- App Configuration -->
+	<key>CFBundleDisplayName</key>
+	<string>CLARITY Pulse</string>
+	
+	<key>CFBundleIdentifier</key>
+	<string>com.novamindnyc.clarity-loop-frontend</string>
+	
+	<!-- API Configuration -->
+	<key>APIBaseURL</key>
+	<string>https://clarity.novamindnyc.com</string>
+	
+	<!-- URL Schemes for AWS Cognito -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>clarityai</string>
+			</array>
+		</dict>
+	</array>
+	
+	<key>CFBundleVersion</key>
+	<string>1.0</string>
+	
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>armv7</string>
+		<string>healthkit</string>
+	</array>
+	
+	<!-- UI Configuration -->
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+	</array>
+	
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	
+	<!-- Background Modes -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>background-fetch</string>
+		<string>background-processing</string>
+		<string>healthkit</string>
+		<string>remote-notification</string>
+	</array>
+	
+	<!-- Background Task Identifiers -->
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.novamindnyc.clarity-loop-frontend.healthDataSync</string>
+		<string>com.novamindnyc.clarity-loop-frontend.appRefresh</string>
+	</array>
+	
+	<!-- Security & Privacy -->
+	<key>NSAllowsArbitraryLoads</key>
+	<false/>
+	
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<false/>
+	</dict>
+</dict>
+</plist>

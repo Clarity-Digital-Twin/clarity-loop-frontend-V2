@@ -1,0 +1,642 @@
+import XCTest
+import Combine
+@testable import clarity_loop_frontend
+
+@MainActor
+final class WebSocketManagerTests: XCTestCase {
+    
+    // MARK: - Properties
+    
+    private var webSocketManager: WebSocketManager!
+    private var mockAuthService: MockAuthService!
+    private var cancellables = Set<AnyCancellable>()
+    private var receivedMessages: [WebSocketMessage] = []
+    
+    // MARK: - Setup & Teardown
+    
+    override func setUp() async throws {
+        try await super.setUp()
+        
+        // Setup mock auth service
+        mockAuthService = MockAuthService()
+        mockAuthService.shouldSucceed = true
+        mockAuthService.currentUser = User(
+            id: "test-user-123",
+            email: "test@example.com",
+            name: "Test User",
+            role: "user",
+            isActive: true,
+            createdAt: Date(),
+            updatedAt: Date(),
+            remoteID: "test-user-123"
+        )
+        
+        // Create WebSocket manager with test URL
+        webSocketManager = WebSocketManager(
+            baseURL: "wss://test.example.com",
+            authService: mockAuthService
+        )
+    }
+    
+    override func tearDown() async throws {
+        cancellables.removeAll()
+        receivedMessages.removeAll()
+        webSocketManager.disconnect()
+        webSocketManager = nil
+        mockAuthService = nil
+        try await super.tearDown()
+    }
+    
+    // MARK: - Connection Tests
+    
+    func testInitialConnectionState() async throws {
+        // Given
+        let manager = WebSocketManager(
+            baseURL: "wss://test.example.com",
+            authService: mockAuthService
+        )
+        
+        // Then
+        XCTAssertEqual(manager.connectionState, .disconnected)
+        XCTAssertNil(manager.lastError)
+        XCTAssertTrue(manager.receivedMessages.isEmpty)
+    }
+    
+    func testConnectChangesStateToConnecting() async throws {
+        // Given
+        XCTAssertEqual(webSocketManager.connectionState, .disconnected)
+        
+        // When
+        let connectTask = Task {
+            await webSocketManager.connect()
+        }
+        
+        // Wait a bit for state change
+        try await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
+        
+        // Then
+        let state = webSocketManager.connectionState
+        XCTAssertTrue(state == .connecting || state == .connected)
+        
+        connectTask.cancel()
+    }
+    
+    func testConnectWithAuthenticationError() async throws {
+        // Given
+        mockAuthService.shouldSucceed = false
+        mockAuthService.errorToThrow = .notAuthenticated
+        
+        // When
+        await webSocketManager.connect()
+        
+        // Then
+        XCTAssertEqual(webSocketManager.connectionState, .disconnected)
+        XCTAssertNotNil(webSocketManager.lastError)
+    }
+    
+    func testDisconnectChangesState() async throws {
+        // Given - simulate connected state
+        await forceConnectionState(.connected)
+        
+        // When
+        webSocketManager.disconnect()
+        
+        // Then
+        XCTAssertEqual(webSocketManager.connectionState, .disconnected)
+    }
+    
+    // MARK: - Auto Reconnect Tests
+    
+    func testAutoReconnectScheduledAfterError() async throws {
+        // Given - simulate connection error
+        await forceConnectionState(.connected)
+        let error = NSError(domain: "test", code: 1001)
+        
+        // When - simulate error
+        webSocketManager.setValue(WebSocketError.connectionLost(error), forKey: "lastError")
+        webSocketManager.setValue(ConnectionState.disconnected, forKey: "connectionState")
+        
+        // Then
+        XCTAssertNotNil(webSocketManager.lastError)
+        XCTAssertEqual(webSocketManager.connectionState, .disconnected)
+    }
+    
+    func testExponentialBackoffCalculation() async throws {
+        // Given
+        let initialDelay: TimeInterval = 5.0
+        let maxDelay: TimeInterval = 60.0
+        
+        // Test exponential backoff
+        var currentDelay = initialDelay
+        
+        // First retry: 5 seconds
+        XCTAssertEqual(currentDelay, 5.0)
+        
+        // Second retry: 10 seconds
+        currentDelay = min(currentDelay * 2, maxDelay)
+        XCTAssertEqual(currentDelay, 10.0)
+        
+        // Third retry: 20 seconds
+        currentDelay = min(currentDelay * 2, maxDelay)
+        XCTAssertEqual(currentDelay, 20.0)
+        
+        // Fourth retry: 40 seconds
+        currentDelay = min(currentDelay * 2, maxDelay)
+        XCTAssertEqual(currentDelay, 40.0)
+        
+        // Fifth retry: should cap at 60 seconds
+        currentDelay = min(currentDelay * 2, maxDelay)
+        XCTAssertEqual(currentDelay, 60.0)
+    }
+    
+    // MARK: - Message Handling Tests
+    
+    func testHealthMetricUpdateSubscription() async throws {
+        // Given
+        var receivedUpdate: HealthMetricUpdate?
+        let expectation = XCTestExpectation(description: "Health metric update received")
+        
+        webSocketManager.healthMetricUpdates
+            .sink { update in
+                receivedUpdate = update
+                expectation.fulfill()
+            }
+            .store(in: &cancellables)
+        
+        // When - simulate receiving a health metric update
+        let update = HealthMetricUpdate(
+            metricId: "metric-123",
+            type: "heartRate",
+            value: 72.0,
+            unit: "bpm",
+            timestamp: Date(),
+            source: "Apple Watch"
+        )
+        
+        let message = try createWebSocketMessage(update, type: .healthMetricUpdate)
+        await simulateMessageReceived(message)
+        
+        // Then
+        await fulfillment(of: [expectation], timeout: 1.0)
+        XCTAssertNotNil(receivedUpdate)
+        XCTAssertEqual(receivedUpdate?.metricId, "metric-123")
+        XCTAssertEqual(receivedUpdate?.value, 72.0)
+    }
+    
+    func testInsightNotificationSubscription() async throws {
+        // Given
+        var receivedNotification: InsightNotification?
+        let expectation = XCTestExpectation(description: "Insight notification received")
+        
+        webSocketManager.insightNotifications
+            .sink { notification in
+                receivedNotification = notification
+                expectation.fulfill()
+            }
+            .store(in: &cancellables)
+        
+        // When
+        let notification = InsightNotification(
+            insightId: "insight-456",
+            title: "New Health Insight",
+            message: "Your heart rate has been elevated",
+            priority: "high",
+            timestamp: Date()
+        )
+        
+        let message = try createWebSocketMessage(notification, type: .insightNotification)
+        await simulateMessageReceived(message)
+        
+        // Then
+        await fulfillment(of: [expectation], timeout: 1.0)
+        XCTAssertNotNil(receivedNotification)
+        XCTAssertEqual(receivedNotification?.insightId, "insight-456")
+        XCTAssertEqual(receivedNotification?.priority, "high")
+    }
+    
+    func testSystemNotificationHandling() async throws {
+        // Given
+        var receivedNotification: SystemNotification?
+        let expectation = XCTestExpectation(description: "System notification received")
+        
+        webSocketManager.systemNotifications
+            .sink { notification in
+                receivedNotification = notification
+                expectation.fulfill()
+            }
+            .store(in: &cancellables)
+        
+        // When
+        let notification = SystemNotification(
+            id: "notif-789",
+            type: .maintenance,
+            title: "Scheduled Maintenance",
+            message: "System will be down for maintenance",
+            timestamp: Date(),
+            actions: nil
+        )
+        
+        let message = try createWebSocketMessage(notification, type: .systemNotification)
+        await simulateMessageReceived(message)
+        
+        // Then
+        await fulfillment(of: [expectation], timeout: 1.0)
+        XCTAssertNotNil(receivedNotification)
+        XCTAssertEqual(receivedNotification?.type, .maintenance)
+    }
+    
+    func testSyncStatusUpdateHandling() async throws {
+        // Given
+        var receivedUpdate: SyncStatusUpdate?
+        let expectation = XCTestExpectation(description: "Sync status update received")
+        
+        webSocketManager.syncStatusUpdates
+            .sink { update in
+                receivedUpdate = update
+                expectation.fulfill()
+            }
+            .store(in: &cancellables)
+        
+        // When
+        let update = SyncStatusUpdate(
+            entityType: "HealthMetric",
+            entityId: "metric-999",
+            syncStatus: "completed",
+            timestamp: Date(),
+            details: "Successfully synced to server"
+        )
+        
+        let message = try createWebSocketMessage(update, type: .syncStatusUpdate)
+        await simulateMessageReceived(message)
+        
+        // Then
+        await fulfillment(of: [expectation], timeout: 1.0)
+        XCTAssertNotNil(receivedUpdate)
+        XCTAssertEqual(receivedUpdate?.syncStatus, "completed")
+    }
+    
+    func testInvalidMessageHandling() async throws {
+        // Given
+        let invalidData = "invalid json data".data(using: .utf8)!
+        
+        // When - process invalid data
+        await webSocketManager.setValue([WebSocketMessage](), forKey: "receivedMessages")
+        await webSocketManager.processData(invalidData)
+        
+        // Then - should not crash and messages should remain empty
+        XCTAssertTrue(webSocketManager.receivedMessages.isEmpty)
+    }
+    
+    // MARK: - Send Message Tests
+    
+    func testSendMessageWhenConnected() async throws {
+        // Given
+        await forceConnectionState(.connected)
+        
+        // When
+        let request = HealthMetricsRequest(
+            userId: "test-user",
+            since: Date(),
+            types: ["heartRate", "steps"]
+        )
+        
+        // Then - should not throw
+        do {
+            try await webSocketManager.send(request, type: .healthMetricsRequest)
+        } catch {
+            XCTFail("Send should not throw when connected: \(error)")
+        }
+    }
+    
+    func testSendMessageFailsWhenDisconnected() async throws {
+        // Given
+        XCTAssertEqual(webSocketManager.connectionState, .disconnected)
+        
+        // When/Then
+        let request = HealthMetricsRequest(
+            userId: "test-user",
+            since: Date(),
+            types: ["heartRate"]
+        )
+        
+        do {
+            try await webSocketManager.send(request, type: .healthMetricsRequest)
+            XCTFail("Expected error when sending while disconnected")
+        } catch let error as WebSocketError {
+            XCTAssertEqual(error, WebSocketError.notConnected)
+        }
+    }
+    
+    func testRequestHealthMetrics() async throws {
+        // Given
+        await forceConnectionState(.connected)
+        let since = Date().addingTimeInterval(-3600) // 1 hour ago
+        
+        // When/Then - should not throw
+        do {
+            try await webSocketManager.requestHealthMetrics(since: since)
+        } catch {
+            XCTFail("Request health metrics should not throw: \(error)")
+        }
+    }
+    
+    // MARK: - Publisher Tests
+    
+    func testConnectionStatePublisher() async throws {
+        // Given
+        var states: [ConnectionState] = []
+        let expectation = XCTestExpectation(description: "Connection state changes")
+        expectation.expectedFulfillmentCount = 2
+        
+        webSocketManager.$connectionState
+            .dropFirst() // Skip initial value
+            .sink { state in
+                states.append(state)
+                expectation.fulfill()
+            }
+            .store(in: &cancellables)
+        
+        // When
+        await forceConnectionState(.connecting)
+        await forceConnectionState(.connected)
+        
+        // Then
+        await fulfillment(of: [expectation], timeout: 1.0)
+        XCTAssertEqual(states, [.connecting, .connected])
+    }
+    
+    func testSubscribeToMessageType() async throws {
+        // Given
+        var receivedMessages: [WebSocketMessage] = []
+        let expectation = XCTestExpectation(description: "Message received")
+        
+        let cancellable = webSocketManager.subscribe(to: .healthMetricUpdate) { message in
+            receivedMessages.append(message)
+            expectation.fulfill()
+        }
+        
+        // When
+        let update = HealthMetricUpdate(
+            metricId: "test-123",
+            type: "steps",
+            value: 5000,
+            unit: "count",
+            timestamp: Date(),
+            source: "iPhone"
+        )
+        
+        let message = try createWebSocketMessage(update, type: .healthMetricUpdate)
+        await simulateMessageReceived(message)
+        
+        // Then
+        await fulfillment(of: [expectation], timeout: 1.0)
+        XCTAssertEqual(receivedMessages.count, 1)
+        XCTAssertEqual(receivedMessages.first?.type, .healthMetricUpdate)
+        
+        // Cleanup
+        cancellable.cancel()
+    }
+    
+    func testMultipleSubscribersToSameMessageType() async throws {
+        // Given
+        var subscriber1Count = 0
+        var subscriber2Count = 0
+        let expectation = XCTestExpectation(description: "Both subscribers receive message")
+        expectation.expectedFulfillmentCount = 2
+        
+        let cancellable1 = webSocketManager.subscribe(to: .ping) { _ in
+            subscriber1Count += 1
+            expectation.fulfill()
+        }
+        
+        let cancellable2 = webSocketManager.subscribe(to: .ping) { _ in
+            subscriber2Count += 1
+            expectation.fulfill()
+        }
+        
+        // When
+        let ping = PingMessage(timestamp: Date())
+        let message = try createWebSocketMessage(ping, type: .ping)
+        await simulateMessageReceived(message)
+        
+        // Then
+        await fulfillment(of: [expectation], timeout: 1.0)
+        XCTAssertEqual(subscriber1Count, 1)
+        XCTAssertEqual(subscriber2Count, 1)
+        
+        // Cleanup
+        cancellable1.cancel()
+        cancellable2.cancel()
+    }
+    
+    // MARK: - Ping/Pong Tests
+    
+    func testHandshakeMessage() async throws {
+        // Test that handshake message is properly formatted
+        let handshake = HandshakeMessage(
+            clientVersion: "1.0.0",
+            platform: "iOS",
+            deviceId: "test-device-123"
+        )
+        
+        // Verify encoding/decoding
+        let encoded = try JSONEncoder().encode(handshake)
+        let decoded = try JSONDecoder().decode(HandshakeMessage.self, from: encoded)
+        
+        XCTAssertEqual(decoded.clientVersion, "1.0.0")
+        XCTAssertEqual(decoded.platform, "iOS")
+        XCTAssertEqual(decoded.deviceId, "test-device-123")
+    }
+    
+    func testPingMessage() async throws {
+        // Test ping message creation
+        let ping = PingMessage(timestamp: Date())
+        
+        // Verify it can be encoded
+        let encoded = try JSONEncoder().encode(ping)
+        let decoded = try JSONDecoder().decode(PingMessage.self, from: encoded)
+        
+        XCTAssertNotNil(decoded.timestamp)
+    }
+    
+    func testRequestInsightUpdate() async throws {
+        // Given
+        await forceConnectionState(.connected)
+        let insightId = "insight-test-123"
+        
+        // When/Then - should not throw
+        do {
+            try await webSocketManager.requestInsightUpdate(insightId: insightId)
+        } catch {
+            XCTFail("Request insight update should not throw: \(error)")
+        }
+    }
+    
+    // MARK: - Error Handling Tests
+    
+    func testWebSocketErrorTypes() async throws {
+        // Test error descriptions
+        let authError = WebSocketError.authenticationRequired
+        XCTAssertEqual(authError.errorDescription, "Authentication required for WebSocket connection")
+        
+        let notConnectedError = WebSocketError.notConnected
+        XCTAssertEqual(notConnectedError.errorDescription, "WebSocket is not connected")
+        
+        let invalidMessageError = WebSocketError.invalidMessage
+        XCTAssertEqual(invalidMessageError.errorDescription, "Invalid WebSocket message format")
+        
+        let serverError = WebSocketError.serverError("Test error")
+        XCTAssertEqual(serverError.errorDescription, "Server error: Test error")
+    }
+    
+    func testAuthenticationFailureHandling() async throws {
+        // Given
+        mockAuthService.shouldSucceed = false
+        mockAuthService.errorToThrow = .notAuthenticated
+        
+        // When
+        await webSocketManager.connect()
+        
+        // Then
+        XCTAssertEqual(webSocketManager.connectionState, .disconnected)
+        XCTAssertNotNil(webSocketManager.lastError)
+        
+        if case .connectionFailed = webSocketManager.lastError {
+            // Expected error type
+        } else {
+            XCTFail("Expected connection failed error")
+        }
+    }
+    
+    func testMessageQueueLimit() async throws {
+        // Test that received messages queue has a limit
+        await forceConnectionState(.connected)
+        
+        // Add more than 100 messages
+        for i in 0..<150 {
+            let update = HealthMetricUpdate(
+                metricId: "metric-\(i)",
+                type: "test",
+                value: Double(i),
+                unit: "unit",
+                timestamp: Date(),
+                source: "test"
+            )
+            
+            let message = try createWebSocketMessage(update, type: .healthMetricUpdate)
+            await simulateMessageReceived(message)
+        }
+        
+        // Then - should only keep last 100 messages
+        XCTAssertLessThanOrEqual(webSocketManager.receivedMessages.count, 100)
+    }
+    
+    // MARK: - Helper Methods
+    
+    private func forceConnectionState(_ state: ConnectionState) async {
+        // Use reflection to set private property for testing
+        webSocketManager.setValue(state, forKey: "connectionState")
+    }
+    
+    private func createWebSocketMessage<T: Encodable>(_ payload: T, type: MessageType) throws -> WebSocketMessage {
+        let payloadData = try JSONEncoder().encode(payload)
+        return WebSocketMessage(
+            id: UUID().uuidString,
+            type: type,
+            timestamp: Date(),
+            payload: payloadData
+        )
+    }
+    
+    private func simulateMessageReceived(_ message: WebSocketMessage) async {
+        // Directly call processData to simulate message reception
+        let messageData = try! JSONEncoder().encode(message)
+        await webSocketManager.processData(messageData)
+    }
+    
+    // MARK: - Performance Tests
+    
+    func testMessageProcessingPerformance() throws {
+        // Measure time to process 1000 messages
+        measure {
+            let expectation = XCTestExpectation(description: "Process messages")
+            
+            Task {
+                for i in 0..<1000 {
+                    let update = HealthMetricUpdate(
+                        metricId: "perf-\(i)",
+                        type: "heartRate",
+                        value: Double(60 + (i % 40)),
+                        unit: "bpm",
+                        timestamp: Date(),
+                        source: "test"
+                    )
+                    
+                    let message = try! createWebSocketMessage(update, type: .healthMetricUpdate)
+                    await simulateMessageReceived(message)
+                }
+                expectation.fulfill()
+            }
+            
+            wait(for: [expectation], timeout: 10.0)
+        }
+    }
+    
+    func testConcurrentMessageHandling() async throws {
+        // Test handling multiple messages concurrently
+        await forceConnectionState(.connected)
+        
+        let messageCount = 100
+        let expectation = XCTestExpectation(description: "All messages processed")
+        expectation.expectedFulfillmentCount = messageCount
+        
+        // Subscribe to updates
+        webSocketManager.healthMetricUpdates
+            .sink { _ in
+                expectation.fulfill()
+            }
+            .store(in: &cancellables)
+        
+        // Send messages concurrently
+        await withTaskGroup(of: Void.self) { group in
+            for i in 0..<messageCount {
+                group.addTask {
+                    let update = HealthMetricUpdate(
+                        metricId: "concurrent-\(i)",
+                        type: "steps",
+                        value: Double(i),
+                        unit: "count",
+                        timestamp: Date(),
+                        source: "test"
+                    )
+                    
+                    let message = try! self.createWebSocketMessage(update, type: .healthMetricUpdate)
+                    await self.simulateMessageReceived(message)
+                }
+            }
+        }
+        
+        // Verify all messages were processed
+        await fulfillment(of: [expectation], timeout: 5.0)
+    }
+}
+
+// MARK: - WebSocketError Extension for Testing
+
+extension WebSocketError: Equatable {
+    public static func == (lhs: WebSocketError, rhs: WebSocketError) -> Bool {
+        switch (lhs, rhs) {
+        case (.authenticationRequired, .authenticationRequired),
+             (.notConnected, .notConnected),
+             (.invalidMessage, .invalidMessage):
+            return true
+        case let (.connectionFailed(lhsError), .connectionFailed(rhsError)),
+             let (.connectionLost(lhsError), .connectionLost(rhsError)):
+            return (lhsError as NSError).code == (rhsError as NSError).code
+        case let (.serverError(lhsMessage), .serverError(rhsMessage)):
+            return lhsMessage == rhsMessage
+        default:
+            return false
+        }
+    }
+}

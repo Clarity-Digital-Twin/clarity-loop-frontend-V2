@@ -1,0 +1,28 @@
+{
+  "auth": {
+    "plugins": {
+      "awsCognitoAuthPlugin": {
+        "UserAgent": "aws-amplify-cli/2.0",
+        "Version": "1.0",
+        "CognitoUserPool": {
+          "Default": {
+            "PoolId": "us-east-1_efXaR5EcP",
+            "AppClientId": "7sm7ckrkovg78b03n1595euc71",
+            "Region": "us-east-1"
+          }
+        },
+        "Auth": {
+          "Default": {
+            "authenticationFlowType": "USER_SRP_AUTH",
+            "usernameAttributes": ["EMAIL"],
+            "signupAttributes": ["EMAIL"],
+            "passwordProtectionSettings": {
+              "passwordPolicyMinLength": 8,
+              "passwordPolicyCharacters": []
+            }
+          }
+        }
+      }
+    }
+  }
+}

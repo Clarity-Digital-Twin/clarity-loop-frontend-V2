@@ -1,0 +1,44 @@
+name: Claude Code Review
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  claude-review:
+    # Skip bot PRs and documentation-only PRs
+    if: |
+      github.event.pull_request.user.type != 'Bot' &&
+      !startsWith(github.event.pull_request.title, 'docs:') &&
+      !contains(github.event.pull_request.labels.*.name, 'skip-review')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: anthropics/claude-code-action@beta
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          direct_prompt: |
+            Please provide a comprehensive code review of this iOS Swift health app PR:
+            
+            Focus on:
+            - HIPAA compliance and security best practices
+            - SwiftUI performance optimizations
+            - Memory management and potential leaks
+            - HealthKit integration patterns
+            - AWS Amplify authentication security
+            - Code architecture adherence to MVVM + Clean Architecture
+            - Test coverage and quality
+            - Accessibility compliance
+            
+            Be specific about any issues found and provide actionable recommendations.
+          timeout_minutes: "30" 

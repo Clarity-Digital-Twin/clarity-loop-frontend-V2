@@ -22,7 +22,7 @@ Built on modern, scalable iOS development principles with enterprise-grade secur
 
 ### 📁 Layer Structure
 ```
-clarity-loop-frontend/
+clarity-loop-frontend-v2/
 ├── 🎨 UI Layer (Features/, UI/)        → SwiftUI Views + ViewModels
 ├── 🧠 Domain Layer (Domain/)           → Use Cases + Models + Protocols  
 ├── 📊 Data Layer (Data/)               → Repositories + DTOs + Services

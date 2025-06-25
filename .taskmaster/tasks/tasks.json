@@ -1,0 +1,2664 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Create iOS Project with SwiftUI",
+        "description": "Initialize new Xcode project with iOS 18.0 target, SwiftUI interface, and Swift 5.10+",
+        "details": "1. Open Xcode 16+\n2. Create new App project\n3. Set product name: ClarityPulse\n4. Set organization identifier: com.clarity.pulse\n5. Choose SwiftUI interface\n6. Set minimum deployment: iOS 18.0\n7. Language: Swift 5.10+\n8. Include Tests",
+        "testStrategy": "Build project successfully, verify Info.plist shows iOS 18.0 minimum",
+        "priority": "high",
+        "dependencies": [],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 2,
+        "title": "Configure Git Repository",
+        "description": "Set up version control with appropriate .gitignore for iOS/Swift projects",
+        "details": "1. Initialize git repository\n2. Create .gitignore using gitignore.io template for Swift, Xcode, macOS\n3. Add .DS_Store, xcuserdata/, build/, DerivedData/\n4. Commit initial project structure",
+        "testStrategy": "Verify build artifacts are not tracked, .gitignore works correctly",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "in-progress",
+        "subtasks": []
+      },
+      {
+        "id": 3,
+        "title": "Create Clean Architecture Structure",
+        "description": "Set up four-layer architecture: UI, Domain, Data, Infrastructure",
+        "details": "1. Create group folders in Xcode:\n   - UI/ (views, viewmodels)\n   - Domain/ (entities, use cases, protocols)\n   - Data/ (repositories, DTOs)\n   - Infrastructure/ (network, persistence, services)\n2. Add README.md to each explaining purpose\n3. Update project structure to match",
+        "testStrategy": "Verify folder structure exists and is properly organized",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 4,
+        "title": "Configure Code Style Tools",
+        "description": "Install and configure SwiftLint for consistent code style",
+        "details": "1. Add SwiftLint via Swift Package Manager\n2. Create .swiftlint.yml with rules:\n   - line_length: 120\n   - type_body_length: 300\n   - file_length: 500\n   - disabled_rules: [trailing_whitespace]\n3. Add Build Phase script\n4. Fix initial violations",
+        "testStrategy": "Run SwiftLint and verify it catches violations, build fails on errors",
+        "priority": "high",
+        "dependencies": [
+          2
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 5,
+        "title": "Create Test Infrastructure",
+        "description": "Set up unit, integration, and UI test targets with base classes",
+        "details": "1. Verify test targets exist (created with project)\n2. Create BaseTestCase.swift for common functionality\n3. Create MockGenerator.swift for test data\n4. Create AsyncTestCase.swift for async testing\n5. Set up test schemes",
+        "testStrategy": "Write meta-test that verifies test infrastructure works",
+        "priority": "high",
+        "dependencies": [
+          3
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 6,
+        "title": "Configure Code Coverage",
+        "description": "Enable code coverage reporting with 80% minimum target",
+        "details": "1. Edit scheme -> Test -> Options\n2. Enable \"Gather coverage for all targets\"\n3. Create coverage report script\n4. Add pre-commit hook to check coverage\n5. Document coverage requirements",
+        "testStrategy": "Write test with known coverage, verify report shows correct percentage",
+        "priority": "high",
+        "dependencies": [
+          5
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 7,
+        "title": "Implement SwiftData Core",
+        "description": "Create ModelContainer and basic persistence setup",
+        "details": "1. Import SwiftData framework\n2. Create Infrastructure/Persistence/ModelContainerFactory.swift\n3. Implement ModelContainer with configuration\n4. Set up in-memory configuration for tests\n5. Add to App environment",
+        "testStrategy": "Test ModelContainer initializes without errors, can save/fetch data",
+        "priority": "high",
+        "dependencies": [
+          3
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 8,
+        "title": "Create Entity Protocol",
+        "description": "Define base Entity protocol in Domain layer",
+        "details": "1. Create Domain/Entities/Entity.swift\n2. Define protocol with id: UUID, createdAt: Date, updatedAt: Date\n3. Add Identifiable conformance\n4. Create extension with default implementation\n5. Add documentation",
+        "testStrategy": "Create mock entity conforming to protocol, verify properties exist",
+        "priority": "high",
+        "dependencies": [
+          3
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 9,
+        "title": "Implement Repository Pattern",
+        "description": "Create generic Repository protocol with CRUD operations",
+        "details": "1. Create Domain/Repositories/Repository.swift\n2. Define protocol with generic Entity type\n3. Add methods: create, read, update, delete, list\n4. Use async/await and Result types\n5. Document pattern usage",
+        "testStrategy": "Create mock repository implementation, verify protocol contract",
+        "priority": "high",
+        "dependencies": [
+          8
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 10,
+        "title": "Create SwiftData Repository",
+        "description": "Implement Repository protocol using SwiftData",
+        "details": "1. Create Data/Repositories/SwiftDataRepository.swift\n2. Implement generic repository with ModelContext\n3. Handle CRUD operations with proper error handling\n4. Add transaction support\n5. Implement query builders",
+        "testStrategy": "Test all CRUD operations with in-memory store",
+        "priority": "high",
+        "dependencies": [
+          7,
+          9
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 11,
+        "title": "Set Up Dependency Injection",
+        "description": "Create DI container using SwiftUI Environment",
+        "details": "1. Create Infrastructure/DI/Dependencies.swift\n2. Define environment keys for services\n3. Create DependencyContainer with factories\n4. Implement in App struct\n5. No singletons - all injected",
+        "testStrategy": "Test dependencies can be injected and resolved correctly",
+        "priority": "high",
+        "dependencies": [
+          10
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 12,
+        "title": "Implement ViewState Pattern",
+        "description": "Create ViewState enum for consistent async state handling",
+        "details": "1. Create UI/Common/ViewState.swift\n2. Define enum: idle, loading, success(T), error(Error), empty\n3. Add helper computed properties\n4. Create ViewStateModifier for UI\n5. Document usage patterns",
+        "testStrategy": "Test all state transitions and helper methods",
+        "priority": "high",
+        "dependencies": [
+          3
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 13,
+        "title": "Create Base ViewModel",
+        "description": "Implement @Observable base ViewModel with ViewState support",
+        "details": "1. Create UI/Common/BaseViewModel.swift\n2. Use @Observable macro (iOS 17+)\n3. Add ViewState property\n4. Implement load() template method\n5. Add error handling helpers",
+        "testStrategy": "Test ViewModel state changes trigger UI updates",
+        "priority": "high",
+        "dependencies": [
+          12
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 14,
+        "title": "Set Up Network Foundation",
+        "description": "Create NetworkService protocol with async/await",
+        "details": "1. Create Infrastructure/Network/NetworkService.swift\n2. Define protocol with request/response methods\n3. Use async/await throughout\n4. Add request interceptor support\n5. Define NetworkError types",
+        "testStrategy": "Test protocol with mock implementation",
+        "priority": "high",
+        "dependencies": [
+          3
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 15,
+        "title": "Implement URLSession Service",
+        "description": "Create URLSession-based NetworkService implementation",
+        "details": "1. Create Infrastructure/Network/URLSessionNetworkService.swift\n2. Implement NetworkService protocol\n3. Add retry logic with exponential backoff\n4. Handle all HTTP methods\n5. Add request/response logging",
+        "testStrategy": "Test with mock URLProtocol, verify retry logic works",
+        "priority": "high",
+        "dependencies": [
+          14
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 16,
+        "title": "Create Request Builder",
+        "description": "Implement type-safe request builder with auth support",
+        "details": "1. Create Infrastructure/Network/RequestBuilder.swift\n2. Add builder pattern for requests\n3. Support headers, query params, body\n4. Add auth token injection\n5. Validate request construction",
+        "testStrategy": "Test request building with various configurations",
+        "priority": "high",
+        "dependencies": [
+          14
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 17,
+        "title": "Implement Response Decoder",
+        "description": "Create generic response decoder with DTO mapping",
+        "details": "1. Create Infrastructure/Network/ResponseDecoder.swift\n2. Use Codable for JSON decoding\n3. Handle error responses\n4. Map DTOs to domain models\n5. Add custom date decoding",
+        "testStrategy": "Test decoding various response types and error cases",
+        "priority": "high",
+        "dependencies": [
+          14
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 18,
+        "title": "Set Up Error Types",
+        "description": "Define comprehensive error types for all layers",
+        "details": "1. Create Domain/Errors/AppError.swift\n2. Define errors: network, persistence, validation, auth\n3. Add user-friendly messages\n4. Include error codes\n5. Make errors localizable",
+        "testStrategy": "Test error creation and message generation",
+        "priority": "high",
+        "dependencies": [
+          3
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 19,
+        "title": "Create Error Handler",
+        "description": "Implement centralized error handling service",
+        "details": "1. Create Infrastructure/Services/ErrorHandler.swift\n2. Map errors to user messages\n3. Add retry suggestions\n4. Handle offline errors specially\n5. No PHI in error logs",
+        "testStrategy": "Test error handling for various error types",
+        "priority": "high",
+        "dependencies": [
+          18
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 20,
+        "title": "Set Up Mock System",
+        "description": "Create mock data generators for testing",
+        "details": "1. Create Tests/Mocks/MockDataGenerator.swift\n2. Add factories for all entities\n3. Create fixture files\n4. Add random data generation\n5. Support deterministic mocks",
+        "testStrategy": "Test mock generation produces valid data",
+        "priority": "high",
+        "dependencies": [
+          5,
+          8
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 21,
+        "title": "Configure Environment Values",
+        "description": "Set up SwiftUI environment for configuration",
+        "details": "1. Create UI/Environment/EnvironmentValues+App.swift\n2. Add custom environment keys\n3. Configure in App struct\n4. Add preview helpers\n5. Document usage",
+        "testStrategy": "Test environment values propagate correctly",
+        "priority": "high",
+        "dependencies": [
+          11
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 22,
+        "title": "Create App Entry Point",
+        "description": "Configure main App struct with dependencies",
+        "details": "1. Update ClarityPulseApp.swift\n2. Initialize ModelContainer\n3. Set up dependency injection\n4. Configure environment\n5. Add lifecycle handlers",
+        "testStrategy": "Test app initializes with all dependencies",
+        "priority": "high",
+        "dependencies": [
+          11,
+          21
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 23,
+        "title": "Set Up Navigation Structure",
+        "description": "Implement navigation coordinator for SwiftUI",
+        "details": "1. Create UI/Navigation/NavigationCoordinator.swift\n2. Use NavigationStack (iOS 16+)\n3. Define navigation paths\n4. Handle deep links\n5. Add navigation helpers",
+        "testStrategy": "Test navigation between screens works correctly",
+        "priority": "high",
+        "dependencies": [
+          3
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 24,
+        "title": "Create Loading View",
+        "description": "Implement reusable loading view component",
+        "details": "1. Create UI/Components/LoadingView.swift\n2. Add skeleton screens\n3. Support different sizes\n4. Add animations\n5. Make accessible",
+        "testStrategy": "Test loading view displays correctly, accessibility works",
+        "priority": "high",
+        "dependencies": [
+          12
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 25,
+        "title": "Create Empty State View",
+        "description": "Implement reusable empty state component",
+        "details": "1. Create UI/Components/EmptyStateView.swift\n2. Add customizable message\n3. Include action button\n4. Add illustration support\n5. Make accessible",
+        "testStrategy": "Test empty state with various configurations",
+        "priority": "high",
+        "dependencies": [
+          12
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 26,
+        "title": "Create Error View",
+        "description": "Implement reusable error view component",
+        "details": "1. Create UI/Components/ErrorView.swift\n2. Display error message\n3. Add retry button\n4. Support different error types\n5. Make accessible",
+        "testStrategy": "Test error view with various error types",
+        "priority": "high",
+        "dependencies": [
+          19
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 27,
+        "title": "Set Up Logging System",
+        "description": "Create debug-only logging system",
+        "details": "1. Create Infrastructure/Services/Logger.swift\n2. Use OSLog for system integration\n3. Add log levels\n4. Ensure no PHI logging\n5. Disable in release builds",
+        "testStrategy": "Test logging works in debug, disabled in release",
+        "priority": "medium",
+        "dependencies": [
+          3
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 28,
+        "title": "Configure Build Configurations",
+        "description": "Set up Debug, Release, TestFlight configurations",
+        "details": "1. Add build configurations in Xcode\n2. Configure different bundle IDs\n3. Set up environment flags\n4. Configure API endpoints\n5. Add configuration files",
+        "testStrategy": "Test different configurations build correctly",
+        "priority": "medium",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 29,
+        "title": "Create CI/CD Foundation",
+        "description": "Set up basic GitHub Actions workflow",
+        "details": "1. Create .github/workflows/ios.yml\n2. Add build job\n3. Add test job\n4. Configure Xcode version\n5. Add status badges",
+        "testStrategy": "Push to GitHub and verify workflow runs",
+        "priority": "medium",
+        "dependencies": [
+          2,
+          5
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 30,
+        "title": "Document Architecture",
+        "description": "Create comprehensive architecture documentation",
+        "details": "1. Create docs/ARCHITECTURE.md\n2. Add layer descriptions\n3. Create architecture diagrams\n4. Document patterns used\n5. Add code examples",
+        "testStrategy": "Review documentation for completeness",
+        "priority": "low",
+        "dependencies": [
+          3
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 31,
+        "title": "Create Login Screen UI",
+        "description": "Implement login screen with email/password fields",
+        "details": "1. Create UI/Auth/LoginView.swift\n2. Add email and password TextFields\n3. Implement form validation\n4. Add login button\n5. Include forgot password link",
+        "testStrategy": "Write UI tests for login screen, test form validation",
+        "priority": "high",
+        "dependencies": [
+          24,
+          25,
+          26
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 32,
+        "title": "Create Login ViewModel",
+        "description": "Implement LoginViewModel with authentication logic",
+        "details": "1. Create UI/Auth/LoginViewModel.swift\n2. Use @Observable macro\n3. Implement login method\n4. Handle loading states\n5. Add form validation",
+        "testStrategy": "Test ViewModel with mock auth service",
+        "priority": "high",
+        "dependencies": [
+          13,
+          31
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 33,
+        "title": "Create Auth Service Protocol",
+        "description": "Define authentication service interface",
+        "details": "1. Create Domain/Services/AuthService.swift\n2. Define login, logout, refresh methods\n3. Add session management\n4. Define auth errors\n5. Document methods",
+        "testStrategy": "Test protocol with mock implementation",
+        "priority": "high",
+        "dependencies": [
+          9
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 34,
+        "title": "Implement AWS Cognito Service",
+        "description": "Create Cognito-based auth service implementation",
+        "details": "1. Add Amplify dependencies via SPM\n2. Create Infrastructure/Auth/CognitoAuthService.swift\n3. Configure Amplify in app\n4. Implement AuthService protocol\n5. Handle Cognito errors",
+        "testStrategy": "Test with mock Cognito responses",
+        "priority": "high",
+        "dependencies": [
+          33,
+          15
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 35,
+        "title": "Create Keychain Service",
+        "description": "Implement secure credential storage",
+        "details": "1. Create Infrastructure/Security/KeychainService.swift\n2. Use Security framework\n3. Store/retrieve credentials\n4. Handle keychain errors\n5. Add access control",
+        "testStrategy": "Test keychain operations work correctly",
+        "priority": "high",
+        "dependencies": [
+          3
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 36,
+        "title": "Implement Login API Integration",
+        "description": "Connect login flow to backend /auth/login endpoint",
+        "details": "1. Create Data/API/AuthAPI.swift\n2. Define login request/response DTOs\n3. Implement login endpoint call\n4. Map response to domain model\n5. Handle error responses",
+        "testStrategy": "Test with mock API responses",
+        "priority": "high",
+        "dependencies": [
+          15,
+          16,
+          17
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 37,
+        "title": "Implement Token Management",
+        "description": "Handle access and refresh tokens securely",
+        "details": "1. Create Domain/Models/AuthToken.swift\n2. Store tokens in keychain\n3. Add token expiry checking\n4. Implement token refresh logic\n5. Add token to requests",
+        "testStrategy": "Test token storage, refresh, and expiry",
+        "priority": "high",
+        "dependencies": [
+          35,
+          36
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 38,
+        "title": "Create Session Manager",
+        "description": "Implement user session management",
+        "details": "1. Create Infrastructure/Auth/SessionManager.swift\n2. Track login state\n3. Handle session timeout\n4. Persist session across launches\n5. Clear on logout",
+        "testStrategy": "Test session persistence and timeout",
+        "priority": "high",
+        "dependencies": [
+          37
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 39,
+        "title": "Implement Logout Flow",
+        "description": "Create logout functionality with cleanup",
+        "details": "1. Add logout to AuthService\n2. Clear tokens from keychain\n3. Clear user data\n4. Reset navigation\n5. Call logout API",
+        "testStrategy": "Test logout clears all user data",
+        "priority": "high",
+        "dependencies": [
+          38
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 40,
+        "title": "Add Authentication State",
+        "description": "Create app-wide authentication state",
+        "details": "1. Create UI/Auth/AuthenticationState.swift\n2. Use @Observable for state\n3. Add to environment\n4. Update on login/logout\n5. Persist state",
+        "testStrategy": "Test auth state updates propagate",
+        "priority": "high",
+        "dependencies": [
+          38,
+          21
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 41,
+        "title": "Create Biometric Service",
+        "description": "Implement Face ID/Touch ID authentication",
+        "details": "1. Create Infrastructure/Security/BiometricService.swift\n2. Use LocalAuthentication framework\n3. Check biometric availability\n4. Implement authentication\n5. Handle errors",
+        "testStrategy": "Test with mock LAContext",
+        "priority": "high",
+        "dependencies": [
+          3
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 42,
+        "title": "Implement Biometric Login",
+        "description": "Add biometric authentication to login flow",
+        "details": "1. Update LoginView with biometric button\n2. Store credentials securely\n3. Authenticate with biometrics\n4. Fall back to password\n5. Handle enrollment",
+        "testStrategy": "Test biometric login flow",
+        "priority": "high",
+        "dependencies": [
+          41,
+          35
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 43,
+        "title": "Create PIN Code Service",
+        "description": "Implement PIN code fallback authentication",
+        "details": "1. Create Infrastructure/Security/PINService.swift\n2. Secure PIN storage\n3. PIN validation logic\n4. Attempt limiting\n5. PIN reset flow",
+        "testStrategy": "Test PIN operations and security",
+        "priority": "high",
+        "dependencies": [
+          35
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 44,
+        "title": "Create PIN Entry UI",
+        "description": "Build PIN code entry interface",
+        "details": "1. Create UI/Auth/PINEntryView.swift\n2. Custom digit input\n3. Secure text entry\n4. Error feedback\n5. Accessibility support",
+        "testStrategy": "Test PIN entry UI and accessibility",
+        "priority": "high",
+        "dependencies": [
+          24
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 45,
+        "title": "Implement PIN Fallback",
+        "description": "Add PIN fallback to biometric auth",
+        "details": "1. Update biometric flow\n2. Show PIN on bio failure\n3. Validate PIN\n4. Update auth state\n5. Handle lockout",
+        "testStrategy": "Test fallback flow works correctly",
+        "priority": "high",
+        "dependencies": [
+          42,
+          43,
+          44
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 46,
+        "title": "Create Password Reset UI",
+        "description": "Build password reset request screen",
+        "details": "1. Create UI/Auth/PasswordResetView.swift\n2. Email input field\n3. Submit button\n4. Success/error states\n5. Navigation flow",
+        "testStrategy": "Test password reset UI flow",
+        "priority": "medium",
+        "dependencies": [
+          24,
+          25,
+          26
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 47,
+        "title": "Implement Password Reset API",
+        "description": "Connect to password reset endpoint",
+        "details": "1. Add to AuthAPI.swift\n2. Define reset DTOs\n3. Call /auth/reset endpoint\n4. Handle responses\n5. Show confirmation",
+        "testStrategy": "Test with mock API responses",
+        "priority": "medium",
+        "dependencies": [
+          36
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 48,
+        "title": "Create Registration UI",
+        "description": "Build account creation screens",
+        "details": "1. Create UI/Auth/RegistrationView.swift\n2. Multi-step form\n3. Input validation\n4. Terms acceptance\n5. Submit flow",
+        "testStrategy": "Test registration UI and validation",
+        "priority": "medium",
+        "dependencies": [
+          24,
+          25,
+          26
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 49,
+        "title": "Create Registration ViewModel",
+        "description": "Implement registration business logic",
+        "details": "1. Create UI/Auth/RegistrationViewModel.swift\n2. Form validation\n3. API integration\n4. Error handling\n5. Success flow",
+        "testStrategy": "Test ViewModel with mocks",
+        "priority": "medium",
+        "dependencies": [
+          13
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 50,
+        "title": "Implement Registration API",
+        "description": "Connect to account creation endpoint",
+        "details": "1. Add to AuthAPI.swift\n2. Define registration DTOs\n3. Call /auth/register endpoint\n4. Handle validation errors\n5. Auto-login on success",
+        "testStrategy": "Test registration with mock API",
+        "priority": "medium",
+        "dependencies": [
+          36
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 51,
+        "title": "Create Email Verification UI",
+        "description": "Build email verification screen",
+        "details": "1. Create UI/Auth/EmailVerificationView.swift\n2. Show pending state\n3. Resend option\n4. Success feedback\n5. Auto-proceed",
+        "testStrategy": "Test verification UI states",
+        "priority": "medium",
+        "dependencies": [
+          24,
+          25,
+          26
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 52,
+        "title": "Implement Email Verification",
+        "description": "Handle email verification flow",
+        "details": "1. Check verification status\n2. Poll for completion\n3. Handle deep links\n4. Update auth state\n5. Navigate to app",
+        "testStrategy": "Test verification flow",
+        "priority": "medium",
+        "dependencies": [
+          40
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 53,
+        "title": "Create Terms UI",
+        "description": "Build terms of service screen",
+        "details": "1. Create UI/Legal/TermsView.swift\n2. ScrollView with terms\n3. Accept/decline buttons\n4. Version tracking\n5. Required acceptance",
+        "testStrategy": "Test terms UI and scrolling",
+        "priority": "medium",
+        "dependencies": [
+          24
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 54,
+        "title": "Implement Terms Acceptance",
+        "description": "Track terms acceptance",
+        "details": "1. Store acceptance date\n2. Track version accepted\n3. Force re-accept on update\n4. API integration\n5. Block access until accepted",
+        "testStrategy": "Test terms acceptance flow",
+        "priority": "medium",
+        "dependencies": [
+          38
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 55,
+        "title": "Create Auth Error Handler",
+        "description": "Specialized error handling for auth",
+        "details": "1. Extend ErrorHandler for auth\n2. Handle Cognito errors\n3. User-friendly messages\n4. Retry suggestions\n5. Account recovery options",
+        "testStrategy": "Test auth error scenarios",
+        "priority": "high",
+        "dependencies": [
+          19
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 56,
+        "title": "Create Dashboard UI Structure",
+        "description": "Build main dashboard screen layout",
+        "details": "1. Create UI/Dashboard/DashboardView.swift\n2. Design card-based layout\n3. Add navigation bar\n4. Include tab bar\n5. Support iPad layout",
+        "testStrategy": "Test dashboard renders correctly on all devices",
+        "priority": "high",
+        "dependencies": [
+          24
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 57,
+        "title": "Create Dashboard ViewModel",
+        "description": "Implement dashboard business logic",
+        "details": "1. Create UI/Dashboard/DashboardViewModel.swift\n2. Load user data\n3. Handle refresh\n4. Manage state\n5. Error handling",
+        "testStrategy": "Test ViewModel with mock data",
+        "priority": "high",
+        "dependencies": [
+          13,
+          12
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 58,
+        "title": "Create User Profile Model",
+        "description": "Define user profile domain model",
+        "details": "1. Create Domain/Models/UserProfile.swift\n2. Define properties\n3. Add validation\n4. Conform to Entity\n5. Document model",
+        "testStrategy": "Test model creation and validation",
+        "priority": "high",
+        "dependencies": [
+          8
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 59,
+        "title": "Implement Profile API",
+        "description": "Connect to /user/profile endpoint",
+        "details": "1. Create Data/API/UserAPI.swift\n2. Define profile DTOs\n3. Implement GET profile\n4. Map to domain model\n5. Handle errors",
+        "testStrategy": "Test with mock API responses",
+        "priority": "high",
+        "dependencies": [
+          15,
+          16,
+          17
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 60,
+        "title": "Create Tab Bar",
+        "description": "Implement main app navigation",
+        "details": "1. Create UI/Navigation/MainTabView.swift\n2. Add tab items\n3. Handle selection\n4. Add badges\n5. Customize appearance",
+        "testStrategy": "Test tab navigation works correctly",
+        "priority": "high",
+        "dependencies": [
+          23
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 61,
+        "title": "Create WebSocket Service",
+        "description": "Implement real-time connection service",
+        "details": "1. Create Infrastructure/Network/WebSocketService.swift\n2. Use URLSessionWebSocketTask\n3. Handle connection lifecycle\n4. Message encoding/decoding\n5. Auto-reconnect logic",
+        "testStrategy": "Test WebSocket connection and messages",
+        "priority": "high",
+        "dependencies": [
+          15
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 62,
+        "title": "Connect Dashboard WebSocket",
+        "description": "Enable real-time updates on dashboard",
+        "details": "1. Initialize WebSocket on dashboard\n2. Subscribe to updates\n3. Handle incoming messages\n4. Update UI reactively\n5. Show connection status",
+        "testStrategy": "Test real-time updates work",
+        "priority": "high",
+        "dependencies": [
+          61,
+          57
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 63,
+        "title": "Create Offline Indicator",
+        "description": "Show network status to user",
+        "details": "1. Create UI/Components/OfflineIndicator.swift\n2. Monitor reachability\n3. Show/hide automatically\n4. Animate transitions\n5. Make accessible",
+        "testStrategy": "Test indicator appears when offline",
+        "priority": "high",
+        "dependencies": [
+          24
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 64,
+        "title": "Implement Dashboard Cache",
+        "description": "Cache dashboard data for offline",
+        "details": "1. Store last dashboard data\n2. Show cached when offline\n3. Sync when online\n4. Show data age\n5. Handle expiry",
+        "testStrategy": "Test offline data display",
+        "priority": "high",
+        "dependencies": [
+          10,
+          57
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 65,
+        "title": "Add Pull to Refresh",
+        "description": "Implement refresh gesture on dashboard",
+        "details": "1. Add refreshable modifier\n2. Trigger data reload\n3. Show loading state\n4. Handle errors\n5. Haptic feedback",
+        "testStrategy": "Test pull gesture triggers refresh",
+        "priority": "medium",
+        "dependencies": [
+          56,
+          57
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 66,
+        "title": "Create HealthKit Permission UI",
+        "description": "Build permission request interface",
+        "details": "1. Create UI/Health/HealthKitPermissionView.swift\n2. List requested types\n3. Explain usage\n4. Request button\n5. Handle denial",
+        "testStrategy": "Test permission UI flow",
+        "priority": "high",
+        "dependencies": [
+          24
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 67,
+        "title": "Create HealthKit Service",
+        "description": "Implement HealthKit integration service",
+        "details": "1. Create Infrastructure/Health/HealthKitService.swift\n2. Configure health types\n3. Request authorization\n4. Read health data\n5. Handle errors",
+        "testStrategy": "Test with mock HKHealthStore",
+        "priority": "high",
+        "dependencies": [
+          3
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 68,
+        "title": "Configure Background Delivery",
+        "description": "Enable background health data updates",
+        "details": "1. Enable HealthKit background\n2. Register for updates\n3. Handle background fetch\n4. Update cache\n5. Trigger sync",
+        "testStrategy": "Test background delivery works",
+        "priority": "high",
+        "dependencies": [
+          67
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 69,
+        "title": "Create Health Metric Models",
+        "description": "Define health data domain models",
+        "details": "1. Create Domain/Models/HealthMetric.swift\n2. Support all metric types\n3. Add validation\n4. Include metadata\n5. Document types",
+        "testStrategy": "Test model creation for all types",
+        "priority": "high",
+        "dependencies": [
+          8
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 70,
+        "title": "Create Health Repository",
+        "description": "Implement health data repository",
+        "details": "1. Create Domain/Repositories/HealthRepository.swift\n2. Define CRUD operations\n3. Add query methods\n4. Support batch ops\n5. Document interface",
+        "testStrategy": "Test repository interface",
+        "priority": "high",
+        "dependencies": [
+          9,
+          69
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 71,
+        "title": "Create Manual Entry UI",
+        "description": "Build manual health data entry forms",
+        "details": "1. Create UI/Health/ManualEntryView.swift\n2. Dynamic form based on type\n3. Input validation\n4. Date/time picker\n5. Save/cancel flow",
+        "testStrategy": "Test form for each metric type",
+        "priority": "high",
+        "dependencies": [
+          24,
+          25
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 72,
+        "title": "Implement Data Validation",
+        "description": "Validate health data before saving",
+        "details": "1. Create Domain/Validators/HealthDataValidator.swift\n2. Range validation\n3. Type checking\n4. Duplicate detection\n5. Error messages",
+        "testStrategy": "Test validation rules for all types",
+        "priority": "high",
+        "dependencies": [
+          69
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 73,
+        "title": "Create Health Metrics API",
+        "description": "Connect to /health/metrics endpoint",
+        "details": "1. Create Data/API/HealthAPI.swift\n2. Define metric DTOs\n3. POST single metric\n4. GET metrics list\n5. Handle errors",
+        "testStrategy": "Test with mock API",
+        "priority": "high",
+        "dependencies": [
+          15,
+          16,
+          17
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 74,
+        "title": "Implement Batch Sync API",
+        "description": "Connect to /health/batch-sync endpoint",
+        "details": "1. Add batch sync to HealthAPI\n2. Define batch DTOs\n3. Chunk large batches\n4. Handle partial success\n5. Retry failed items",
+        "testStrategy": "Test batch sync with various sizes",
+        "priority": "high",
+        "dependencies": [
+          73
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 75,
+        "title": "Create Offline Health Queue",
+        "description": "Queue health data when offline",
+        "details": "1. Create Infrastructure/Sync/OfflineQueue.swift\n2. Persist queue to disk\n3. Add retry logic\n4. Priority ordering\n5. Expire old items",
+        "testStrategy": "Test queue operations offline",
+        "priority": "high",
+        "dependencies": [
+          10
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 76,
+        "title": "Implement Sync Status Tracking",
+        "description": "Track sync state for health data",
+        "details": "1. Add sync status to models\n2. Update UI indicators\n3. Show pending count\n4. Last sync time\n5. Error tracking",
+        "testStrategy": "Test sync status updates",
+        "priority": "high",
+        "dependencies": [
+          75
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 77,
+        "title": "Create Conflict Resolver",
+        "description": "Handle sync conflicts for health data",
+        "details": "1. Create Domain/Sync/ConflictResolver.swift\n2. Define conflict types\n3. Resolution strategies\n4. User choice UI\n5. Audit trail",
+        "testStrategy": "Test conflict scenarios",
+        "priority": "high",
+        "dependencies": [
+          74
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 78,
+        "title": "Implement Health Data Export",
+        "description": "Export health data to various formats",
+        "details": "1. Create Domain/Export/HealthDataExporter.swift\n2. Support CSV, JSON, PDF\n3. Date range selection\n4. Type filtering\n5. Share sheet integration",
+        "testStrategy": "Test export formats are valid",
+        "priority": "medium",
+        "dependencies": [
+          69
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 79,
+        "title": "Create Health Charts",
+        "description": "Build chart components for health data",
+        "details": "1. Create UI/Health/Charts/HealthChartView.swift\n2. Use Swift Charts\n3. Support multiple types\n4. Interactive features\n5. Accessibility",
+        "testStrategy": "Test charts render correctly",
+        "priority": "medium",
+        "dependencies": [
+          24
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 80,
+        "title": "Implement Trend Analysis",
+        "description": "Calculate and display health trends",
+        "details": "1. Create Domain/Analytics/TrendAnalyzer.swift\n2. Calculate trends\n3. Detect patterns\n4. Generate insights\n5. Visualize trends",
+        "testStrategy": "Test trend calculations",
+        "priority": "medium",
+        "dependencies": [
+          69,
+          79
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 81,
+        "title": "Implement Real-time Service",
+        "description": "Create comprehensive real-time monitoring service",
+        "details": "1. Create Infrastructure/Realtime/RealtimeService.swift\n2. WebSocket management\n3. Event subscription system\n4. Message routing\n5. State synchronization",
+        "testStrategy": "Test real-time event delivery",
+        "priority": "high",
+        "dependencies": [
+          61
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 82,
+        "title": "Create Health Alert Models",
+        "description": "Define health alert domain models",
+        "details": "1. Create Domain/Models/HealthAlert.swift\n2. Alert types and severity\n3. Trigger conditions\n4. Alert metadata\n5. Dismissal tracking",
+        "testStrategy": "Test alert model creation",
+        "priority": "high",
+        "dependencies": [
+          8
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 83,
+        "title": "Create Alert UI Components",
+        "description": "Build reusable alert UI components",
+        "details": "1. Create UI/Alerts/AlertBanner.swift\n2. Different severity styles\n3. Actions support\n4. Auto-dismiss option\n5. Accessibility",
+        "testStrategy": "Test alert UI states",
+        "priority": "high",
+        "dependencies": [
+          24
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 84,
+        "title": "Implement Alert Service",
+        "description": "Create service for managing health alerts",
+        "details": "1. Create Domain/Services/AlertService.swift\n2. Alert queue management\n3. Priority handling\n4. Persistence support\n5. Notification integration",
+        "testStrategy": "Test alert queueing and priority",
+        "priority": "high",
+        "dependencies": [
+          82
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 85,
+        "title": "Create Notification Manager",
+        "description": "Implement push notification handling",
+        "details": "1. Create Infrastructure/Notifications/NotificationManager.swift\n2. Permission handling\n3. Remote notifications\n4. Local notifications\n5. Deep link support",
+        "testStrategy": "Test notification delivery",
+        "priority": "high",
+        "dependencies": [
+          3
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 86,
+        "title": "Connect Alerts to Notifications",
+        "description": "Link health alerts to push notifications",
+        "details": "1. Map alerts to notifications\n2. Configure notification content\n3. Handle actions\n4. Track delivery\n5. Analytics integration",
+        "testStrategy": "Test alert notifications work",
+        "priority": "high",
+        "dependencies": [
+          84,
+          85
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 87,
+        "title": "Implement Connection Status",
+        "description": "Show real-time connection status",
+        "details": "1. Create UI/Components/ConnectionStatus.swift\n2. Visual indicators\n3. Connection quality\n4. Latency display\n5. Debug information",
+        "testStrategy": "Test status updates correctly",
+        "priority": "medium",
+        "dependencies": [
+          81
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 88,
+        "title": "Create Auto-reconnect Logic",
+        "description": "Implement WebSocket reconnection",
+        "details": "1. Exponential backoff\n2. Max retry limits\n3. State preservation\n4. Queue messages\n5. Resume subscriptions",
+        "testStrategy": "Test reconnection scenarios",
+        "priority": "high",
+        "dependencies": [
+          61,
+          81
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 89,
+        "title": "Implement Message Queue",
+        "description": "Queue messages during disconnect",
+        "details": "1. Create Infrastructure/Realtime/MessageQueue.swift\n2. Persist to disk\n3. Priority ordering\n4. Expiry handling\n5. Batch sending",
+        "testStrategy": "Test queue persistence",
+        "priority": "high",
+        "dependencies": [
+          88
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 90,
+        "title": "Create Collaboration Base",
+        "description": "Foundation for collaborative features",
+        "details": "1. Create Domain/Collaboration/CollaborationService.swift\n2. User presence\n3. Shared state\n4. Conflict handling\n5. Activity tracking",
+        "testStrategy": "Test collaborative state sync",
+        "priority": "medium",
+        "dependencies": [
+          81
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 91,
+        "title": "Create Insights Screen UI",
+        "description": "Build main insights interface",
+        "details": "1. Create UI/Insights/InsightsView.swift\n2. Card-based layout\n3. Insight categories\n4. Interactive elements\n5. Refresh support",
+        "testStrategy": "Test insights UI layout",
+        "priority": "high",
+        "dependencies": [
+          24,
+          25,
+          26
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 92,
+        "title": "Create Insights ViewModel",
+        "description": "Implement insights business logic",
+        "details": "1. Create UI/Insights/InsightsViewModel.swift\n2. Load insights data\n3. Filter and sort\n4. State management\n5. Refresh logic",
+        "testStrategy": "Test ViewModel with mock insights",
+        "priority": "high",
+        "dependencies": [
+          13,
+          91
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 93,
+        "title": "Create Insight Models",
+        "description": "Define insight domain models",
+        "details": "1. Create Domain/Models/Insight.swift\n2. Insight types\n3. Confidence scores\n4. Evidence data\n5. Action items",
+        "testStrategy": "Test insight model validation",
+        "priority": "high",
+        "dependencies": [
+          8
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 94,
+        "title": "Implement Insights API",
+        "description": "Connect to /insights/analysis endpoint",
+        "details": "1. Create Data/API/InsightsAPI.swift\n2. Analysis request DTOs\n3. Response mapping\n4. Caching logic\n5. Error handling",
+        "testStrategy": "Test with mock API responses",
+        "priority": "high",
+        "dependencies": [
+          15,
+          16,
+          17
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 95,
+        "title": "Create Recommendation Cards",
+        "description": "Build recommendation UI components",
+        "details": "1. Create UI/Insights/RecommendationCard.swift\n2. Action buttons\n3. Evidence display\n4. Dismissal tracking\n5. Feedback options",
+        "testStrategy": "Test recommendation interactions",
+        "priority": "high",
+        "dependencies": [
+          91
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 96,
+        "title": "Implement Recommendations API",
+        "description": "Connect to recommendations endpoint",
+        "details": "1. Add to InsightsAPI.swift\n2. Personalization params\n3. Feedback submission\n4. History tracking\n5. A/B testing support",
+        "testStrategy": "Test recommendation fetching",
+        "priority": "high",
+        "dependencies": [
+          94
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 97,
+        "title": "Create Progress Tracking UI",
+        "description": "Build progress visualization",
+        "details": "1. Create UI/Insights/ProgressView.swift\n2. Goal progress bars\n3. Milestone markers\n4. Trend indicators\n5. Achievement badges",
+        "testStrategy": "Test progress calculations",
+        "priority": "medium",
+        "dependencies": [
+          79
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 98,
+        "title": "Implement Goal Management",
+        "description": "Create goal setting and tracking",
+        "details": "1. Create Domain/Goals/GoalService.swift\n2. Goal creation\n3. Progress calculation\n4. Reminder scheduling\n5. Achievement detection",
+        "testStrategy": "Test goal operations",
+        "priority": "medium",
+        "dependencies": [
+          69
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 99,
+        "title": "Create Predictive Display",
+        "description": "Show predictive analytics",
+        "details": "1. Create UI/Insights/PredictiveView.swift\n2. Forecast charts\n3. Confidence intervals\n4. Scenario comparison\n5. Risk indicators",
+        "testStrategy": "Test predictive UI elements",
+        "priority": "medium",
+        "dependencies": [
+          79
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 100,
+        "title": "Implement Anomaly Alerts",
+        "description": "Create anomaly detection alerts",
+        "details": "1. Configure anomaly thresholds\n2. Real-time detection\n3. Alert generation\n4. Context provision\n5. Action suggestions",
+        "testStrategy": "Test anomaly detection",
+        "priority": "high",
+        "dependencies": [
+          84,
+          93
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 101,
+        "title": "Create History Screen UI",
+        "description": "Build historical data viewer",
+        "details": "1. Create UI/History/HistoryView.swift\n2. Timeline layout\n3. Filter controls\n4. Search functionality\n5. Export options",
+        "testStrategy": "Test history UI navigation",
+        "priority": "high",
+        "dependencies": [
+          24,
+          25
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 102,
+        "title": "Create History ViewModel",
+        "description": "Implement history business logic",
+        "details": "1. Create UI/History/HistoryViewModel.swift\n2. Date range handling\n3. Data filtering\n4. Pagination support\n5. Export preparation",
+        "testStrategy": "Test ViewModel with historical data",
+        "priority": "high",
+        "dependencies": [
+          13,
+          101
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 103,
+        "title": "Create Date Range Picker",
+        "description": "Build custom date range selector",
+        "details": "1. Create UI/Components/DateRangePicker.swift\n2. Calendar view\n3. Quick ranges\n4. Custom selection\n5. Validation logic",
+        "testStrategy": "Test date selection logic",
+        "priority": "high",
+        "dependencies": [
+          24
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 104,
+        "title": "Implement History API",
+        "description": "Connect to /health/history endpoint",
+        "details": "1. Add to HealthAPI.swift\n2. Query parameters\n3. Pagination handling\n4. Response caching\n5. Incremental loading",
+        "testStrategy": "Test historical data fetching",
+        "priority": "high",
+        "dependencies": [
+          73
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 105,
+        "title": "Create Filter Options",
+        "description": "Build data filtering UI",
+        "details": "1. Create UI/History/FilterView.swift\n2. Metric type selection\n3. Value ranges\n4. Tag filtering\n5. Quick presets",
+        "testStrategy": "Test filter combinations",
+        "priority": "medium",
+        "dependencies": [
+          101
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 106,
+        "title": "Create Comparison Tool",
+        "description": "Build period comparison feature",
+        "details": "1. Create UI/History/ComparisonView.swift\n2. Side-by-side display\n3. Difference calculation\n4. Trend comparison\n5. Statistical analysis",
+        "testStrategy": "Test comparison calculations",
+        "priority": "medium",
+        "dependencies": [
+          101,
+          79
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 107,
+        "title": "Implement Trend Charts",
+        "description": "Create trend visualization",
+        "details": "1. Time series charts\n2. Moving averages\n3. Annotations support\n4. Zoom and pan\n5. Export as image",
+        "testStrategy": "Test chart interactions",
+        "priority": "medium",
+        "dependencies": [
+          79,
+          80
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 108,
+        "title": "Create Export Service",
+        "description": "Implement multi-format export",
+        "details": "1. Create Domain/Export/ExportService.swift\n2. PDF generation\n3. CSV formatting\n4. JSON export\n5. Email integration",
+        "testStrategy": "Test export file generation",
+        "priority": "medium",
+        "dependencies": [
+          78
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 109,
+        "title": "Implement Share Feature",
+        "description": "Add sharing functionality",
+        "details": "1. UIActivityViewController\n2. Custom share items\n3. Provider sharing\n4. Privacy controls\n5. Share tracking",
+        "testStrategy": "Test share sheet functionality",
+        "priority": "medium",
+        "dependencies": [
+          108
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 110,
+        "title": "Create Search Feature",
+        "description": "Implement history search",
+        "details": "1. Create UI/History/SearchBar.swift\n2. Full-text search\n3. Filter by date\n4. Search suggestions\n5. Recent searches",
+        "testStrategy": "Test search functionality",
+        "priority": "medium",
+        "dependencies": [
+          101
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 111,
+        "title": "Create Provider List UI",
+        "description": "Build healthcare provider list",
+        "details": "1. Create UI/Providers/ProviderListView.swift\n2. Provider cards\n3. Specialties display\n4. Contact options\n5. Search/filter",
+        "testStrategy": "Test provider list display",
+        "priority": "high",
+        "dependencies": [
+          24,
+          25
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 112,
+        "title": "Create Provider Models",
+        "description": "Define provider domain models",
+        "details": "1. Create Domain/Models/Provider.swift\n2. Provider details\n3. Specialties\n4. Availability\n5. Permissions",
+        "testStrategy": "Test provider model creation",
+        "priority": "high",
+        "dependencies": [
+          8
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 113,
+        "title": "Implement Provider API",
+        "description": "Connect to /providers endpoint",
+        "details": "1. Create Data/API/ProviderAPI.swift\n2. List providers\n3. Provider details\n4. Search functionality\n5. Relationship management",
+        "testStrategy": "Test provider API calls",
+        "priority": "high",
+        "dependencies": [
+          15,
+          16,
+          17
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 114,
+        "title": "Create Messaging UI",
+        "description": "Build secure messaging interface",
+        "details": "1. Create UI/Messaging/MessageView.swift\n2. Chat interface\n3. Message composer\n4. Attachment support\n5. Read receipts",
+        "testStrategy": "Test messaging UI functionality",
+        "priority": "high",
+        "dependencies": [
+          24
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 115,
+        "title": "Implement Message Encryption",
+        "description": "Add end-to-end encryption",
+        "details": "1. Create Infrastructure/Security/MessageEncryption.swift\n2. Key exchange\n3. Message encryption\n4. Attachment encryption\n5. Key management",
+        "testStrategy": "Test encryption/decryption",
+        "priority": "high",
+        "dependencies": [
+          35
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 116,
+        "title": "Create File Attachment",
+        "description": "Support file attachments in messages",
+        "details": "1. Image picker integration\n2. Document picker\n3. File validation\n4. Upload progress\n5. Thumbnail generation",
+        "testStrategy": "Test file attachment flow",
+        "priority": "high",
+        "dependencies": [
+          114
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 117,
+        "title": "Create Provider Notes",
+        "description": "Display provider notes and instructions",
+        "details": "1. Create UI/Providers/ProviderNotesView.swift\n2. Note categories\n3. Priority levels\n4. Action items\n5. Acknowledgment tracking",
+        "testStrategy": "Test notes display and actions",
+        "priority": "medium",
+        "dependencies": [
+          111
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 118,
+        "title": "Create Appointment UI",
+        "description": "Build appointment scheduling interface",
+        "details": "1. Create UI/Appointments/AppointmentView.swift\n2. Calendar integration\n3. Time slot selection\n4. Reminder setup\n5. Cancellation flow",
+        "testStrategy": "Test appointment booking flow",
+        "priority": "medium",
+        "dependencies": [
+          103
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 119,
+        "title": "Implement Data Sharing",
+        "description": "Provider data sharing controls",
+        "details": "1. Create UI/Privacy/DataSharingView.swift\n2. Granular permissions\n3. Time-limited access\n4. Audit trail\n5. Revocation support",
+        "testStrategy": "Test permission management",
+        "priority": "high",
+        "dependencies": [
+          112
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 120,
+        "title": "Create Consent Manager",
+        "description": "Manage provider consent",
+        "details": "1. Create Domain/Privacy/ConsentManager.swift\n2. Consent types\n3. Version tracking\n4. Expiry handling\n5. Legal compliance",
+        "testStrategy": "Test consent workflows",
+        "priority": "high",
+        "dependencies": [
+          119
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 121,
+        "title": "Create Medication List UI",
+        "description": "Build medication management interface",
+        "details": "1. Create UI/Medications/MedicationListView.swift\n2. Active medications\n3. Add medication flow\n4. Dosage display\n5. Schedule indicators",
+        "testStrategy": "Test medication list functionality",
+        "priority": "high",
+        "dependencies": [
+          24,
+          25
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 122,
+        "title": "Create Medication Models",
+        "description": "Define medication domain models",
+        "details": "1. Create Domain/Models/Medication.swift\n2. Drug information\n3. Dosage details\n4. Schedule data\n5. Refill tracking",
+        "testStrategy": "Test medication model validation",
+        "priority": "high",
+        "dependencies": [
+          8
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 123,
+        "title": "Implement Medication API",
+        "description": "Connect to /medications endpoint",
+        "details": "1. Create Data/API/MedicationAPI.swift\n2. CRUD operations\n3. Schedule management\n4. Adherence tracking\n5. Refill requests",
+        "testStrategy": "Test medication API operations",
+        "priority": "high",
+        "dependencies": [
+          15,
+          16,
+          17
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 124,
+        "title": "Create Reminder Service",
+        "description": "Implement medication reminders",
+        "details": "1. Create Domain/Reminders/ReminderService.swift\n2. Schedule calculation\n3. Notification scheduling\n4. Snooze handling\n5. Adherence tracking",
+        "testStrategy": "Test reminder scheduling",
+        "priority": "high",
+        "dependencies": [
+          85
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 125,
+        "title": "Create Schedule UI",
+        "description": "Build medication schedule view",
+        "details": "1. Create UI/Medications/ScheduleView.swift\n2. Daily timeline\n3. Dose markers\n4. Take/skip actions\n5. History display",
+        "testStrategy": "Test schedule interactions",
+        "priority": "high",
+        "dependencies": [
+          121
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 126,
+        "title": "Implement Adherence Tracking",
+        "description": "Track medication compliance",
+        "details": "1. Create Domain/Analytics/AdherenceTracker.swift\n2. Calculate adherence rate\n3. Identify patterns\n4. Generate reports\n5. Provider sharing",
+        "testStrategy": "Test adherence calculations",
+        "priority": "high",
+        "dependencies": [
+          122
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 127,
+        "title": "Create Refill Reminders",
+        "description": "Implement refill notifications",
+        "details": "1. Calculate refill dates\n2. Early warning system\n3. Pharmacy integration prep\n4. One-tap refill\n5. History tracking",
+        "testStrategy": "Test refill calculations",
+        "priority": "medium",
+        "dependencies": [
+          124
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 128,
+        "title": "Implement Drug Interactions",
+        "description": "Check for drug interactions",
+        "details": "1. Create Domain/Safety/InteractionChecker.swift\n2. Interaction database\n3. Severity levels\n4. Warning display\n5. Provider alerts",
+        "testStrategy": "Test interaction detection",
+        "priority": "high",
+        "dependencies": [
+          122
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 129,
+        "title": "Create Medication History",
+        "description": "View medication history",
+        "details": "1. Past medications list\n2. Effectiveness tracking\n3. Side effects log\n4. Discontinuation reasons\n5. Export support",
+        "testStrategy": "Test history display",
+        "priority": "medium",
+        "dependencies": [
+          101
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 130,
+        "title": "Create Medication Reports",
+        "description": "Generate adherence reports",
+        "details": "1. Create UI/Reports/MedicationReport.swift\n2. Adherence charts\n3. Missed dose analysis\n4. Provider format\n5. PDF export",
+        "testStrategy": "Test report generation",
+        "priority": "medium",
+        "dependencies": [
+          108,
+          126
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 131,
+        "title": "Create Care Plan Overview",
+        "description": "Build care plan dashboard",
+        "details": "1. Create UI/CarePlan/CarePlanOverview.swift\n2. Active plans display\n3. Progress indicators\n4. Task summary\n5. Team members",
+        "testStrategy": "Test care plan display",
+        "priority": "high",
+        "dependencies": [
+          24,
+          25
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 132,
+        "title": "Create Care Plan Models",
+        "description": "Define care plan domain models",
+        "details": "1. Create Domain/Models/CarePlan.swift\n2. Plan structure\n3. Task definitions\n4. Milestones\n5. Team roles",
+        "testStrategy": "Test care plan model structure",
+        "priority": "high",
+        "dependencies": [
+          8
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 133,
+        "title": "Implement Care Plan API",
+        "description": "Connect to /care-plans endpoint",
+        "details": "1. Create Data/API/CarePlanAPI.swift\n2. Fetch active plans\n3. Task updates\n4. Progress submission\n5. Team communication",
+        "testStrategy": "Test care plan API calls",
+        "priority": "high",
+        "dependencies": [
+          15,
+          16,
+          17
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 134,
+        "title": "Create Task Management UI",
+        "description": "Build care plan task interface",
+        "details": "1. Create UI/CarePlan/TaskListView.swift\n2. Task categories\n3. Due dates\n4. Completion tracking\n5. Notes addition",
+        "testStrategy": "Test task interactions",
+        "priority": "high",
+        "dependencies": [
+          131
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 135,
+        "title": "Implement Progress Tracking",
+        "description": "Track care plan progress",
+        "details": "1. Create Domain/CarePlan/ProgressTracker.swift\n2. Milestone detection\n3. Completion rates\n4. Trend analysis\n5. Alerts generation",
+        "testStrategy": "Test progress calculations",
+        "priority": "high",
+        "dependencies": [
+          132
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 136,
+        "title": "Create Care Team Display",
+        "description": "Show care team members",
+        "details": "1. Create UI/CarePlan/CareTeamView.swift\n2. Member profiles\n3. Roles display\n4. Contact options\n5. Activity feed",
+        "testStrategy": "Test team display functionality",
+        "priority": "medium",
+        "dependencies": [
+          112
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 137,
+        "title": "Implement Plan Updates",
+        "description": "Handle care plan modifications",
+        "details": "1. Version tracking\n2. Change notifications\n3. Approval workflow\n4. History log\n5. Rollback support",
+        "testStrategy": "Test update mechanisms",
+        "priority": "high",
+        "dependencies": [
+          133
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 138,
+        "title": "Create Milestone Tracking",
+        "description": "Track care plan milestones",
+        "details": "1. Create UI/CarePlan/MilestoneView.swift\n2. Timeline display\n3. Achievement badges\n4. Progress charts\n5. Celebration animations",
+        "testStrategy": "Test milestone detection",
+        "priority": "medium",
+        "dependencies": [
+          135
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 139,
+        "title": "Implement Care Notifications",
+        "description": "Care plan related alerts",
+        "details": "1. Task reminders\n2. Milestone alerts\n3. Team messages\n4. Plan updates\n5. Deadline warnings",
+        "testStrategy": "Test notification delivery",
+        "priority": "high",
+        "dependencies": [
+          85,
+          134
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 140,
+        "title": "Create Compliance Reports",
+        "description": "Generate care plan reports",
+        "details": "1. Create UI/Reports/CarePlanReport.swift\n2. Compliance metrics\n3. Task completion rates\n4. Outcome tracking\n5. Provider format",
+        "testStrategy": "Test report accuracy",
+        "priority": "medium",
+        "dependencies": [
+          108,
+          135
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 141,
+        "title": "Create Device Management UI",
+        "description": "Build wearable device manager",
+        "details": "1. Create UI/Devices/DeviceListView.swift\n2. Connected devices\n3. Add device flow\n4. Device settings\n5. Sync status",
+        "testStrategy": "Test device list functionality",
+        "priority": "high",
+        "dependencies": [
+          24,
+          25
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 142,
+        "title": "Create Watch App Foundation",
+        "description": "Initialize Apple Watch app",
+        "details": "1. Add Watch App target\n2. Basic project structure\n3. Communication setup\n4. Shared data models\n5. Watch connectivity",
+        "testStrategy": "Test Watch app builds",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 143,
+        "title": "Implement Watch UI",
+        "description": "Build Watch app interface",
+        "details": "1. Create main Watch views\n2. Complication support\n3. Quick actions\n4. Health data display\n5. Sync indicators",
+        "testStrategy": "Test Watch UI functionality",
+        "priority": "high",
+        "dependencies": [
+          142
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 144,
+        "title": "Create Watch Sync",
+        "description": "Implement Watch data sync",
+        "details": "1. WatchConnectivity framework\n2. Background transfers\n3. Data prioritization\n4. Conflict handling\n5. Battery optimization",
+        "testStrategy": "Test Watch sync reliability",
+        "priority": "high",
+        "dependencies": [
+          142,
+          67
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 145,
+        "title": "Implement Devices API",
+        "description": "Connect to /devices endpoint",
+        "details": "1. Create Data/API/DevicesAPI.swift\n2. Device registration\n3. Data submission\n4. Settings sync\n5. Firmware info",
+        "testStrategy": "Test device API operations",
+        "priority": "high",
+        "dependencies": [
+          15,
+          16,
+          17
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 146,
+        "title": "Create Pairing Flow",
+        "description": "Build device pairing interface",
+        "details": "1. Create UI/Devices/PairingView.swift\n2. Discovery process\n3. Authentication\n4. Configuration\n5. Success confirmation",
+        "testStrategy": "Test pairing process",
+        "priority": "high",
+        "dependencies": [
+          141
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 147,
+        "title": "Implement Device Sync",
+        "description": "Sync data from wearables",
+        "details": "1. Create Infrastructure/Devices/DeviceSyncService.swift\n2. Data mapping\n3. Batch processing\n4. Deduplication\n5. Error recovery",
+        "testStrategy": "Test sync from devices",
+        "priority": "high",
+        "dependencies": [
+          145
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 148,
+        "title": "Create Battery Monitor",
+        "description": "Monitor device battery levels",
+        "details": "1. Battery level tracking\n2. Low battery alerts\n3. Charging reminders\n4. Usage optimization\n5. Historical tracking",
+        "testStrategy": "Test battery monitoring",
+        "priority": "medium",
+        "dependencies": [
+          141
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 149,
+        "title": "Implement Firmware Updates",
+        "description": "Handle device firmware updates",
+        "details": "1. Update notifications\n2. Download management\n3. Installation flow\n4. Progress tracking\n5. Rollback support",
+        "testStrategy": "Test update process",
+        "priority": "medium",
+        "dependencies": [
+          145
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 150,
+        "title": "Create Multi-device Support",
+        "description": "Support multiple wearables",
+        "details": "1. Device prioritization\n2. Data aggregation\n3. Duplicate handling\n4. Sync coordination\n5. Settings per device",
+        "testStrategy": "Test multi-device scenarios",
+        "priority": "medium",
+        "dependencies": [
+          147
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 151,
+        "title": "Create Profile Screen",
+        "description": "Build complete profile interface",
+        "details": "1. Create UI/Profile/ProfileView.swift\n2. Personal info display\n3. Edit mode\n4. Avatar support\n5. Verification badges",
+        "testStrategy": "Test profile display and editing",
+        "priority": "high",
+        "dependencies": [
+          24,
+          25
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 152,
+        "title": "Implement Profile Update",
+        "description": "Update profile via API",
+        "details": "1. Add PUT to UserAPI.swift\n2. Validation logic\n3. Optimistic updates\n4. Error recovery\n5. Cache invalidation",
+        "testStrategy": "Test profile updates",
+        "priority": "high",
+        "dependencies": [
+          59
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 153,
+        "title": "Create Avatar Upload",
+        "description": "Implement profile picture upload",
+        "details": "1. Create UI/Profile/AvatarPicker.swift\n2. Camera/gallery access\n3. Image cropping\n4. Upload progress\n5. CDN integration",
+        "testStrategy": "Test image upload flow",
+        "priority": "high",
+        "dependencies": [
+          151
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 154,
+        "title": "Create Privacy Settings",
+        "description": "Build privacy control interface",
+        "details": "1. Create UI/Settings/PrivacySettings.swift\n2. Data visibility\n3. Sharing controls\n4. Export options\n5. Deletion requests",
+        "testStrategy": "Test privacy controls",
+        "priority": "high",
+        "dependencies": [
+          24
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 155,
+        "title": "Create Notification Settings",
+        "description": "Build notification preferences",
+        "details": "1. Create UI/Settings/NotificationSettings.swift\n2. Category toggles\n3. Quiet hours\n4. Channel selection\n5. Preview options",
+        "testStrategy": "Test notification preferences",
+        "priority": "high",
+        "dependencies": [
+          85
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 156,
+        "title": "Implement Data Controls",
+        "description": "Data sharing preference manager",
+        "details": "1. Granular permissions\n2. Provider access\n3. Research participation\n4. Analytics opt-out\n5. Consent tracking",
+        "testStrategy": "Test data control settings",
+        "priority": "high",
+        "dependencies": [
+          119,
+          120
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 157,
+        "title": "Create Security Settings",
+        "description": "Build security options interface",
+        "details": "1. Create UI/Settings/SecuritySettings.swift\n2. Biometric toggle\n3. PIN management\n4. Session timeout\n5. Device management",
+        "testStrategy": "Test security settings",
+        "priority": "high",
+        "dependencies": [
+          41,
+          43
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 158,
+        "title": "Create Subscription UI",
+        "description": "Build subscription management",
+        "details": "1. Create UI/Subscription/SubscriptionView.swift\n2. Plan details\n3. Upgrade options\n4. Payment history\n5. Cancellation flow",
+        "testStrategy": "Test subscription flows",
+        "priority": "medium",
+        "dependencies": [
+          24
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 159,
+        "title": "Implement Payment Integration",
+        "description": "Add in-app purchase support",
+        "details": "1. StoreKit integration\n2. Product configuration\n3. Purchase flow\n4. Receipt validation\n5. Restore purchases",
+        "testStrategy": "Test purchase flows",
+        "priority": "medium",
+        "dependencies": [
+          158
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 160,
+        "title": "Create Settings Persistence",
+        "description": "Save all settings locally",
+        "details": "1. UserDefaults wrapper\n2. Secure storage\n3. Migration support\n4. Export/import\n5. Reset functionality",
+        "testStrategy": "Test settings persistence",
+        "priority": "high",
+        "dependencies": [
+          10
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 161,
+        "title": "Implement Re-authentication",
+        "description": "Add biometric re-auth for sensitive ops",
+        "details": "1. Identify sensitive operations\n2. Trigger re-auth\n3. Grace period\n4. Fallback options\n5. Audit logging",
+        "testStrategy": "Test re-auth flows",
+        "priority": "high",
+        "dependencies": [
+          41,
+          42
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 162,
+        "title": "Create Security Audit Log",
+        "description": "Implement comprehensive audit logging",
+        "details": "1. Create Infrastructure/Security/AuditLogger.swift\n2. Event tracking\n3. User actions\n4. Access logs\n5. Export capability",
+        "testStrategy": "Test audit log completeness",
+        "priority": "high",
+        "dependencies": [
+          27
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 163,
+        "title": "Enhance Data Encryption",
+        "description": "Implement additional encryption layers",
+        "details": "1. Field-level encryption\n2. Key rotation\n3. Secure key storage\n4. Encryption at rest\n5. Transit encryption",
+        "testStrategy": "Test encryption strength",
+        "priority": "high",
+        "dependencies": [
+          35,
+          115
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 164,
+        "title": "Create Secure File Storage",
+        "description": "Implement encrypted file storage",
+        "details": "1. Create Infrastructure/Storage/SecureFileStorage.swift\n2. File encryption\n3. Access control\n4. Temporary files\n5. Secure deletion",
+        "testStrategy": "Test file security",
+        "priority": "high",
+        "dependencies": [
+          163
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 165,
+        "title": "Implement Certificate Pinning",
+        "description": "Add SSL certificate pinning",
+        "details": "1. Pin certificates\n2. Backup pins\n3. Update mechanism\n4. Failure handling\n5. Debug bypass",
+        "testStrategy": "Test certificate validation",
+        "priority": "high",
+        "dependencies": [
+          15
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 166,
+        "title": "Add Jailbreak Detection",
+        "description": "Detect compromised devices",
+        "details": "1. Create Infrastructure/Security/JailbreakDetector.swift\n2. Multiple checks\n3. Obfuscation\n4. Response actions\n5. Reporting",
+        "testStrategy": "Test on jailbroken device",
+        "priority": "high",
+        "dependencies": [
+          3
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 167,
+        "title": "Implement App Attestation",
+        "description": "Add app integrity verification",
+        "details": "1. DeviceCheck framework\n2. App attestation\n3. Server validation\n4. Risk scoring\n5. Response actions",
+        "testStrategy": "Test attestation flow",
+        "priority": "high",
+        "dependencies": [
+          165
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 168,
+        "title": "Add Security Headers",
+        "description": "Implement security headers",
+        "details": "1. Add to all requests\n2. HSTS support\n3. CSP headers\n4. Anti-CSRF tokens\n5. Custom headers",
+        "testStrategy": "Test header presence",
+        "priority": "high",
+        "dependencies": [
+          16
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 169,
+        "title": "Implement Rate Limiting",
+        "description": "Add client-side rate limiting",
+        "details": "1. Request throttling\n2. Endpoint limits\n3. User feedback\n4. Retry handling\n5. Analytics",
+        "testStrategy": "Test rate limit behavior",
+        "priority": "medium",
+        "dependencies": [
+          15
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 170,
+        "title": "Create Security Analytics",
+        "description": "Track security metrics",
+        "details": "1. Failed auth attempts\n2. Suspicious patterns\n3. Device anomalies\n4. Access patterns\n5. Risk scoring",
+        "testStrategy": "Test analytics accuracy",
+        "priority": "medium",
+        "dependencies": [
+          162
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 171,
+        "title": "Create Offline Manager",
+        "description": "Comprehensive offline mode system",
+        "details": "1. Create Infrastructure/Offline/OfflineManager.swift\n2. Mode detection\n3. Feature availability\n4. Queue management\n5. Sync coordination",
+        "testStrategy": "Test offline mode switching",
+        "priority": "high",
+        "dependencies": [
+          75
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 172,
+        "title": "Implement Smart Sync",
+        "description": "Intelligent sync algorithm",
+        "details": "1. Priority-based sync\n2. Bandwidth detection\n3. Battery awareness\n4. Incremental sync\n5. Conflict resolution",
+        "testStrategy": "Test sync efficiency",
+        "priority": "high",
+        "dependencies": [
+          171
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 173,
+        "title": "Create Conflict UI",
+        "description": "Build conflict resolution interface",
+        "details": "1. Create UI/Sync/ConflictResolutionView.swift\n2. Side-by-side comparison\n3. Merge options\n4. Bulk resolution\n5. History tracking",
+        "testStrategy": "Test conflict resolution UI",
+        "priority": "high",
+        "dependencies": [
+          77
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 174,
+        "title": "Enhance Offline Indicators",
+        "description": "Improve offline status visibility",
+        "details": "1. Status bar indicator\n2. Feature badges\n3. Sync progress\n4. Queue size\n5. Last sync time",
+        "testStrategy": "Test indicator visibility",
+        "priority": "high",
+        "dependencies": [
+          63
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 175,
+        "title": "Optimize Background Sync",
+        "description": "Improve background sync performance",
+        "details": "1. BackgroundTasks framework\n2. Smart scheduling\n3. Priority queues\n4. Partial sync\n5. Power efficiency",
+        "testStrategy": "Test background sync reliability",
+        "priority": "high",
+        "dependencies": [
+          68,
+          172
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 176,
+        "title": "Implement Data Compression",
+        "description": "Add sync data compression",
+        "details": "1. Gzip compression\n2. Custom algorithms\n3. Selective compression\n4. CPU vs bandwidth\n5. Decompression",
+        "testStrategy": "Test compression ratios",
+        "priority": "medium",
+        "dependencies": [
+          172
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 177,
+        "title": "Create Selective Sync",
+        "description": "Allow users to choose sync data",
+        "details": "1. Create UI/Settings/SelectiveSyncView.swift\n2. Data categories\n3. Size estimates\n4. Priority settings\n5. Schedule options",
+        "testStrategy": "Test selective sync options",
+        "priority": "medium",
+        "dependencies": [
+          154
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 178,
+        "title": "Implement Offline Limits",
+        "description": "Manage offline storage limits",
+        "details": "1. Storage monitoring\n2. Automatic cleanup\n3. User warnings\n4. Priority retention\n5. Manual management",
+        "testStrategy": "Test storage management",
+        "priority": "medium",
+        "dependencies": [
+          171
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 179,
+        "title": "Create Sync Progress UI",
+        "description": "Build detailed sync progress view",
+        "details": "1. Create UI/Sync/SyncProgressView.swift\n2. Item-level progress\n3. Time estimates\n4. Error display\n5. Pause/resume",
+        "testStrategy": "Test progress accuracy",
+        "priority": "medium",
+        "dependencies": [
+          172
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 180,
+        "title": "Add Offline Analytics",
+        "description": "Track offline usage patterns",
+        "details": "1. Offline duration\n2. Feature usage\n3. Sync patterns\n4. Error rates\n5. Performance metrics",
+        "testStrategy": "Test analytics collection",
+        "priority": "low",
+        "dependencies": [
+          171
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 181,
+        "title": "Optimize App Launch",
+        "description": "Achieve <2 second launch time",
+        "details": "1. Profile launch sequence\n2. Lazy initialization\n3. Async loading\n4. Splash optimization\n5. First paint time",
+        "testStrategy": "Test launch time metrics",
+        "priority": "high",
+        "dependencies": [
+          22
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 182,
+        "title": "Optimize Memory Usage",
+        "description": "Keep memory under 150MB",
+        "details": "1. Memory profiling\n2. Image optimization\n3. Cache limits\n4. View recycling\n5. Leak detection",
+        "testStrategy": "Test memory consumption",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 183,
+        "title": "Optimize Battery Usage",
+        "description": "Minimize battery consumption",
+        "details": "1. Background task optimization\n2. Location usage\n3. Network batching\n4. CPU throttling\n5. Wake lock management",
+        "testStrategy": "Test battery impact",
+        "priority": "high",
+        "dependencies": [
+          175
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 184,
+        "title": "Implement Request Batching",
+        "description": "Batch network requests efficiently",
+        "details": "1. Request queue\n2. Batch timing\n3. Size limits\n4. Priority handling\n5. Failure isolation",
+        "testStrategy": "Test batching efficiency",
+        "priority": "high",
+        "dependencies": [
+          15
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 185,
+        "title": "Create Image Cache",
+        "description": "Implement efficient image caching",
+        "details": "1. Memory cache\n2. Disk cache\n3. Size limits\n4. Expiry policy\n5. Preloading",
+        "testStrategy": "Test cache hit rates",
+        "priority": "medium",
+        "dependencies": [
+          153
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 186,
+        "title": "Implement Lazy Loading",
+        "description": "Add lazy loading throughout app",
+        "details": "1. List virtualization\n2. Image lazy load\n3. Module splitting\n4. On-demand features\n5. Pagination",
+        "testStrategy": "Test scroll performance",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 187,
+        "title": "Optimize Database Queries",
+        "description": "Improve SwiftData query performance",
+        "details": "1. Query profiling\n2. Index optimization\n3. Batch fetching\n4. Predicate optimization\n5. Background queries",
+        "testStrategy": "Test query performance",
+        "priority": "high",
+        "dependencies": [
+          10
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 188,
+        "title": "Optimize Animations",
+        "description": "Ensure 60 FPS animations",
+        "details": "1. Animation profiling\n2. GPU optimization\n3. Reduce complexity\n4. Async rendering\n5. Frame drops detection",
+        "testStrategy": "Test animation smoothness",
+        "priority": "medium",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 189,
+        "title": "Optimize Scroll Performance",
+        "description": "Achieve smooth scrolling",
+        "details": "1. Cell reuse\n2. Async rendering\n3. Prefetching\n4. Image decoding\n5. Layout caching",
+        "testStrategy": "Test scroll FPS",
+        "priority": "high",
+        "dependencies": [
+          186
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 190,
+        "title": "Optimize Background Tasks",
+        "description": "Efficient background processing",
+        "details": "1. Task scheduling\n2. Priority queues\n3. Resource limits\n4. Deferrability\n5. Completion time",
+        "testStrategy": "Test background efficiency",
+        "priority": "medium",
+        "dependencies": [
+          175
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 191,
+        "title": "Complete VoiceOver Support",
+        "description": "Full VoiceOver accessibility",
+        "details": "1. Audit all screens\n2. Add labels/hints\n3. Custom actions\n4. Grouping logic\n5. Navigation order",
+        "testStrategy": "Test with VoiceOver enabled",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 192,
+        "title": "Implement Dynamic Type",
+        "description": "Support all text sizes",
+        "details": "1. Audit text elements\n2. Scalable layouts\n3. Image scaling\n4. Line height adjust\n5. Truncation handling",
+        "testStrategy": "Test with all text sizes",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 193,
+        "title": "Verify Color Contrast",
+        "description": "Ensure WCAG AA compliance",
+        "details": "1. Contrast audit\n2. Fix violations\n3. Dark mode check\n4. Color blind modes\n5. High contrast",
+        "testStrategy": "Test contrast ratios",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 194,
+        "title": "Add Keyboard Navigation",
+        "description": "Full keyboard support",
+        "details": "1. Tab order\n2. Focus indicators\n3. Shortcuts\n4. Escape handling\n5. Arrow navigation",
+        "testStrategy": "Test keyboard-only navigation",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 195,
+        "title": "Implement Voice Control",
+        "description": "Support Voice Control feature",
+        "details": "1. Label all controls\n2. Number overlays\n3. Custom commands\n4. Grid navigation\n5. Dictation support",
+        "testStrategy": "Test with Voice Control",
+        "priority": "medium",
+        "dependencies": [
+          191
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 196,
+        "title": "Add Switch Control",
+        "description": "Support Switch Control",
+        "details": "1. Scanning order\n2. Item grouping\n3. Custom actions\n4. Timing adjust\n5. Sound feedback",
+        "testStrategy": "Test with Switch Control",
+        "priority": "medium",
+        "dependencies": [
+          191
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 197,
+        "title": "Create Accessibility Tests",
+        "description": "Automated accessibility testing",
+        "details": "1. XCUITest accessibility\n2. Audit automation\n3. Regression tests\n4. Coverage metrics\n5. CI integration",
+        "testStrategy": "Test accessibility test suite",
+        "priority": "high",
+        "dependencies": [
+          5
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 198,
+        "title": "Write Accessibility Docs",
+        "description": "Document accessibility features",
+        "details": "1. Feature list\n2. Usage guides\n3. Best practices\n4. Testing guide\n5. Support resources",
+        "testStrategy": "Review documentation",
+        "priority": "low",
+        "dependencies": [
+          191,
+          192,
+          193,
+          194,
+          195,
+          196
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 199,
+        "title": "Implement Reduced Motion",
+        "description": "Respect reduced motion preference",
+        "details": "1. Detect preference\n2. Disable animations\n3. Alternative transitions\n4. Maintain usability\n5. Test coverage",
+        "testStrategy": "Test with reduced motion",
+        "priority": "medium",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 200,
+        "title": "Create Accessibility Settings",
+        "description": "In-app accessibility preferences",
+        "details": "1. Create UI/Settings/AccessibilitySettings.swift\n2. Font size override\n3. Contrast options\n4. Animation toggle\n5. Sound settings",
+        "testStrategy": "Test preference application",
+        "priority": "medium",
+        "dependencies": [
+          154
+        ],
+        "status": "pending",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2025-06-25T16:21:52.741Z",
+      "updated": "2025-06-25T16:56:43.866Z",
+      "description": "CLARITY Pulse V2 - Vertical Slice Development Tasks"
+    }
+  }
+}

@@ -1,0 +1,36 @@
+CLARITY Pulse V2 - Foundation Slice PRD
+
+OVERVIEW
+Foundation tasks that must be completed first to enable all other development.
+
+TASKS
+1. Create iOS Project with SwiftUI - Initialize new Xcode project with iOS 18.0 target, SwiftUI interface, and Swift 5.10+
+2. Configure Git Repository - Set up .gitignore for iOS/Swift, initialize Git, make initial commit
+3. Create Clean Architecture Structure - Set up UI, Domain, Data, Infrastructure directories with README files
+4. Configure Code Style Tools - Install SwiftLint, create .swiftlint.yml, add build phase, configure formatting
+5. Create Test Infrastructure - Set up unit test target, integration test target, UI test target with base classes
+6. Configure Code Coverage - Enable code coverage in scheme, set 80% minimum target, add coverage reports
+7. Implement SwiftData Core - Create ModelContainer, ModelConfiguration, basic persistence setup
+8. Create Entity Protocol - Define base Entity protocol with id and timestamps in Domain layer
+9. Implement Repository Pattern - Create generic Repository protocol with CRUD operations
+10. Create SwiftData Repository - Implement Repository protocol using SwiftData with error handling
+11. Set Up Dependency Injection - Create DI container using SwiftUI Environment, no singletons
+12. Implement ViewState Pattern - Create ViewState enum with loading, success, error, empty cases
+13. Create Base ViewModel - Implement @Observable base ViewModel with ViewState support
+14. Set Up Network Foundation - Create NetworkService protocol with async/await
+15. Implement URLSession Service - Create URLSession-based NetworkService with error handling
+16. Create Request Builder - Implement type-safe request builder with headers and auth support
+17. Implement Response Decoder - Create generic response decoder with DTO mapping
+18. Set Up Error Types - Define comprehensive error types for network, persistence, validation
+19. Create Error Handler - Implement centralized error handling with user-friendly messages
+20. Set Up Mock System - Create mock data generators and fixture system for testing
+21. Configure Environment Values - Set up SwiftUI environment for DI and configuration
+22. Create App Entry Point - Configure App struct with environment setup and dependencies
+23. Set Up Navigation Structure - Implement navigation coordinator pattern for SwiftUI
+24. Create Loading View - Implement reusable loading view with skeleton screens
+25. Create Empty State View - Implement reusable empty state view with actions
+26. Create Error View - Implement reusable error view with retry functionality
+27. Set Up Logging System - Create debug-only logging system (no PHI logging)
+28. Configure Build Configurations - Set up Debug, Release, TestFlight configurations
+29. Create CI/CD Foundation - Set up basic GitHub Actions workflow for testing
+30. Document Architecture - Create architecture documentation and diagrams

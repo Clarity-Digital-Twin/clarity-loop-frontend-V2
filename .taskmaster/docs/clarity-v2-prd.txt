@@ -1,0 +1,238 @@
+CLARITY Pulse V2 - iOS Frontend Rebuild Product Requirements Document
+
+EXECUTIVE SUMMARY
+Complete rebuild of CLARITY Pulse iOS application using SwiftUI and SwiftData. This is a frontend wrapper for the existing backend API with 44 endpoints. The app must follow strict Test-Driven Development (TDD) practices with NO production code written without a failing test first.
+
+TECHNICAL REQUIREMENTS
+
+Architecture:
+- Clean Architecture with 4 distinct layers: UI, Domain, Data, Infrastructure
+- SwiftUI with @Observable pattern (iOS 17+)
+- SwiftData for persistence (NOT Core Data)
+- Repository Pattern for data abstraction
+- Protocol-first design for complete testability
+- Dependency injection via SwiftUI Environment
+- NO singletons anywhere in the codebase
+- Private access control by default
+
+Development Methodology:
+- Strict Test-Driven Development (TDD)
+- Behavior-Driven Development (BDD) for test descriptions
+- Red-Green-Refactor cycle mandatory
+- Minimum 80% code coverage requirement
+- All external dependencies must be mockable
+- Human intervention required for Xcode test target configuration
+
+Technology Stack:
+- iOS 18.0 minimum deployment target
+- Swift 5.10+
+- Xcode 16+
+- SwiftUI for all UI
+- SwiftData for persistence
+- AWS Amplify for authentication
+- URLSession for networking
+- Combine/async-await for reactive programming
+
+CORE FEATURES
+
+1. Authentication System
+- AWS Cognito integration via Amplify
+- Email/password login
+- Biometric authentication (Face ID/Touch ID)
+- PIN code fallback
+- Automatic token refresh
+- Session timeout management
+- Secure credential storage in Keychain
+- Password reset flow
+- Account creation with validation
+- Terms of service acceptance
+
+2. HealthKit Integration
+- Full HealthKit permissions setup
+- Background delivery configuration
+- Apple Watch synchronization
+- Support for 15+ health metrics
+- iOS 18 mental wellbeing APIs
+- Batch syncing with backend
+- Offline data collection
+- Conflict resolution
+- Data validation
+
+3. Network Layer
+- RESTful API client
+- Async/await throughout
+- Comprehensive error handling
+- Retry logic with exponential backoff
+- Request/response interceptors
+- Network reachability monitoring
+- Request queuing for offline
+- 44 backend endpoints integration
+- Proper DTO mapping
+
+4. Data Persistence
+- SwiftData models for all entities
+- Encrypted health data storage
+- Automatic migration support
+- Sync status tracking
+- Conflict resolution
+- Query optimization
+- Background sync support
+- Data export functionality
+
+5. Real-time Features
+- WebSocket connection management
+- Automatic reconnection
+- Message queuing
+- Real-time health alerts
+- Collaborative features
+- Live data updates
+- Connection status indicators
+
+6. User Interface
+- Custom design system
+- Health-focused components
+- WCAG AA accessibility
+- Dark mode support
+- Haptic feedback
+- Loading skeletons
+- Empty states
+- Pull-to-refresh
+- Smooth animations (60 FPS)
+
+7. State Management
+- ViewState<T> pattern
+- Loading/Success/Error/Empty states
+- @Observable ViewModels
+- Environment-based DI
+- No global state
+
+8. Error Handling
+- User-friendly messages
+- Retry mechanisms
+- Offline indicators
+- Graceful degradation
+- Error logging (no PHI)
+- Crash recovery
+
+9. Security & Compliance
+- HIPAA compliance
+- No logging of health data
+- Encrypted storage
+- Audit trails
+- Secure transmission
+- Biometric protection
+- Session management
+- Data anonymization
+
+10. Performance
+- App launch < 2 seconds
+- Screen transitions < 300ms
+- 60 FPS scrolling
+- Memory < 150MB typical
+- Battery efficient
+- Optimized queries
+- Image caching
+- Lazy loading
+
+FEATURE MODULES
+
+Dashboard Module:
+- Health metrics overview
+- Real-time updates
+- Interactive charts
+- Quick actions
+- Sync status
+- Recent activities
+- Personalized insights
+
+Health Data Module:
+- Manual entry forms
+- HealthKit sync
+- Historical viewing
+- Trend analysis
+- Data export
+- Comparison tools
+- Goal tracking
+
+Insights Module:
+- AI-powered analysis
+- Personalized recommendations
+- Progress tracking
+- Predictive insights
+- Anomaly detection
+- Report generation
+
+Profile Module:
+- Personal information
+- Privacy settings
+- Data preferences
+- Account security
+- Subscription management
+- Connected devices
+
+Settings Module:
+- App preferences
+- Notification controls
+- Sync configuration
+- Debug options
+- About section
+- Support contact
+
+Onboarding Module:
+- Welcome flow
+- Permission requests
+- Initial setup
+- Tutorial
+- Data import
+
+BACKEND INTEGRATION
+- 44 API endpoints (see CLARITY_ENDPOINT_MAPPING.md)
+- Exact DTO matching required
+- Standardized error handling
+- API versioning support
+- Rate limiting compliance
+- WebSocket for real-time
+- Offline sync queue
+
+TESTING REQUIREMENTS
+- Unit tests for all logic
+- Integration tests for repos
+- UI tests for critical flows
+- Performance tests
+- Security tests
+- Accessibility tests
+- Mock all dependencies
+- Test data fixtures
+
+DEPLOYMENT
+- GitHub Actions CI/CD
+- Automated testing
+- TestFlight beta
+- App Store release
+- Version management
+- Release notes
+- Crash reporting
+
+DELIVERABLES
+- Complete iOS app
+- Test suite (80%+ coverage)
+- Documentation
+- API integration
+- Performance optimized
+- HIPAA compliant
+- App Store ready
+
+TIMELINE
+Week 1-2: Foundation & Setup
+Week 3-4: Core Features
+Week 5-6: Advanced Features
+Week 7-8: Testing & Polish
+
+SUCCESS METRICS
+- All tests passing
+- 80%+ code coverage
+- No critical bugs
+- HIPAA compliance verified
+- Performance targets met
+- Backend fully integrated
+- App Store approved

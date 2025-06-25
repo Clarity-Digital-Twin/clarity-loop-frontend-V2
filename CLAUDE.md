@@ -69,19 +69,23 @@ public func configure() { }   // NO! Keep it internal!
 
 ### Taskmaster CLI (Primary Task Management)
 ```bash
-# Initialize project with Taskmaster
-taskmaster init --project-root .
+# View current tasks (200 vertical slice tasks ready!)
+task-master list --status pending
+task-master next
 
-# Parse requirements into tasks
-taskmaster parse-prd .taskmaster/docs/prd.txt --num-tasks 20
+# Work on tasks
+task-master set-status --id=1 --status=in-progress
+task-master set-status --id=1 --status=done
 
-# Expand tasks with TDD focus
-taskmaster expand-task <id> --prompt "Create TDD tasks for this feature"
+# Expand complex tasks with TDD focus
+task-master expand --id=<id> --num=10 --prompt="Create TDD subtasks"
 
 # Track progress
-taskmaster list --status pending
-taskmaster next-task
+task-master list --status done
 ```
+
+**IMPORTANT**: 200 comprehensive tasks have been created following vertical slices.
+See `CLARITY_VERTICAL_SLICE_TASK_SUMMARY.md` for complete details.
 
 ### MCP Tools Available
 - **mcp__taskmaster-ai__*** - Task management operations
@@ -204,6 +208,7 @@ The frontend is a wrapper for 44 backend endpoints. Key considerations:
 
 ### Document References
 Essential guides for implementation:
+- `CLARITY_VERTICAL_SLICE_TASK_SUMMARY.md` - 200 tasks in vertical slices
 - `CLARITY_IMPLEMENTATION_GUIDE.md` - Step-by-step TDD approach
 - `CLARITY_ENDPOINT_MAPPING.md` - All 44 endpoints with DTOs
 - `CLARITY_SWIFT_BEST_PRACTICES.md` - Avoid AI agent pitfalls
@@ -213,9 +218,9 @@ Essential guides for implementation:
 
 ```bash
 # Taskmaster
-taskmaster next-task
-taskmaster set-task-status <id> done
-taskmaster expand-task <id>
+task-master next
+task-master set-status --id=<id> --status=done
+task-master expand --id=<id>
 
 # Testing
 swift test --filter DashboardTests

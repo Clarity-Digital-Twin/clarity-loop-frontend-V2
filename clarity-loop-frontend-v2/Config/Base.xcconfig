@@ -1,0 +1,69 @@
+//
+//  Base.xcconfig
+//  clarity-loop-frontend-v2
+//
+//  Base configuration settings for CLARITY Pulse V2
+//
+
+// Swift Language Version
+SWIFT_VERSION = 6.1
+
+// Swift Compiler Settings
+SWIFT_STRICT_CONCURRENCY = complete
+SWIFT_TREAT_WARNINGS_AS_ERRORS = YES
+OTHER_SWIFT_FLAGS = -enable-actor-data-race-checks -enable-bare-slash-regex
+
+// Deployment Target
+IPHONEOS_DEPLOYMENT_TARGET = 18.0
+
+// Build Settings
+ENABLE_TESTABILITY = YES
+ONLY_ACTIVE_ARCH = YES
+DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
+
+// Code Signing
+CODE_SIGN_STYLE = Automatic
+DEVELOPMENT_TEAM = $(inherited)
+
+// Asset Catalog Compiler
+ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon
+ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor
+
+// Info.plist
+INFOPLIST_FILE = clarity-loop-frontend-v2/Info.plist
+INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES
+INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES
+INFOPLIST_KEY_UILaunchScreen_Generation = YES
+INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+
+// HIPAA Compliance Settings
+INFOPLIST_KEY_NSHealthShareUsageDescription = "CLARITY Pulse needs access to your health data to track and analyze your wellness metrics."
+INFOPLIST_KEY_NSHealthUpdateUsageDescription = "CLARITY Pulse needs permission to save health data entries."
+INFOPLIST_KEY_NSFaceIDUsageDescription = "CLARITY Pulse uses Face ID to secure your health information."
+
+// Hardened Runtime (for security)
+ENABLE_HARDENED_RUNTIME = YES
+
+// Module Settings
+CLANG_ENABLE_MODULES = YES
+SWIFT_OPTIMIZATION_LEVEL = -Onone
+SWIFT_EMIT_LOC_STRINGS = YES
+
+// Localization
+DEVELOPMENT_LANGUAGE = en
+LOCALIZATION_PREFERS_STRING_CATALOGS = YES
+
+// Framework Search Paths
+FRAMEWORK_SEARCH_PATHS = $(inherited)
+LD_RUNPATH_SEARCH_PATHS = $(inherited) @executable_path/Frameworks
+
+// Product Settings
+PRODUCT_BUNDLE_IDENTIFIER = com.clarity.pulse.v2
+PRODUCT_NAME = $(TARGET_NAME)
+TARGETED_DEVICE_FAMILY = 1,2
+
+// Marketing Version
+MARKETING_VERSION = 1.0.0
+CURRENT_PROJECT_VERSION = 1
+EOF < /dev/null

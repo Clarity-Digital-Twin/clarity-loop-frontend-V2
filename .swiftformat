@@ -1,73 +1,102 @@
-# SwiftFormat configuration for CLARITY Pulse
+# SwiftFormat configuration for CLARITY Pulse V2
+# Swift 6.1 compatible settings
 
-# Swift version
---swiftversion 5.10
-
-# Indentation
---indent 4
---tabwidth 4
---smarttabs enabled
-
-# Spacing
+# Format Options
+--swiftversion 6.1
+--self remove
+--importgrouping testable-bottom
+--commas inline
 --trimwhitespace always
---insertlines enabled
---nospaceoperators ...,..<
-
-# Braces
---allman false
---elseposition same-line
---guardelse same-line
-
-# Arguments & Parameters
+--indent 4
+--indentcase false
+--ifdef no-indent
 --wraparguments before-first
 --wrapparameters before-first
 --wrapcollections before-first
---wrapconditions before-first
---closingparen balanced
---wrapreturntype preserve
---wrapternary default
-
-# Closures
---trailingclosures enabled
---stripunusedargs closure-only
-
-# Organization
---organizetypes actor,class,enum,struct,extension
+--closingparen same-line
+--funcattributes prev-line
+--typeattributes prev-line
+--varattributes preserve
+--enumnamespaces always
 --extensionacl on-declarations
---modifierorder override,acl,setterACL,dynamic,mutators,lazy,final,required,static,class
---groupedextension enabled
-# Rules (not options)
---enable sortedImports
-
-# Self
---self init-only
---selfrequired 
-
-# Headers
---header strip
-
-# Line length
---maxwidth 120
-
-# Redundancy
---redundanttype inferred
-# Rules to enable
---enable redundantInit,redundantLet,redundantBackticks
-
-# Numbers
---decimalgrouping 3,6
+--decimalgrouping 3,4
 --binarygrouping 4,8
 --octalgrouping 4,8
---hexgrouping 4,8
---exponentcase lowercase
+--hexgrouping 2,4
+--fractiongrouping disabled
+--exponentgrouping disabled
 --hexliteralcase uppercase
+--exponentcase lowercase
+--semicolons never
+--trailingspace trimmed
+--insertlines disabled
+--linelength 120
+--maxwidth 120
 
-# Misc
---acronyms ID,URL,UUID,API,DTO,UI,MCP,AI,PAT,JSON,HTTP,HTTPS
---linebreaks lf
---xcodeindentation enabled
---fragment false
---conflictmarkers enabled
+# Rules
+--enable isEmpty
+--enable blankLinesBetweenScopes
+--enable blankLinesAroundMark
+--enable anyObjectProtocol
+--enable consecutiveBlankLines
+--enable consecutiveSpaces
+--enable duplicateImports
+--enable elseOnSameLine
+--enable emptyBraces
+--enable initCoderUnavailable
+--enable leadingDelimiters
+--enable numberFormatting
+--enable preferKeyPath
+--enable redundantBreak
+--enable redundantExtensionACL
+--enable redundantFileprivate
+--enable redundantGet
+--enable redundantInit
+--enable redundantLet
+--enable redundantLetError
+--enable redundantNilInit
+--enable redundantObjc
+--enable redundantParens
+--enable redundantPattern
+--enable redundantRawValues
+--enable redundantReturn
+--enable redundantSelf
+--enable redundantType
+--enable redundantVoidReturnType
+--enable semicolons
+--enable sortImports
+--enable sortDeclarations
+--enable spaceAroundBraces
+--enable spaceAroundBrackets
+--enable spaceAroundComments
+--enable spaceAroundGenerics
+--enable spaceAroundOperators
+--enable spaceAroundParens
+--enable spaceInsideBraces
+--enable spaceInsideBrackets
+--enable spaceInsideComments
+--enable spaceInsideGenerics
+--enable spaceInsideParens
+--enable strongOutlets
+--enable strongifiedSelf
+--enable todos
+--enable trailingClosures
+--enable unusedArguments
+--enable void
+--enable yodaConditions
 
-# Disable rules
---disable blankLinesAroundMark,unusedArguments,wrapMultilineStatementBraces
+# Disabled rules (for Swift 6.2 compatibility)
+--disable blankLinesAtStartOfScope
+--disable blankLinesAtEndOfScope
+--disable redundantClosure
+--disable wrapMultilineStatementBraces
+
+# Excluded paths
+--exclude .build
+--exclude .swiftpm
+--exclude build
+--exclude DerivedData
+--exclude Pods
+--exclude vendor
+--exclude BACKEND_REFERENCE
+EOF < /dev/null

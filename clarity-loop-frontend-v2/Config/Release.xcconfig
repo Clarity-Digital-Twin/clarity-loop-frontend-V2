@@ -1,0 +1,41 @@
+//
+//  Release.xcconfig
+//  clarity-loop-frontend-v2
+//
+//  Release configuration settings
+//
+
+#include "Base.xcconfig"
+
+// Swift Compiler - Code Generation
+SWIFT_OPTIMIZATION_LEVEL = -O
+SWIFT_COMPILATION_MODE = wholemodule
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = RELEASE
+
+// Build Options
+ONLY_ACTIVE_ARCH = NO
+ENABLE_TESTABILITY = NO
+
+// Debug Information
+DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
+ENABLE_NS_ASSERTIONS = NO
+
+// Code Stripping
+DEPLOYMENT_POSTPROCESSING = YES
+STRIP_INSTALLED_PRODUCT = YES
+STRIP_SWIFT_SYMBOLS = YES
+DEAD_CODE_STRIPPING = YES
+
+// Optimization
+GCC_OPTIMIZATION_LEVEL = s
+VALIDATE_PRODUCT = YES
+LLVM_LTO = YES
+
+// Metal Optimization
+MTL_ENABLE_DEBUG_INFO = NO
+MTL_FAST_MATH = YES
+
+// Additional Security
+ENABLE_HARDENED_RUNTIME = YES
+ENABLE_APP_SANDBOX = YES
+EOF < /dev/null

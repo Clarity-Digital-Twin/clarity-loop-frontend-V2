@@ -176,10 +176,6 @@ node_modules/
 *.sln
 *.sw?
 # OS specific
-# Task files
-tasks.json
-tasks/
-
 # PRODUCTION: Test and debug files that might contain sensitive data
 test-auth.sh
 debug-*.json
@@ -187,4 +183,22 @@ staging-config.json .cursor/mcp.json
 
 # BACKEND REFERENCE: Copied backend code for development reference only
 # This is the deployed backend available at https://clarity.novamindnyc.com/api/v1/docs
-BACKEND_REFERENCE/
+# BACKEND_REFERENCE/  # Commented out - we're tracking this for reference
+# But ignoring sensitive files within it:
+BACKEND_REFERENCE/clarity-loop-backend/.env
+BACKEND_REFERENCE/clarity-loop-backend/.env.*
+!BACKEND_REFERENCE/clarity-loop-backend/.env.example
+BACKEND_REFERENCE/clarity-loop-backend/__pycache__/
+BACKEND_REFERENCE/clarity-loop-backend/.pytest_cache/
+BACKEND_REFERENCE/clarity-loop-backend/.mypy_cache/
+BACKEND_REFERENCE/clarity-loop-backend/.ruff_cache/
+BACKEND_REFERENCE/clarity-loop-backend/node_modules/
+BACKEND_REFERENCE/clarity-loop-backend/*.log
+BACKEND_REFERENCE/clarity-loop-backend/.coverage
+BACKEND_REFERENCE/clarity-loop-backend/htmlcov/
+BACKEND_REFERENCE/clarity-loop-backend/*.key
+BACKEND_REFERENCE/clarity-loop-backend/*.pem
+
+# Task files
+# tasks.json
+# tasks/ 

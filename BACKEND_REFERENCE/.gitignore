@@ -1,0 +1,22 @@
+# Backend Reference Directory - Special Gitignore
+# This prevents the backend reference from being tracked
+
+# Ignore the entire backend reference by default
+# Uncomment the line below if you want to exclude it from git
+# clarity-loop-backend/
+
+# If tracking the backend reference, these files should still be ignored:
+clarity-loop-backend/.env
+clarity-loop-backend/.env.*
+!clarity-loop-backend/.env.example
+clarity-loop-backend/*.key
+clarity-loop-backend/*.pem
+clarity-loop-backend/secrets.json
+clarity-loop-backend/aws-exports.js
+clarity-loop-backend/__pycache__/
+clarity-loop-backend/.coverage
+clarity-loop-backend/.pytest_cache/
+clarity-loop-backend/node_modules/
+clarity-loop-backend/*.log
+clarity-loop-backend/.mypy_cache/
+clarity-loop-backend/.ruff_cache/

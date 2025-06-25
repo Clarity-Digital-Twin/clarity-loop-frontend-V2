@@ -42,207 +42,15 @@
 		716D97602DF4DFFA0068C70F /* Exceptions for "clarity-loop-frontend-v2" folder in "clarity-loop-frontend-v2" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				"clarity-loop-frontend-v2Tests/E2E/HealthKitEndToEndTest.swift",
+				Config/Base.xcconfig,
+				Config/Debug.xcconfig,
+				Config/Release.xcconfig,
 				Info.plist,
 			);
 			platformFiltersByRelativePath = {
 				ContentView.swift = (ios, );
-				Core/Adapters/BackendContract.swift = (ios, );
-				Core/Adapters/BackendContractAdapter.swift = (ios, );
-				Core/Architecture/BaseViewModel.swift = (ios, );
-				Core/Architecture/EnvironmentKeys.swift = (ios, );
-				Core/Architecture/ViewState.swift = (ios, );
-				Core/Networking/APIClient.swift = (ios, );
-				Core/Networking/APIError.swift = (ios, );
-				Core/Networking/APIService.swift = (ios, );
-				Core/Networking/AuthEndpoint.swift = (ios, );
-				Core/Networking/BackendAPIClient.swift = (ios, );
-				Core/Networking/BackendHealthDataEndpoint.swift = (ios, );
-				Core/Networking/HealthDataEndpoint.swift = (ios, );
-				Core/Networking/InsightEndpoint.swift = (ios, );
-				Core/Networking/PATEndpoint.swift = (ios, );
-				Core/Persistence/PersistenceController.swift = (ios, );
-				Core/Services/AmplifyConfigurator.swift = (ios, );
-				Core/Services/AppSecurityService.swift = (ios, );
-				Core/Services/AuthService.swift = (ios, );
-				Core/Services/BackgroundTaskManager.swift = (ios, );
-				Core/Services/BiometricAuthService.swift = (ios, );
-				Core/Services/CognitoAuthService.swift.disabled = (ios, );
-				Core/Services/CognitoConfiguration.swift.disabled = (ios, );
-				Core/Services/EnhancedOfflineQueueManager.swift = (ios, );
-				Core/Services/HealthDataSyncManager.swift = (ios, );
-				Core/Services/HealthKitService.swift = (ios, );
-				Core/Services/HealthKitServiceProtocol.swift = (ios, );
-				Core/Services/HealthKitSyncService.swift = (ios, );
-				Core/Services/InsightAIService.swift = (ios, );
-				Core/Services/OfflineQueueManager.swift = (ios, );
-				Core/Services/PushNotificationManager.swift = (ios, );
-				Core/Services/SessionTimeoutService.swift = (ios, );
-				Core/Services/SwiftDataConfigurator.swift = (ios, );
-				Core/Services/TokenManagementService.swift = (ios, );
-				Core/Services/TokenManager.swift = (ios, );
-				Core/Services/UserDataService.swift = (ios, );
-				Core/Services/WebSocketManager.swift = (ios, );
-				Core/Utilities/AppConfig.swift = (ios, );
-				Core/Utilities/DeviceInfoHelper.swift = (ios, );
-				Data/DTOs/AnyCodable.swift = (ios, );
-				Data/DTOs/AuthLoginDTOs.swift = (ios, );
-				Data/DTOs/AuthMiscDTOs.swift = (ios, );
-				Data/DTOs/AuthRegistrationDTOs.swift = (ios, );
-				Data/DTOs/BackendHealthDataDTOs.swift = (ios, );
-				Data/DTOs/ChatRequestDTO.swift = (ios, );
-				Data/DTOs/HealthDataDTOs.swift = (ios, );
-				Data/DTOs/HealthKitUploadDTOs.swift = (ios, );
-				Data/DTOs/InsightsDTOs.swift = (ios, );
-				Data/DTOs/PATAnalysisDTOs.swift = (ios, );
-				"Data/DTOs/UserSessionResponseDTO+AuthUser.swift" = (ios, );
-				Data/Models/HealthMetricEntity.swift = (ios, );
-				Data/Models/InsightEntity.swift = (ios, );
-				Data/Models/PATAnalysisEntity.swift = (ios, );
-				Data/Models/UserProfile.swift = (ios, );
-				Data/Repositories/RemoteHealthDataRepository.swift = (ios, );
-				Data/Repositories/RemoteInsightsRepository.swift = (ios, );
-				Data/Repositories/RemoteUserRepository.swift = (ios, );
-				Data/SwiftDataModels/AIInsight.swift = (ios, );
-				Data/SwiftDataModels/HealthMetric.swift = (ios, );
-				Data/SwiftDataModels/PATAnalysis.swift = (ios, );
-				Data/SwiftDataModels/TestOnlyModel.swift = (ios, );
-				Data/SwiftDataModels/UserProfileModel.swift = (ios, );
-				Domain/Models/AuthUser.swift = (ios, );
-				Domain/Models/HealthKitDomainModels.swift = (ios, );
-				Domain/Repositories/AIInsightRepository.swift = (ios, );
-				Domain/Repositories/Base/BaseRepository.swift = (ios, );
-				Domain/Repositories/Base/RepositoryFactory.swift = (ios, );
-				Domain/Repositories/HealthDataRepositoryProtocol.swift = (ios, );
-				Domain/Repositories/HealthRepository.swift = (ios, );
-				Domain/Repositories/InsightsRepositoryProtocol.swift = (ios, );
-				Domain/Repositories/PATAnalysisRepository.swift = (ios, );
-				Domain/Repositories/UserProfileRepository.swift = (ios, );
-				Domain/Repositories/UserRepositoryProtocol.swift = (ios, );
-				Domain/UseCases/AnalyzePATDataUseCase.swift = (ios, );
-				Domain/UseCases/FetchDailyHealthSummaryUseCase.swift = (ios, );
-				Domain/UseCases/GenerateInsightUseCase.swift = (ios, );
-				Domain/UseCases/SyncHealthDataUseCase.swift = (ios, );
-				Features/Analysis/PATAnalysisViewModel.swift = (ios, );
-				Features/Authentication/AuthViewModel.swift = (ios, );
-				Features/Authentication/EmailVerificationView.swift = (ios, );
-				Features/Authentication/EmailVerificationViewModel.swift = (ios, );
-				Features/Authentication/LoginView.swift = (ios, );
-				Features/Authentication/LoginViewModel.swift = (ios, );
-				Features/Authentication/OnboardingViewModel.swift = (ios, );
-				Features/Authentication/RegistrationView.swift = (ios, );
-				Features/Authentication/RegistrationViewModel.swift = (ios, );
-				Features/Dashboard/DashboardView.swift = (ios, );
-				Features/Dashboard/DashboardViewModel.swift = (ios, );
-				Features/Health/HealthViewModel.swift = (ios, );
-				Features/Insights/AIInsightViewModel.swift = (ios, );
-				Features/Insights/ChatView.swift = (ios, );
-				Features/Insights/ChatViewModel.swift = (ios, );
-				Features/Insights/InsightsListView.swift = (ios, );
-				Features/Insights/InsightsListViewModel.swift = (ios, );
-				Features/Profile/UserProfileViewModel.swift = (ios, );
-				Features/Settings/DataManagementView.swift = (ios, );
-				Features/Settings/DataManagementViewModel.swift = (ios, );
-				Features/Settings/SettingsView.swift = (ios, );
-				Features/Settings/SettingsViewModel.swift = (ios, );
-				Resources/amplifyconfiguration.json = (ios, );
-				UI/Components/CustomSecureField.swift = (ios, );
-				UI/Components/EmptyStateView.swift = (ios, );
-				UI/Components/ErrorView.swift = (ios, );
-				UI/Components/HealthMetricCardView.swift = (ios, );
-				UI/Components/InsightCardView.swift = (ios, );
-				UI/Components/MessageBubbleView.swift = (ios, );
-				UI/MainTabView.swift = (ios, );
-				clarity_loop_frontendApp.swift = (ios, );
 			};
 			target = 71B2A8CA2DF35EB800F2784F /* clarity-loop-frontend-v2 */;
-		};
-		7171570C2DF3DE8600F8B4D7 /* Exceptions for "clarity-loop-frontend-v2UITests" folder in "clarity-loop-frontend-v2UITests" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				HealthDataContractValidationTests.swift,
-			);
-			platformFiltersByRelativePath = {
-				Features/Authentication/AuthenticationUITests.swift = (ios, );
-				UI/Layout/LayoutStabilityUITests.swift = (ios, );
-				clarity_loop_frontendUITests.swift = (ios, );
-				clarity_loop_frontendUITestsLaunchTests.swift = (ios, );
-			};
-			target = 71B2A8E32DF35EBB00F2784F /* clarity-loop-frontend-v2UITests */;
-		};
-		718FE5DA2E0787FD0064FC60 /* Exceptions for "clarity-loop-frontend-v2" folder in "clarity-loop-frontend-v2Tests" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"clarity-loop-frontend-v2Tests/E2E/HealthKitEndToEndTest.swift",
-			);
-			platformFiltersByRelativePath = {
-				"clarity-loop-frontend-v2Tests/E2E/HealthKitEndToEndTest.swift" = (ios, );
-			};
-			target = 71B2A8D92DF35EBB00F2784F /* clarity-loop-frontend-v2Tests */;
-		};
-		719D291C2E098EBC00E96A58 /* Exceptions for "clarity-loop-frontend-v2UITests" folder in "clarity-loop-frontend-v2Tests" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				HealthDataContractValidationTests.swift,
-			);
-			platformFiltersByRelativePath = {
-				HealthDataContractValidationTests.swift = (ios, );
-			};
-			target = 71B2A8D92DF35EBB00F2784F /* clarity-loop-frontend-v2Tests */;
-		};
-		71EC91292DF481EE00226717 /* Exceptions for "clarity-loop-frontend-v2Tests" folder in "clarity-loop-frontend-v2Tests" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			platformFiltersByRelativePath = {
-				Core/Architecture/BaseViewModelTests.swift = (ios, );
-				Core/Architecture/ViewStateTests.swift = (ios, );
-				Core/Networking/APIClientTests.swift = (ios, );
-				Core/Networking/JSONEncodingTests.swift = (ios, );
-				Core/Repositories/AIInsightRepositoryTests.swift = (ios, );
-				Core/Repositories/HealthRepositoryTests.swift = (ios, );
-				Core/Repositories/PATAnalysisRepositoryTests.swift = (ios, );
-				Core/Repositories/UserProfileRepositoryTests.swift = (ios, );
-				Core/Services/APIServiceTests.swift = (ios, );
-				Core/Services/AppSecurityServiceTests.swift = (ios, );
-				Core/Services/AuthServiceTests.swift = (ios, );
-				Core/Services/BiometricAuthServiceTests.swift = (ios, );
-				Core/Services/EnhancedOfflineQueueManagerTests.swift = (ios, );
-				Core/Services/HealthKitServiceTests.swift = (ios, );
-				Core/Services/HealthKitSyncServiceTests.swift = (ios, );
-				Core/Services/InsightAIServiceTests.swift = (ios, );
-				Core/Services/PushNotificationManagerTests.swift = (ios, );
-				Core/Services/SessionTimeoutServiceTests.swift = (ios, );
-				Core/Services/WebSocketManagerTests.swift = (ios, );
-				Data/DTOs/DTOValidationTests.swift = (ios, );
-				Data/Repositories/RemoteHealthDataRepositoryTests.swift = (ios, );
-				Data/Repositories/RemoteInsightsRepositoryTests.swift = (ios, );
-				Data/Repositories/RemoteUserRepositoryTests.swift = (ios, );
-				Domain/UseCases/AnalyzePATDataUseCaseTests.swift = (ios, );
-				Domain/UseCases/FetchDailyHealthSummaryUseCaseTests.swift = (ios, );
-				Domain/UseCases/GenerateInsightUseCaseTests.swift = (ios, );
-				Domain/UseCases/SyncHealthDataUseCaseTests.swift = (ios, );
-				E2E/BackendE2ETests.swift = (ios, );
-				E2E/BackendMockServer.swift = (ios, );
-				Features/Authentication/LoginViewModelTests.swift = (ios, );
-				Features/Authentication/RegistrationViewModelTests.swift = (ios, );
-				Features/Health/HealthViewModelTests.swift = (ios, );
-				Features/Insights/AIInsightViewModelTests.swift = (ios, );
-				Features/Profile/UserProfileViewModelTests.swift = (ios, );
-				Integration/AuthenticationIntegrationTests.swift = (ios, );
-				Integration/BackendContractValidationTests.swift = (ios, );
-				Integration/BackendIntegrationTests.swift = (ios, );
-				Integration/PATContractValidationTests.swift = (ios, );
-				IntegrationTests.swift = (ios, );
-				Mocks/CorrectMockAPIClient.swift = (ios, );
-				Mocks/MockAuthService.swift = (ios, );
-				Mocks/MockHealthKitService.swift = (ios, );
-				Mocks/MockHealthMetric.swift = (ios, );
-				Performance/MemoryLeakTests.swift = (ios, );
-				SimpleGreenTest.swift = (ios, );
-				UI/Authentication/SecureFieldRenderingTests.swift = (ios, );
-				UI/Components/ComponentRenderingTests.swift = (ios, );
-				UI/Layout/ConstraintValidationTests.swift = (ios, );
-			};
-			target = 71B2A8D92DF35EBB00F2784F /* clarity-loop-frontend-v2Tests */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -251,25 +59,17 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				716D97602DF4DFFA0068C70F /* Exceptions for "clarity-loop-frontend-v2" folder in "clarity-loop-frontend-v2" target */,
-				718FE5DA2E0787FD0064FC60 /* Exceptions for "clarity-loop-frontend-v2" folder in "clarity-loop-frontend-v2Tests" target */,
 			);
 			path = "clarity-loop-frontend-v2";
 			sourceTree = "<group>";
 		};
 		71B2A8DD2DF35EBB00F2784F /* clarity-loop-frontend-v2Tests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				71EC91292DF481EE00226717 /* Exceptions for "clarity-loop-frontend-v2Tests" folder in "clarity-loop-frontend-v2Tests" target */,
-			);
 			path = "clarity-loop-frontend-v2Tests";
 			sourceTree = "<group>";
 		};
 		71B2A8E72DF35EBB00F2784F /* clarity-loop-frontend-v2UITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				719D291C2E098EBC00E96A58 /* Exceptions for "clarity-loop-frontend-v2UITests" folder in "clarity-loop-frontend-v2Tests" target */,
-				7171570C2DF3DE8600F8B4D7 /* Exceptions for "clarity-loop-frontend-v2UITests" folder in "clarity-loop-frontend-v2UITests" target */,
-			);
 			path = "clarity-loop-frontend-v2UITests";
 			sourceTree = "<group>";
 		};
@@ -422,7 +222,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1630;
-				LastUpgradeCheck = 1630;
+				LastUpgradeCheck = 1640;
 				TargetAttributes = {
 					71B2A8CA2DF35EB800F2784F = {
 						CreatedOnToolsVersion = 16.3;
@@ -676,7 +476,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.novamindnyc.clarity-loop-frontend-v2";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -705,7 +505,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.novamindnyc.clarity-loop-frontend-v2";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -724,7 +524,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.novamindnyc.clarity-loop-frontend-v2Tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/clarity-loop-frontend-v2.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/clarity-loop-frontend-v2";
 			};
@@ -744,7 +544,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.novamindnyc.clarity-loop-frontend-v2Tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/clarity-loop-frontend-v2.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/clarity-loop-frontend-v2";
 			};
@@ -873,7 +673,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.novamindnyc.clarity-loop-frontend-v2";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = "Debug-UITest";
@@ -892,7 +692,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.novamindnyc.clarity-loop-frontend-v2Tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/clarity-loop-frontend-v2.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/clarity-loop-frontend-v2";
 			};

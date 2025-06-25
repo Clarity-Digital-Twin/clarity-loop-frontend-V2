@@ -1,4 +1,5 @@
 # SwiftLint configuration for CLARITY Pulse
+# Updated for Swift 6.1 with strict concurrency checks
 
 # Paths
 included:
@@ -175,6 +176,24 @@ custom_rules:
     regex: '\/\/\s*TODO(?!:)'
     message: "TODO comments should include a colon (// TODO: Description)"
     severity: warning
+  
+  no_phi_in_logs:
+    name: "PHI in Logs"
+    regex: '(log|print|debugPrint|NSLog|os_log).*\b(patient|health|medical|diagnosis|treatment|medication|blood|heart|glucose|weight|height|bmi)\b'
+    message: "HIPAA: Do not log PHI (Protected Health Information)"
+    severity: error
+  
+  private_by_default:
+    name: "Private by Default"
+    regex: '^(internal|public|open)\s+(let|var|func|class|struct|enum)'
+    message: "Use private by default for access control"
+    severity: warning
+    
+  no_hardcoded_secrets:
+    name: "Hardcoded Secrets"
+    regex: '(apiKey|api_key|secret|password|token)\s*=\s*"[^"]+"'
+    message: "Never hardcode secrets in source code"
+    severity: error
 
 # Reporter
 reporter: "xcode"

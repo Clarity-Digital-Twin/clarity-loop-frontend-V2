@@ -221,8 +221,8 @@ readme-check: ## Verify all documentation is up to date
 .PHONY: install-hooks
 install-hooks: ## Install Git hooks
 	@echo "$(BLUE)Installing Git hooks...$(NC)"
-	@if [ -f scripts/pre-commit ]; then \
-		cp scripts/pre-commit .git/hooks/pre-commit; \
+	@if [ -f Scripts/pre-commit ]; then \
+		cp Scripts/pre-commit .git/hooks/pre-commit; \
 		chmod +x .git/hooks/pre-commit; \
 		echo "$(GREEN)✓ Git hooks installed$(NC)"; \
 	else \

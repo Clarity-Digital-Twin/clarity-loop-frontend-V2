@@ -22,7 +22,7 @@
         "dependencies": [
           1
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": []
       },
       {
@@ -35,8 +35,119 @@
         "dependencies": [
           1
         ],
-        "status": "pending",
-        "subtasks": []
+        "status": "in-progress",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create Domain Layer Tests and Structure",
+            "description": "Set up the Domain layer with tests for core entities and protocols",
+            "dependencies": [],
+            "details": "Create Domain/ folder with subfolders for Entities/, UseCases/, and Protocols/. Write tests for core domain entities first, then implement the entities. Define protocol interfaces for repositories that will be implemented in the Data layer.",
+            "status": "done",
+            "testStrategy": "Write unit tests for domain entities that verify their properties and behavior. Test domain use cases with mock repositories."
+          },
+          {
+            "id": 2,
+            "title": "Implement Core Domain Entities and Use Cases",
+            "description": "Create the core domain entities and use case interfaces based on the tests",
+            "dependencies": [
+              1
+            ],
+            "details": "Implement the domain entities defined in the tests. Create protocol definitions for use cases that will be consumed by the UI layer. Add a README.md explaining the Domain layer's purpose and components.",
+            "status": "done",
+            "testStrategy": "Ensure all domain entity tests pass. Create tests for use case protocols using mocks."
+          },
+          {
+            "id": 3,
+            "title": "Create Data Layer Tests and Structure",
+            "description": "Set up the Data layer with tests for repositories and DTOs",
+            "dependencies": [
+              2
+            ],
+            "details": "Create Data/ folder with subfolders for Repositories/ and DTOs/. Write tests for repository implementations and data transfer objects. Define how repositories will implement the protocols defined in the Domain layer.",
+            "status": "pending",
+            "testStrategy": "Write tests for repository implementations using mock data sources. Test DTO mapping functions."
+          },
+          {
+            "id": 4,
+            "title": "Implement Repository Interfaces and DTOs",
+            "description": "Create the repository implementations and data transfer objects based on the tests",
+            "dependencies": [
+              3
+            ],
+            "details": "Implement repository classes that conform to the Domain layer protocols. Create DTOs for data transformation between layers. Add a README.md explaining the Data layer's purpose and components.",
+            "status": "pending",
+            "testStrategy": "Verify repository implementations pass all tests. Ensure DTOs correctly map between domain entities and external data formats."
+          },
+          {
+            "id": 5,
+            "title": "Create Infrastructure Layer Tests and Structure",
+            "description": "Set up the Infrastructure layer with tests for network, persistence, and services",
+            "dependencies": [
+              4
+            ],
+            "details": "Create Infrastructure/ folder with subfolders for Network/, Persistence/, and Services/. Write tests for API clients, database access, and external service integrations.",
+            "status": "pending",
+            "testStrategy": "Create tests for network clients using mock responses. Test persistence operations with in-memory storage. Use dependency injection to facilitate testing."
+          },
+          {
+            "id": 6,
+            "title": "Implement Network and Persistence Components",
+            "description": "Create the network and persistence implementations based on the tests",
+            "dependencies": [
+              5
+            ],
+            "details": "Implement API clients, database access classes, and service integrations. Create concrete implementations of data sources needed by repositories. Add a README.md explaining the Infrastructure layer's purpose and components.",
+            "status": "pending",
+            "testStrategy": "Ensure all infrastructure components pass their tests. Use protocol-based design to allow for test doubles."
+          },
+          {
+            "id": 7,
+            "title": "Create UI Layer Tests and Structure",
+            "description": "Set up the UI layer with tests for views and view models",
+            "dependencies": [
+              2
+            ],
+            "details": "Create UI/ folder with subfolders for Views/ and ViewModels/. Write tests for view models that will connect domain use cases to the UI. Define view protocols for dependency injection.",
+            "status": "pending",
+            "testStrategy": "Write tests for view models using mock use cases. Test UI state management and transformations."
+          },
+          {
+            "id": 8,
+            "title": "Implement View Models and UI Components",
+            "description": "Create the view models and UI components based on the tests",
+            "dependencies": [
+              7
+            ],
+            "details": "Implement view models that connect domain use cases to views. Create basic UI components that will be used throughout the app. Add a README.md explaining the UI layer's purpose and components.",
+            "status": "pending",
+            "testStrategy": "Verify view models pass all tests. Use protocol-based design for views to facilitate testing."
+          },
+          {
+            "id": 9,
+            "title": "Set Up Dependency Injection Container",
+            "description": "Create a DI container to manage dependencies between layers",
+            "dependencies": [
+              4,
+              6,
+              8
+            ],
+            "details": "Implement a dependency injection container that will wire up all layers. Create factory methods for creating objects with their dependencies. Ensure proper separation between layers is maintained.",
+            "status": "pending",
+            "testStrategy": "Test the DI container by verifying it correctly resolves dependencies. Ensure circular dependencies are avoided."
+          },
+          {
+            "id": 10,
+            "title": "Update Project Structure and Documentation",
+            "description": "Finalize the project structure and add comprehensive documentation",
+            "dependencies": [
+              9
+            ],
+            "details": "Update the Xcode project file to reflect the new folder structure. Ensure all files are in the correct groups. Update the main README.md with an overview of the architecture and how the layers interact.",
+            "status": "pending",
+            "testStrategy": "Create a test that verifies the correct architectural boundaries are maintained (e.g., UI doesn't directly access Infrastructure)."
+          }
+        ]
       },
       {
         "id": 4,
@@ -2657,7 +2768,7 @@
     ],
     "metadata": {
       "created": "2025-06-25T16:21:52.741Z",
-      "updated": "2025-06-25T16:56:43.866Z",
+      "updated": "2025-06-25T17:59:25.774Z",
       "description": "CLARITY Pulse V2 - Vertical Slice Development Tasks"
     }
   }

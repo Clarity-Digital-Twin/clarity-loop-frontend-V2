@@ -1,231 +1,242 @@
-# CLARITY Pulse iOS Application
+# CLARITY Pulse V2 - TDD/BDD Development Guidelines
 
-## Overview
-CLARITY Pulse is a HIPAA-compliant iOS health data tracking application built with SwiftUI, following MVVM + Clean Architecture principles. The app integrates with HealthKit, AWS Amplify + Cognito, and provides secure biometric authentication for sensitive health data management.
+## Project Context
+CLARITY Pulse V2 is a complete rebuild of a HIPAA-compliant iOS health tracking app. This is a **SwiftUI + SwiftData** application that serves as a frontend wrapper for the backend API.
 
-## Architecture
+## 🚨 FUNDAMENTAL DEVELOPMENT PHILOSOPHY: TDD + BDD
 
-### Design Pattern
-- **MVVM + Clean Architecture** with Protocol-Oriented Design
-- **SwiftUI + iOS 17's @Observable** for reactive UI
-- **Environment-based Dependency Injection** for lightweight IoC
-- **Repository Pattern** for data abstraction
-- **ViewState<T>** pattern for async operation handling
+### Test-Driven Development (TDD)
+**NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST. NO EXCEPTIONS.**
 
-### Layer Structure
+Red → Green → Refactor:
+1. **Red**: Write a failing test that describes the desired behavior
+2. **Green**: Write MINIMUM code to make the test pass
+3. **Refactor**: Improve code quality while keeping tests green
+
+### Behavior-Driven Development (BDD)
+**DESCRIBE BEHAVIOR, NOT IMPLEMENTATION**
+
+Write tests that describe what the system does, not how:
+```swift
+// ✅ BDD - Describes behavior
+func test_whenUserLogsIn_withValidCredentials_shouldShowDashboard()
+func test_whenHealthDataSyncs_withNoNetwork_shouldQueueForLaterSync()
+
+// ❌ Not BDD - Tests implementation
+func test_loginMethodCallsAuthService()
+func test_repositorySavesDataToDatabase()
 ```
-UI Layer         → SwiftUI Views + ViewModels
-Domain Layer     → Use Cases + Domain Models + Repository Protocols  
-Data Layer       → Repositories + Services + DTOs
-Core Layer       → Networking + Persistence + Utilities
+
+## Architecture Overview
+
+### Clean Architecture Layers
+```
+UI Layer       → SwiftUI Views + @Observable ViewModels
+Domain Layer   → Use Cases + Domain Models + Repository Protocols  
+Data Layer     → Repositories + Services + DTOs
+Infrastructure → Network + SwiftData + AWS Amplify
 ```
 
-### Key Frameworks
-- **SwiftUI**: Primary UI framework
-- **SwiftData**: Persistence (iOS 17+)
-- **HealthKit**: Health data integration
-- **AWS Amplify + Cognito**: Authentication & backend integration
-- **LocalAuthentication**: Biometric auth
+### Key Patterns
+- **@Observable ViewModels** (iOS 17+) - No more ObservableObject
+- **Environment Injection** - No singletons
+- **ViewState<T>** - Consistent async state handling
+- **Repository Pattern** - Abstract data sources
+- **Protocol-First** - Everything testable via protocols
 
-## Development Commands
+## Critical Swift Rules
 
-### Build Commands
+### Access Control - THIS IS AN APP, NOT A FRAMEWORK!
+```swift
+// ✅ CORRECT - Private by default
+private let apiClient: APIClient
+private func syncData() { }
+internal protocol RepositoryProtocol { }  // Only when needed cross-module
+
+// ❌ WRONG - Don't make things public
+public class DataManager { }  // NO! This isn't a library!
+public func configure() { }   // NO! Keep it internal!
+```
+
+### HIPAA Compliance Requirements
+- **NO logging of health data** - Ever.
+- **Biometric auth** for sensitive operations
+- **Encrypted storage** for all PHI
+- **Audit trail** for data access
+- **Secure transmission** - HTTPS only
+
+## Essential Tool Integration
+
+### Taskmaster CLI (Primary Task Management)
 ```bash
-# Clean build
-xcodebuild clean -scheme clarity-loop-frontend
+# Initialize project with Taskmaster
+taskmaster init --project-root .
 
-# Debug build
-xcodebuild -scheme clarity-loop-frontend -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 16'
+# Parse requirements into tasks
+taskmaster parse-prd .taskmaster/docs/prd.txt --num-tasks 20
 
-# Release build  
-xcodebuild -scheme clarity-loop-frontend -configuration Release -destination 'platform=iOS Simulator,name=iPhone 16'
+# Expand tasks with TDD focus
+taskmaster expand-task <id> --prompt "Create TDD tasks for this feature"
+
+# Track progress
+taskmaster list --status pending
+taskmaster next-task
 ```
 
-### Test Commands
-✅ **ALL TESTS WORKING**: Test targets are fully functional with 212 tests passing.
+### MCP Tools Available
+- **mcp__taskmaster-ai__*** - Task management operations
+- **mcp__XcodeBuildMCP__*** - Xcode build and test automation
+- **mcp__Filesystem__*** - File operations
+- **mcp__sequential-thinking__*** - Complex problem solving
+- **TodoWrite/TodoRead** - In-session task tracking
 
+### Xcode Build Commands
 ```bash
-# Unit tests (175+ tests passing)
-xcodebuild test -scheme clarity-loop-frontendTests -destination 'platform=iOS Simulator,name=iPhone 16'
-
-# UI tests (20+ tests passing)
-xcodebuild test -scheme clarity-loop-frontendUITests -destination 'platform=iOS Simulator,name=iPhone 16'
+# Use MCP tools for building/testing
+mcp__XcodeBuildMCP__build_sim_name_ws
+mcp__XcodeBuildMCP__test_sim_name_ws
+mcp__XcodeBuildMCP__describe_ui  # For UI testing
 ```
 
-### Lint Commands
-Currently no linting tools configured. Recommended to add:
-- SwiftLint for style consistency
-- SwiftFormat for auto-formatting
-- Periphery for unused code detection
+## TDD/BDD Workflow Example
 
-## Project Configuration
+```swift
+// 1. BDD Scenario: User views health metrics
+describe("Health Dashboard") {
+    context("when user has synced data") {
+        it("displays current step count") {
+            // Given
+            let mockHealthKit = MockHealthKitService()
+            mockHealthKit.mockSteps = 10_000
+            
+            // When
+            let viewModel = DashboardViewModel(healthKit: mockHealthKit)
+            
+            // Then
+            expect(viewModel.stepCount).toEventually(equal("10,000"))
+        }
+    }
+}
 
-### Requirements
-- **iOS**: 18.4+
-- **Xcode**: 16.0+
-- **Swift**: 5.0+
-
-### Bundle Information
-- **Bundle ID**: com.novamindnyc.clarity-loop-frontend
-- **Development Team**: HJ7W9PTAD8
-
-## Security & HIPAA Compliance
-
-### Access Control Standards
-- **PRIVATE by default**: All implementation details should be `private`
-- **INTERNAL**: Module-internal access for shared components
-- **PUBLIC**: Only for protocols and essential interfaces
-- **NO public classes/structs** unless absolutely necessary for external access
-
-### Security Features
-- **Biometric Authentication**: Face ID/Touch ID via `BiometricAuthService`
-- **Session Management**: Auto-logout with `SessionTimeoutService`
-- **App Security**: Background blur, jailbreak detection via `AppSecurityService`
-- **Secure Storage**: SwiftData with iOS file protection
-- **Token Security**: AWS Amplify secure token storage and automatic refresh
-
-## Testing Architecture
-
-### Test Targets
-1. **clarity-loop-frontendTests**: Unit tests with comprehensive mocks (✅ Working)
-2. **clarity-loop-frontendUITests**: SwiftUI UI automation tests (✅ Working)
-
-### Mock Strategy
-Protocol-based mocks for all major services:
-- `MockAuthService`
-- `MockAPIClient` 
-- `MockHealthKitService`
-- Repository mocks
-
-### Testing Guidelines
-- Mock all external dependencies (AWS Amplify, HealthKit, API)
-- Use Environment injection for test doubles
-- Test ViewModels in isolation
-- Integration tests for critical health data flows
-
-## Code Conventions
-
-### Naming Patterns
-- **ViewModels**: `[Feature]ViewModel` (e.g., `AuthViewModel`)
-- **Services**: `[Purpose]Service` (e.g., `HealthKitService`)
-- **Repositories**: `[Domain]Repository` (e.g., `RemoteHealthDataRepository`)
-- **DTOs**: Descriptive names ending in `DTO`
-
-### File Organization
-```
-clarity-loop-frontend/
-├── Application/         # App lifecycle
-├── Core/               # Infrastructure layer
-│   ├── Architecture/   # ViewState, Environment keys
-│   ├── Networking/     # API clients, endpoints
-│   ├── Services/       # Business services
-│   └── Persistence/    # SwiftData controllers
-├── Data/               # Data layer
-│   ├── DTOs/          # Data transfer objects
-│   ├── Models/        # Data models (SwiftData)
-│   └── Repositories/  # Repository implementations
-├── Domain/             # Business logic layer
-│   ├── Models/        # Domain models
-│   └── Repositories/  # Repository protocols
-├── Features/           # Feature modules (MVVM)
-│   ├── Authentication/
-│   ├── Dashboard/
-│   ├── Insights/
-│   └── Settings/
-└── UI/                 # Shared UI components
-    ├── Components/     # Reusable SwiftUI views
-    └── Theme/          # Design system
-```
-
-### SwiftUI Best Practices
-- Use `@Observable` for ViewModels (iOS 17+)
-- Environment injection over singletons
-- Prefer composition over inheritance
-- Keep Views lightweight - logic in ViewModels
-- Use `ViewState<T>` for async operations
-
-## Critical Development Notes
-
-### AWS Amplify Integration
-- Authentication handled by AWS Cognito via Amplify
-- JWT tokens auto-refreshed by Amplify SDK
-- API calls use Bearer token authentication
-- Configuration in `amplifyconfiguration.json`
-- User Pool: `us-east-1_efXaR5EcP`
-- Client ID: `7sm7ckrkovg78b03n1595euc71`
-
-### Health Data Sensitivity
-- All health data handling must maintain HIPAA compliance
-- No logging of sensitive health information
-- Secure data transmission only (HTTPS)
-- User consent required for all HealthKit access
-
-## Development Workflow
-
-### Before Starting Development
-1. ✅ Test targets are working properly
-2. ✅ AWS Amplify configuration is included
-3. Check HealthKit permissions in simulator/device
-4. Run clean build to verify setup
-
-### Code Quality Checklist
-- [ ] All new code follows access control standards (private by default)
-- [ ] ViewModels use `@Observable` pattern
-- [ ] Services implement protocols for testability  
-- [ ] No sensitive data in logs
-- [ ] Proper error handling with `ViewState<T>`
-- [ ] Mock implementations for all external dependencies
-
-### Recommended Tools to Add
-- SwiftLint configuration
-- SwiftFormat rules
-- GitHub Actions CI/CD
-- Fastlane for deployment automation
-
-## Common Issues
-
-### Authentication Flow
-**Current Status**: ✅ Fully working with email verification support
-**Architecture**: AWS Cognito → Amplify → iOS App → Backend API
-
-### HealthKit Permissions
-**Problem**: Simulator doesn't support all HealthKit features
-**Solution**: Test on physical device for full HealthKit functionality
-
-### AWS Configuration
-**Status**: ✅ Pre-configured and working
-**File**: `amplifyconfiguration.json` (already included)
-**Backend**: `https://clarity.novamindnyc.com`
-
-## API Integration
-
-### Backend Endpoints
-- **Production URL**: `https://clarity.novamindnyc.com`
-- **Authentication**: `/api/v1/auth/*` 
-- **Health Data**: `/api/v1/health/*`
-- **Insights**: `/api/v1/insights/*`
-
-### Error Handling
-- Use `APIError` enum for structured error handling
-- `ViewState<T>` pattern for UI error states
-- Network retry logic built into `APIClient`
-
-### Authentication Architecture
-```mermaid
-sequenceDiagram
-    participant iOS as iOS App
-    participant Amplify as AWS Amplify
-    participant Cognito as AWS Cognito
-    participant Backend as FastAPI Backend
+// 2. TDD Implementation
+func test_loadHealthMetrics_updatesViewState() async {
+    // Red: Test fails - no implementation
+    let sut = DashboardViewModel(healthKit: mockService)
     
-    iOS->>Amplify: signIn(email, password)
-    Amplify->>Cognito: USER_SRP_AUTH
-    Cognito->>Amplify: JWT Tokens
-    Amplify->>iOS: Authentication Success
-    iOS->>Backend: API calls with Bearer token
-    Backend->>iOS: Protected resources
+    await sut.loadHealthMetrics()
+    
+    XCTAssertEqual(sut.viewState, .success)
+}
+
+// 3. Green: Minimal implementation
+func loadHealthMetrics() async {
+    viewState = .success([])  // Just enough to pass
+}
+
+// 4. Refactor: Add real logic with all tests still passing
 ```
+
+## SwiftUI + SwiftData Patterns
+
+### ViewModels with @Observable
+```swift
+@Observable
+final class DashboardViewModel {
+    // State is automatically observable
+    private(set) var metrics: [HealthMetric] = []
+    private(set) var viewState: ViewState<[HealthMetric]> = .idle
+    
+    // Dependencies injected
+    private let healthService: HealthServiceProtocol
+    
+    init(healthService: HealthServiceProtocol) {
+        self.healthService = healthService
+    }
+}
+```
+
+### SwiftData Models
+```swift
+@Model
+final class HealthMetric {
+    private(set) var id: UUID
+    private(set) var type: MetricType
+    private(set) var value: Double
+    private(set) var recordedAt: Date
+    
+    // Relationships
+    private(set) var user: User?
+    
+    init(type: MetricType, value: Double) {
+        self.id = UUID()
+        self.type = type
+        self.value = value
+        self.recordedAt = Date()
+    }
+}
+```
+
+## Backend Integration Requirements
+
+The frontend is a wrapper for 44 backend endpoints. Key considerations:
+- **DTOs must match exactly** - See CLARITY_ENDPOINT_MAPPING.md
+- **Error responses are standardized** - Handle consistently
+- **WebSocket for real-time** - See CLARITY_WEBSOCKET_REALTIME_GUIDE.md
+- **Offline-first architecture** - See CLARITY_OFFLINE_SYNC_ARCHITECTURE.md
+
+## Human Intervention Points
+
+**🛑 STOP and request human help for:**
+1. Xcode project configuration changes
+2. Certificate/provisioning profile setup  
+3. Build settings modifications
+4. Dependency management (SPM)
+5. Archive and distribution
+
+## V2 Specific Guidelines
+
+### What's Different from V1
+- **Fresh start with TDD/BDD** - No legacy code
+- **SwiftData instead of Core Data**
+- **@Observable instead of ObservableObject**
+- **Proper dependency injection from day 1**
+- **Protocol-first architecture**
+
+### Document References
+Essential guides for implementation:
+- `CLARITY_IMPLEMENTATION_GUIDE.md` - Step-by-step TDD approach
+- `CLARITY_ENDPOINT_MAPPING.md` - All 44 endpoints with DTOs
+- `CLARITY_SWIFT_BEST_PRACTICES.md` - Avoid AI agent pitfalls
+- `CLARITY_PROGRESS_TRACKER.md` - Track implementation progress
+
+## Quick Command Reference
+
+```bash
+# Taskmaster
+taskmaster next-task
+taskmaster set-task-status <id> done
+taskmaster expand-task <id>
+
+# Testing
+swift test --filter DashboardTests
+swift test --parallel
+
+# Building  
+swift build -c debug
+swift build -c release
+```
+
+## Remember
+
+1. **TDD is mandatory** - No exceptions
+2. **BDD describes user behavior** - Not technical implementation  
+3. **Private by default** - This is an app, not a framework
+4. **HIPAA compliance** - Security first, always
+5. **Use Taskmaster** - For task management and progress tracking
+6. **Request human help** - For Xcode-specific operations
 
 ---
 
-*This is a production health application handling sensitive user data. Always prioritize security, privacy, and HIPAA compliance in all development decisions.*
+This is CLARITY Pulse V2. We're building it right from the start with TDD/BDD.
+
+Every line of production code must be justified by a failing test that describes desired behavior.

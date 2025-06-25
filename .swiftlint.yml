@@ -2,9 +2,9 @@
 
 # Paths
 included:
-  - clarity-loop-frontend
-  - clarity-loop-frontendTests
-  - clarity-loop-frontendUITests
+  - clarity-loop-frontend-v2
+  - clarity-loop-frontend-v2Tests
+  - clarity-loop-frontend-v2UITests
 
 excluded:
   - DerivedData
@@ -12,8 +12,8 @@ excluded:
   - .swiftpm
   - Pods
   - Carthage
-  - clarity-loop-frontend/Core/Services/CognitoAuthService.swift.disabled
-  - clarity-loop-frontend/Core/Services/CognitoConfiguration.swift.disabled
+  - clarity-loop-frontend-v2/Core/Services/CognitoAuthService.swift.disabled
+  - clarity-loop-frontend-v2/Core/Services/CognitoConfiguration.swift.disabled
 
 # Rules
 disabled_rules:

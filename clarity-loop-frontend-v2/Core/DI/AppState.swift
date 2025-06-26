@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import ClarityDomain
 
 /// Global app state for managing authentication and navigation
 @MainActor
@@ -16,7 +15,9 @@ public final class AppState {
     // MARK: - Properties
     
     public private(set) var isAuthenticated: Bool = false
-    public private(set) var currentUser: User?
+    public private(set) var currentUserId: UUID?
+    public private(set) var currentUserEmail: String?
+    public private(set) var currentUserName: String?
     
     // MARK: - Initialization
     
@@ -24,15 +25,19 @@ public final class AppState {
     
     // MARK: - Public Methods
     
-    /// Log in with a user
-    public func login(with user: User) {
-        currentUser = user
+    /// Log in with user information
+    public func login(userId: UUID, email: String, name: String) {
+        currentUserId = userId
+        currentUserEmail = email
+        currentUserName = name
         isAuthenticated = true
     }
     
     /// Log out the current user
     public func logout() {
-        currentUser = nil
+        currentUserId = nil
+        currentUserEmail = nil
+        currentUserName = nil
         isAuthenticated = false
     }
 }

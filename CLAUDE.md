@@ -1,7 +1,23 @@
 # CLARITY Pulse V2 - TDD/BDD Development Guidelines
 
+## 🚨 CRITICAL: READ THIS FIRST!
+
+**BEFORE IMPLEMENTING ANY TASK:**
+1. Check the markdown documentation files in the root directory
+2. Reference the specific guides relevant to your task
+3. Follow TDD/BDD principles - NO production code without failing tests
+
+**KEY DOCUMENTATION:**
+- `CLARITY_IMPLEMENTATION_GUIDE.md` - Start here for TDD approach
+- `CLARITY_VERTICAL_SLICE_TASK_SUMMARY.md` - 200 tasks ready to implement
+- `CLARITY_ENDPOINT_MAPPING.md` - Backend API specifications
+- See "Markdown Documentation References" section below for complete list
+
 ## Project Context
-CLARITY Pulse V2 is a complete rebuild of a HIPAA-compliant iOS health tracking app. This is a **SwiftUI + SwiftData** application that serves as a frontend wrapper for the backend API.
+CLARITY Pulse V2 is a complete rebuild of a HIPAA-compliant iOS health tracking app. This is a **PURE SwiftUI + SwiftData** application that serves as a frontend wrapper for the backend API.
+
+### 🚀 PURE SWIFTUI COMMITMENT
+**NO UIKit imports allowed!** This is a 100% SwiftUI application. All UI components, keyboard handling, colors, and interactions must use SwiftUI APIs only.
 
 ## 🚨 FUNDAMENTAL DEVELOPMENT PHILOSOPHY: TDD + BDD
 
@@ -225,6 +241,45 @@ final class HealthMetric {
     }
 }
 ```
+
+## 📚 CRITICAL: Markdown Documentation References
+
+**MANDATORY READING BEFORE ANY IMPLEMENTATION:**
+
+When working on ANY task, you MUST reference these markdown files in the root directory:
+
+### Core Implementation Guides
+- **CLARITY_IMPLEMENTATION_GUIDE.md** - TDD/BDD step-by-step approach (READ FIRST!)
+- **CLARITY_VERTICAL_SLICE_TASK_SUMMARY.md** - 200 tasks organized by features
+- **CLARITY_TESTING_STRATEGY.md** - Complete testing patterns and examples
+- **CLARITY_SWIFT_BEST_PRACTICES.md** - Avoid common AI agent mistakes
+
+### Architecture & Design
+- **CLARITY_UI_COMPONENT_ARCHITECTURE.md** - Pure SwiftUI patterns
+- **CLARITY_SWIFTDATA_ARCHITECTURE.md** - SwiftData implementation details
+- **CLARITY_STATE_MANAGEMENT_GUIDE.md** - @Observable and state handling
+- **CLARITY_MODULE_IMPORT_GUIDE.md** - Cross-module visibility rules
+
+### Backend Integration
+- **CLARITY_ENDPOINT_MAPPING.md** - ALL 44 endpoints with exact DTOs
+- **CLARITY_NETWORK_LAYER_IMPLEMENTATION.md** - Network client patterns
+- **CLARITY_WEBSOCKET_REALTIME_GUIDE.md** - Real-time features
+- **CLARITY_OFFLINE_SYNC_ARCHITECTURE.md** - Offline-first implementation
+
+### Security & Compliance
+- **CLARITY_SECURITY_HIPAA_GUIDE.md** - HIPAA compliance requirements
+- **CLARITY_BIOMETRIC_AUTH.md** - Biometric authentication implementation
+
+### Integration & Tools
+- **CLARITY_HEALTHKIT_INTEGRATION.md** - HealthKit implementation
+- **CLARITY_AWS_AMPLIFY_SETUP.md** - AWS integration
+- **CLARITY_MCP_TOOLS_GUIDE.md** - Using MCP tools effectively
+
+### Progress & Tracking
+- **CLARITY_PROGRESS_TRACKER.md** - Implementation phase tracking
+- **CLARITY_TASKMASTER_IMPLEMENTATION_GUIDE.md** - Task management
+
+**⚠️ IMPORTANT: When implementing ANY task, ALWAYS check the relevant markdown files above!**
 
 ## Backend Integration Requirements
 

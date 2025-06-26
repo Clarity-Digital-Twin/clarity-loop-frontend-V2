@@ -8,7 +8,7 @@
 import Foundation
 
 /// URLSession protocol for dependency injection
-protocol URLSessionProtocol: Sendable {
+public protocol URLSessionProtocol: Sendable {
     func data(for request: URLRequest) async throws -> (Data, URLResponse)
 }
 
@@ -20,14 +20,14 @@ protocol NetworkClientProtocol: APIClientProtocol {
 }
 
 /// Concrete implementation of network client
-final class NetworkClient: Sendable {
+public final class NetworkClient: Sendable {
     
     private let session: URLSessionProtocol
     private let baseURL: URL
     private let decoder: JSONDecoder
     private let encoder: JSONEncoder
     
-    required init(
+    public init(
         session: URLSessionProtocol = URLSession.shared,
         baseURL: URL = URL(string: "https://api.claritypulse.com")!
     ) {
@@ -43,7 +43,7 @@ final class NetworkClient: Sendable {
         self.encoder.dateEncodingStrategy = .iso8601
     }
     
-    func get<T: Decodable>(
+    public func get<T: Decodable>(
         _ endpoint: String,
         parameters: [String: String]?
     ) async throws -> T {
@@ -57,7 +57,7 @@ final class NetworkClient: Sendable {
         return try await performRequest(request)
     }
     
-    func post<T: Decodable, U: Encodable>(
+    public func post<T: Decodable, U: Encodable>(
         _ endpoint: String,
         body: U
     ) async throws -> T {
@@ -71,7 +71,7 @@ final class NetworkClient: Sendable {
         return try await performRequest(request)
     }
     
-    func put<T: Decodable, U: Encodable>(
+    public func put<T: Decodable, U: Encodable>(
         _ endpoint: String,
         body: U
     ) async throws -> T {
@@ -85,7 +85,7 @@ final class NetworkClient: Sendable {
         return try await performRequest(request)
     }
     
-    func delete<T: Decodable>(
+    public func delete<T: Decodable>(
         _ endpoint: String
     ) async throws -> T {
         let request = try buildRequest(
@@ -185,7 +185,7 @@ final class NetworkClient: Sendable {
 // MARK: - Conformance to APIClientProtocol
 
 extension NetworkClient: APIClientProtocol {
-    func delete<T: Identifiable>(
+    public func delete<T: Identifiable>(
         type: T.Type,
         id: T.ID
     ) async throws {

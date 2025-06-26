@@ -78,7 +78,6 @@ public struct HealthMetricsView: View {
                         
                         HStack {
                             TextField(placeholderText, text: $metricValue)
-                                .keyboardType(selectedMetricType.isWholeNumber ? .numberPad : .decimalPad)
                                 .textFieldStyle(.roundedBorder)
                             
                             Text(unitText)
@@ -132,9 +131,11 @@ public struct HealthMetricsView: View {
                 .padding()
             }
             .navigationTitle("Add Metric")
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .primaryAction) {
                     Button("History") {
                         // Navigate to history
                     }
@@ -204,7 +205,7 @@ public struct HealthMetricsView: View {
                     notes: notes.isEmpty ? nil : notes
                 )
                 
-                try await repository.create(metric)
+                _ = try await repository.create(metric)
                 
                 await MainActor.run {
                     alertMessage = "Successfully recorded \(selectedMetricType.displayName): \(value) \(unitText)"

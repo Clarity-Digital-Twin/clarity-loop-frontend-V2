@@ -48,6 +48,58 @@ task-master generate                                         # Update task markd
 ### Claude Code Integration Files
 
 - `CLAUDE.md` - Auto-loaded context for Claude Code (this file)
+
+## 📚 CRITICAL: Documentation-Driven Development Workflow
+
+**BEFORE IMPLEMENTING ANY TASK, YOU MUST:**
+
+1. **Check the Task-Specific Documentation:**
+   - For authentication tasks: Review `CLARITY_ENDPOINT_MAPPING.md` sections 1-7
+   - For health data tasks: Review `CLARITY_ENDPOINT_MAPPING.md` sections 8-17
+   - For HealthKit tasks: Review `CLARITY_HEALTHKIT_INTEGRATION.md`
+   - For UI components: Review `CLARITY_UI_COMPONENT_ARCHITECTURE.md`
+   - For state management: Review `CLARITY_STATE_MANAGEMENT_GUIDE.md`
+
+2. **Follow Implementation Guides:**
+   - Always start with `CLARITY_IMPLEMENTATION_GUIDE.md` for TDD approach
+   - Check `CLARITY_TESTING_STRATEGY.md` for test patterns
+   - Review `CLARITY_SWIFT_BEST_PRACTICES.md` to avoid common mistakes
+
+3. **Verify Backend Integration:**
+   - Cross-reference with `/BACKEND_REFERENCE/` for actual API implementations
+   - Ensure DTOs match exactly with backend OpenAPI spec
+   - Test against real backend endpoints when available
+
+4. **Task Implementation Pattern:**
+   ```bash
+   # 1. Get next task
+   task-master next
+   
+   # 2. Read relevant documentation
+   # Example: For task 20 (Login Implementation)
+   # - Read CLARITY_ENDPOINT_MAPPING.md section on /api/v1/auth/login
+   # - Read CLARITY_TESTING_STRATEGY.md for auth test patterns
+   # - Read CLARITY_SECURITY_HIPAA_GUIDE.md for security requirements
+   
+   # 3. Implement with TDD
+   # - Write failing test first (Red)
+   # - Implement minimum code to pass (Green)
+   # - Refactor with confidence (Refactor)
+   
+   # 4. Update task status
+   task-master set-status --id=20 --status=done
+   ```
+
+### Documentation Reference Matrix
+
+| Task Category | Primary Documentation | Secondary References |
+|--------------|----------------------|---------------------|
+| Authentication | CLARITY_ENDPOINT_MAPPING.md (1-7) | CLARITY_SECURITY_HIPAA_GUIDE.md, CLARITY_BIOMETRIC_AUTH.md |
+| Health Data | CLARITY_ENDPOINT_MAPPING.md (8-17) | CLARITY_SWIFTDATA_ARCHITECTURE.md, CLARITY_OFFLINE_SYNC_ARCHITECTURE.md |
+| HealthKit | CLARITY_HEALTHKIT_INTEGRATION.md | CLARITY_SECURITY_HIPAA_GUIDE.md |
+| UI Components | CLARITY_UI_COMPONENT_ARCHITECTURE.md | CLARITY_DESIGN_SYSTEM.md, CLARITY_ACCESSIBILITY_GUIDE.md |
+| Networking | CLARITY_NETWORK_LAYER_IMPLEMENTATION.md | CLARITY_ERROR_HANDLING_PATTERNS.md |
+| Testing | CLARITY_TESTING_STRATEGY.md | CLARITY_IMPLEMENTATION_GUIDE.md |
 - `.claude/settings.json` - Claude Code tool allowlist and preferences
 - `.claude/commands/` - Custom slash commands for repeated workflows
 - `.mcp.json` - MCP server configuration (project-specific)

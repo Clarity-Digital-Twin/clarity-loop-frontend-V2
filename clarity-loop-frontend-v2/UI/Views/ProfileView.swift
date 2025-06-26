@@ -10,15 +10,11 @@ import ClarityDomain
 import ClarityCore
 
 public struct ProfileView: View {
-    let user: User
-    
+    @Environment(AppState.self) private var appState
     @State private var showingLogoutAlert = false
     @State private var isLoggingOut = false
-    // @EnvironmentObject private var appState: AppState // TODO: Uncomment when needed
     
-    public init(user: User) {
-        self.user = user
-    }
+    public init() {}
     
     public var body: some View {
         NavigationStack {
@@ -32,12 +28,12 @@ public struct ProfileView: View {
                             .foregroundColor(.accentColor)
                         
                         // User Name
-                        Text("\(user.firstName) \(user.lastName)")
+                        Text(appState.currentUserName ?? "User")
                             .font(.title2)
                             .fontWeight(.semibold)
                         
                         // Email
-                        Text(user.email)
+                        Text(appState.currentUserEmail ?? "user@example.com")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
@@ -48,19 +44,15 @@ public struct ProfileView: View {
                 
                 // Account Details
                 Section("Account Details") {
-                    DetailRow(label: "Email", value: user.email)
-                    DetailRow(label: "First Name", value: user.firstName)
-                    DetailRow(label: "Last Name", value: user.lastName)
+                    DetailRow(label: "Email", value: appState.currentUserEmail ?? "user@example.com")
+                    DetailRow(label: "First Name", value: appState.currentUserName?.components(separatedBy: " ").first ?? "User")
+                    DetailRow(label: "Last Name", value: appState.currentUserName?.components(separatedBy: " ").last ?? "")
                     
-                    if let dateOfBirth = user.dateOfBirth {
-                        DetailRow(label: "Date of Birth", value: formatDate(dateOfBirth))
-                    }
+                    // TODO: Add date of birth when stored in AppState
                     
-                    if let phoneNumber = user.phoneNumber {
-                        DetailRow(label: "Phone", value: phoneNumber)
-                    }
+                    // TODO: Add phone number when stored in AppState
                     
-                    DetailRow(label: "Member Since", value: formatDate(user.createdAt))
+                    DetailRow(label: "Member Since", value: "January 2025")
                 }
                 
                 // Settings Section
@@ -179,7 +171,7 @@ public struct ProfileView: View {
                 try await authService.logout()
                 
                 await MainActor.run {
-                    // appState.logout() // TODO: Uncomment when appState is available
+                    appState.logout()
                     isLoggingOut = false
                 }
             } catch {

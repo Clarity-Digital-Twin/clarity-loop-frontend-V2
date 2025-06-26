@@ -9,17 +9,17 @@ import Foundation
 import SwiftData
 
 @Model
-final class PersistedHealthMetric {
-    @Attribute(.unique) var id: UUID
-    var userId: UUID
-    var type: String
-    var value: Double
-    var unit: String
-    var recordedAt: Date
-    var source: String?
-    var notes: String?
+public final class PersistedHealthMetric {
+    @Attribute(.unique) public var id: UUID
+    public var userId: UUID
+    public var type: String
+    public var value: Double
+    public var unit: String
+    public var recordedAt: Date
+    public var source: String?
+    public var notes: String?
     
-    init(
+    public init(
         id: UUID,
         userId: UUID,
         type: String,

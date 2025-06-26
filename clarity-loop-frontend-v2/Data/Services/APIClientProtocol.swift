@@ -8,7 +8,7 @@
 import Foundation
 
 /// Protocol defining API client operations
-protocol APIClientProtocol: Sendable {
+public protocol APIClientProtocol: Sendable {
     /// Perform GET request
     func get<T: Decodable>(_ endpoint: String, parameters: [String: String]?) async throws -> T
     
@@ -26,7 +26,7 @@ protocol APIClientProtocol: Sendable {
 }
 
 /// Protocol for persistence operations
-protocol PersistenceServiceProtocol: Sendable {
+public protocol PersistenceServiceProtocol: Sendable {
     /// Save an object to local storage
     func save<T: Identifiable>(_ object: T) async throws
     

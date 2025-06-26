@@ -16,9 +16,8 @@ final class DashboardViewModelTests: XCTestCase {
     private var mockHealthMetricRepository: MockHealthMetricRepository!
     private var mockUser: User!
     
-    @MainActor
-    override func setUp() async throws {
-        try await super.setUp()
+    override func setUp() {
+        super.setUp()
         
         mockUser = User(
             id: UUID(),
@@ -28,10 +27,12 @@ final class DashboardViewModelTests: XCTestCase {
         )
         
         mockHealthMetricRepository = MockHealthMetricRepository()
-        sut = DashboardViewModel(
-            user: mockUser,
-            healthMetricRepository: mockHealthMetricRepository
-        )
+        sut = MainActor.assumeIsolated {
+            DashboardViewModel(
+                user: mockUser,
+                healthMetricRepository: mockHealthMetricRepository
+            )
+        }
     }
     
     override func tearDown() {

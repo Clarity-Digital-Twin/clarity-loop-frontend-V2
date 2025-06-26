@@ -255,6 +255,13 @@ private final class MockAPIClient: APIClientProtocol, @unchecked Sendable {
         }
         return mockResponse as! T
     }
+    
+    func delete<T: Identifiable>(type: T.Type, id: T.ID) async throws {
+        deleteCalled = true
+        if shouldFail {
+            throw mockError ?? APIError.unknown
+        }
+    }
 }
 
 private final class MockPersistenceService: PersistenceServiceProtocol, @unchecked Sendable {
@@ -304,6 +311,14 @@ private func mapMetricTypeToDTO(_ type: HealthMetricType) -> String {
         return "steps"
     case .sleepDuration:
         return "sleep_duration"
+    case .respiratoryRate:
+        return "respiratory_rate"
+    case .caloriesBurned:
+        return "calories_burned"
+    case .waterIntake:
+        return "water_intake"
+    case .exerciseDuration:
+        return "exercise_duration"
     case .custom(let name):
         return name.lowercased().replacingOccurrences(of: " ", with: "_")
     }

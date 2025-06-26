@@ -233,6 +233,13 @@ private final class MockAPIClient: APIClientProtocol, @unchecked Sendable {
         }
         return mockResponse as! T
     }
+    
+    func delete<T: Identifiable>(type: T.Type, id: T.ID) async throws {
+        deleteCalled = true
+        if shouldFail {
+            throw mockError ?? APIError.unknown
+        }
+    }
 }
 
 private final class MockPersistenceService: PersistenceServiceProtocol, @unchecked Sendable {

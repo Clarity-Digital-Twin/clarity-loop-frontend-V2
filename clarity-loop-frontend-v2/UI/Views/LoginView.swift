@@ -11,7 +11,7 @@ import ClarityCore
 
 public struct LoginView: View {
     @State private var viewModel: LoginViewModel
-    @EnvironmentObject private var appState: AppState
+    @Environment(AppState.self) private var appState
     @FocusState private var focusedField: Field?
     
     public init() {
@@ -53,11 +53,11 @@ public struct LoginView: View {
                         
                         TextField("Enter your email", text: $viewModel.email)
                             .textFieldStyle(.roundedBorder)
-                            .keyboardType(.emailAddress)
-                            .textContentType(.emailAddress)
+                            #if os(iOS)
                             .textInputAutocapitalization(.never)
+                            #endif
                             .disabled(viewModel.viewState.isLoading)
-                            .focused($focusedField, equals: .email)
+                            .focused($focusedField, equals: Field.email)
                     }
                     
                     // Password Field
@@ -68,9 +68,8 @@ public struct LoginView: View {
                         
                         SecureField("Enter your password", text: $viewModel.password)
                             .textFieldStyle(.roundedBorder)
-                            .textContentType(.password)
                             .disabled(viewModel.viewState.isLoading)
-                            .focused($focusedField, equals: .password)
+                            .focused($focusedField, equals: Field.password)
                     }
                     
                     // Error Message
@@ -132,11 +131,17 @@ public struct LoginView: View {
                 .font(.footnote)
                 .padding(.bottom, 32)
             }
+            #if os(iOS)
             .toolbar(.hidden, for: .navigationBar)
+            #endif
         }
         .onChange(of: viewModel.viewState) { _, newState in
             if case .success(let user) = newState {
-                appState.login(with: user)
+                appState.login(
+                    userId: user.id,
+                    email: user.email,
+                    name: "\(user.firstName) \(user.lastName)"
+                )
             }
         }
     }

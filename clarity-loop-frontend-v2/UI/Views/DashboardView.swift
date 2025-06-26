@@ -11,16 +11,13 @@ import ClarityCore
 
 public struct DashboardView: View {
     @State private var viewModel: DashboardViewModel
-    // @EnvironmentObject private var appState: AppState // TODO: Uncomment when needed
+    @Environment(AppState.self) private var appState
     
-    let user: User
-    
-    public init(user: User) {
-        self.user = user
-        
+    public init() {
         let container = DIContainer.shared
         let factory = container.require(DashboardViewModelFactory.self)
-        let vm = factory.create(user)
+        // TODO: Pass user ID when factory is updated
+        let vm = factory.create(User(id: UUID(), email: "temp@example.com", firstName: "Temp", lastName: "User"))
         
         self._viewModel = State(wrappedValue: vm)
     }
@@ -35,7 +32,7 @@ public struct DashboardView: View {
                             .font(.title2)
                             .foregroundColor(.secondary)
                         
-                        Text("\(user.firstName) \(user.lastName)")
+                        Text(appState.currentUserName ?? "User")
                             .font(.largeTitle)
                             .fontWeight(.bold)
                     }
@@ -77,7 +74,7 @@ public struct DashboardView: View {
             .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .primaryAction) {
                     Button(action: { Task { await viewModel.refresh() } }) {
                         Image(systemName: "arrow.clockwise")
                     }

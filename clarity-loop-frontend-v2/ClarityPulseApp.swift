@@ -21,7 +21,7 @@ struct ClarityPulseApp: App {
     private let modelContainer: ModelContainer
     
     /// App state management
-    @StateObject private var appState = AppState()
+    @State private var appState = AppState()
     
     // MARK: - Initialization
     
@@ -57,59 +57,9 @@ struct ClarityPulseApp: App {
         WindowGroup {
             RootView()
                 .modelContainer(modelContainer)
-                .environmentObject(appState)
-                .task {
-                    await appState.initialize()
-                }
+                .environment(appState)
         }
     }
 }
 
-// MARK: - App State
-
-@MainActor
-final class AppState: ObservableObject {
-    @Published var isAuthenticated = false
-    @Published var currentUser: User?
-    @Published var isLoading = true
-    
-    private let container = DIContainer.shared
-    
-    func initialize() async {
-        isLoading = true
-        
-        // Check authentication status
-        await checkAuthStatus()
-        
-        isLoading = false
-    }
-    
-    private func checkAuthStatus() async {
-        guard let authService = container.resolve(AuthServiceProtocol.self) else { 
-            print("AuthService not found in DI container")
-            return 
-        }
-        
-        do {
-            currentUser = try await authService.getCurrentUser()
-            isAuthenticated = currentUser != nil
-        } catch {
-            print("Auth check failed: \(error)")
-            isAuthenticated = false
-            currentUser = nil
-        }
-    }
-    
-    func login(with user: User) {
-        currentUser = user
-        isAuthenticated = true
-    }
-    
-    func logout() async {
-        if let authService = container.resolve(AuthServiceProtocol.self) {
-            try? await authService.logout()
-        }
-        currentUser = nil
-        isAuthenticated = false
-    }
-}
+// MARK: - App State is imported from ClarityCore

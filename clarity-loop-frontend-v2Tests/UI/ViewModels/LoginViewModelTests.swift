@@ -15,11 +15,13 @@ final class LoginViewModelTests: XCTestCase {
     private var sut: LoginViewModel!
     private var mockLoginUseCase: MockLoginUseCase!
     
-    @MainActor
-    override func setUp() async throws {
-        try await super.setUp()
-        mockLoginUseCase = MockLoginUseCase()
-        sut = LoginViewModel(loginUseCase: mockLoginUseCase)
+    override func setUp() {
+        super.setUp()
+        let mockUseCase = MockLoginUseCase()
+        mockLoginUseCase = mockUseCase
+        sut = MainActor.assumeIsolated {
+            LoginViewModel(loginUseCase: mockUseCase)
+        }
     }
     
     override func tearDown() {

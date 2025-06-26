@@ -9,17 +9,17 @@ import Foundation
 import SwiftData
 
 @Model
-final class PersistedUser {
-    @Attribute(.unique) var id: UUID
-    var email: String
-    var firstName: String
-    var lastName: String
-    var createdAt: Date
-    var lastLoginAt: Date?
-    var dateOfBirth: Date?
-    var phoneNumber: String?
+public final class PersistedUser {
+    @Attribute(.unique) public var id: UUID
+    public var email: String
+    public var firstName: String
+    public var lastName: String
+    public var createdAt: Date
+    public var lastLoginAt: Date?
+    public var dateOfBirth: Date?
+    public var phoneNumber: String?
     
-    init(
+    public init(
         id: UUID,
         email: String,
         firstName: String,

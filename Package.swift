@@ -97,6 +97,11 @@ let package = Package(
             path: "clarity-loop-frontend-v2Tests/Domain"
         ),
         .testTarget(
+            name: "ClarityDataTests",
+            dependencies: ["ClarityData", "ClarityDomain", "ClarityCore"],
+            path: "clarity-loop-frontend-v2Tests/Data"
+        ),
+        .testTarget(
             name: "ClarityInfrastructureTests",
             dependencies: ["ClarityData", "ClarityDomain"],
             path: "clarity-loop-frontend-v2Tests/Infrastructure"
@@ -109,7 +114,8 @@ let package = Package(
         .testTarget(
             name: "ClarityCoreTests",
             dependencies: ["ClarityCore", "ClarityDomain", "ClarityData", "ClarityUI"],
-            path: "clarity-loop-frontend-v2Tests/DI"
+            path: "clarity-loop-frontend-v2Tests",
+            sources: ["DI/", "Architecture/", "ClarityPulseAppTests.swift"]
         )
     ]
 )

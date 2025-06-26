@@ -10,9 +10,7 @@ import ClarityDomain
 import ClarityCore
 
 public struct RootView: View {
-    // TODO: Add AppState when implemented
-    // @EnvironmentObject private var appState: AppState
-    @State private var isAuthenticated = false
+    @Environment(AppState.self) private var appState
     
     public init() {}
     
@@ -20,21 +18,18 @@ public struct RootView: View {
         Group {
             // TODO: Implement navigation based on AppState
             // For now, just show the login view
-            if isAuthenticated {
+            if appState.isAuthenticated {
                 // Temporary user for testing
-                MainTabView(user: User(
-                    id: UUID(),
-                    email: "test@example.com",
-                    firstName: "Test",
-                    lastName: "User",
-                    createdAt: Date(),
-                    updatedAt: Date()
-                ))
+                MainTabView(
+                    userId: appState.currentUserId ?? UUID(),
+                    userName: appState.currentUserName ?? "User",
+                    userEmail: appState.currentUserEmail ?? "user@example.com"
+                )
             } else {
                 LoginView()
             }
         }
-        .animation(.easeInOut, value: isAuthenticated)
+        .animation(.easeInOut, value: appState.isAuthenticated)
     }
 }
 
@@ -58,11 +53,13 @@ struct LoadingView: View {
 // MARK: - Main Tab View
 
 struct MainTabView: View {
-    let user: User
+    let userId: UUID
+    let userName: String
+    let userEmail: String
     
     var body: some View {
         TabView {
-            DashboardView(user: user)
+            DashboardView()
                 .tabItem {
                     Label("Dashboard", systemImage: "heart.text.square")
                 }
@@ -72,7 +69,7 @@ struct MainTabView: View {
                     Label("Metrics", systemImage: "chart.line.uptrend.xyaxis")
                 }
             
-            ProfileView(user: user)
+            ProfileView()
                 .tabItem {
                     Label("Profile", systemImage: "person.circle")
                 }

@@ -142,8 +142,8 @@ final class DIContainerTests: XCTestCase {
         registerAllLayers()
         
         // When
-        let loginVMFactory = sut.resolve(LoginViewModelFactory.self)
-        let dashboardVMFactory = sut.resolve(DashboardViewModelFactory.self)
+        let loginVMFactory = sut.resolve(LoginViewModelFactoryImpl.self)
+        let dashboardVMFactory = sut.resolve(DashboardViewModelFactoryImpl.self)
         
         // Then
         XCTAssertNotNil(loginVMFactory)
@@ -171,7 +171,7 @@ final class DIContainerTests: XCTestCase {
     }
     
     private func registerDataLayer() {
-        sut.register(NetworkClientProtocol.self) { _ in
+        sut.register(APIClientProtocol.self) { _ in
             MockNetworkClient()
         }
         
@@ -181,14 +181,14 @@ final class DIContainerTests: XCTestCase {
         
         sut.register(UserRepositoryProtocol.self) { container in
             UserRepositoryImplementation(
-                networkClient: container.resolve(NetworkClientProtocol.self)!,
+                apiClient: container.resolve(APIClientProtocol.self)!,
                 persistence: container.resolve(PersistenceServiceProtocol.self)!
             )
         }
         
         sut.register(HealthMetricRepositoryProtocol.self) { container in
             HealthMetricRepositoryImplementation(
-                networkClient: container.resolve(NetworkClientProtocol.self)!,
+                apiClient: container.resolve(APIClientProtocol.self)!,
                 persistence: container.resolve(PersistenceServiceProtocol.self)!
             )
         }
@@ -199,17 +199,16 @@ final class DIContainerTests: XCTestCase {
         registerDomainLayer()
         
         // UI Layer factories
-        sut.register(LoginViewModelFactory.self) { container in
-            LoginViewModelFactory { container.resolve(LoginUseCaseProtocol.self)! }
+        sut.register(LoginViewModelFactoryImpl.self) { container in
+            LoginViewModelFactoryImpl(
+                loginUseCase: container.resolve(LoginUseCaseProtocol.self)!
+            )
         }
         
-        sut.register(DashboardViewModelFactory.self) { container in
-            DashboardViewModelFactory { user in
-                DashboardViewModel(
-                    user: user,
-                    healthMetricRepository: container.resolve(HealthMetricRepositoryProtocol.self)!
-                )
-            }
+        sut.register(DashboardViewModelFactoryImpl.self) { container in
+            DashboardViewModelFactoryImpl(
+                healthMetricRepository: container.resolve(HealthMetricRepositoryProtocol.self)!
+            )
         }
     }
 }
@@ -256,8 +255,8 @@ private final class MockUserRepository: UserRepositoryProtocol, @unchecked Senda
     func findAll() async throws -> [User] { [] }
 }
 
-private final class MockNetworkClient: NetworkClientProtocol, @unchecked Sendable {
-    required init(session: URLSessionProtocol = URLSession.shared, baseURL: URL = URL(string: "https://test.com")!) {}
+private final class MockNetworkClient: APIClientProtocol, @unchecked Sendable {
+    init() {}
     
     func get<T: Decodable>(_ endpoint: String, parameters: [String: String]?) async throws -> T {
         throw NetworkError.noConnection
@@ -285,5 +284,31 @@ private final class MockPersistence: PersistenceServiceProtocol, @unchecked Send
     func fetch<T: Identifiable>(_ id: T.ID) async throws -> T? { nil }
     func delete<T: Identifiable>(type: T.Type, id: T.ID) async throws {}
     func fetchAll<T: Identifiable>() async throws -> [T] { [] }
+}
+
+// MARK: - Factory Implementations
+
+private struct LoginViewModelFactoryImpl: LoginViewModelFactory {
+    let loginUseCase: LoginUseCaseProtocol
+    
+    func create() -> LoginUseCaseProtocol {
+        loginUseCase
+    }
+}
+
+private struct DashboardViewModelFactoryImpl: @preconcurrency DashboardViewModelFactory {
+    let healthMetricRepository: HealthMetricRepositoryProtocol
+    
+    func create(_ user: User) -> DashboardViewModel {
+        // Since DashboardViewModel is @MainActor, we need to handle this properly
+        // For testing purposes, we'll use a synchronous approach
+        let viewModel = MainActor.assumeIsolated {
+            DashboardViewModel(
+                user: user,
+                healthMetricRepository: healthMetricRepository
+            )
+        }
+        return viewModel
+    }
 }
 

@@ -11,7 +11,7 @@ import ClarityCore
 import ClarityDomain
 import ClarityData
 import ClarityUI
-import Amplify
+@preconcurrency import Amplify
 import AWSCognitoAuthPlugin
 import AWSAPIPlugin
 
@@ -35,8 +35,8 @@ public final class AppDependencies {
     // MARK: - Infrastructure Configuration
     
     private func configureInfrastructure() {
-        // Network Client
-        container.register(NetworkClientProtocol.self, scope: .singleton) { _ in
+        // Network Client - register as APIClientProtocol since that's what repositories expect
+        container.register(APIClientProtocol.self, scope: .singleton) { _ in
             NetworkClient(
                 session: URLSession.shared,
                 baseURL: URL(string: "https://api.clarity-pulse.com")!
@@ -66,7 +66,7 @@ public final class AppDependencies {
         // User Repository
         container.register(UserRepositoryProtocol.self, scope: .singleton) { container in
             UserRepositoryImplementation(
-                networkClient: container.require(NetworkClientProtocol.self),
+                apiClient: container.require(APIClientProtocol.self),
                 persistence: container.require(PersistenceServiceProtocol.self)
             )
         }
@@ -74,7 +74,7 @@ public final class AppDependencies {
         // Health Metric Repository
         container.register(HealthMetricRepositoryProtocol.self, scope: .singleton) { container in
             HealthMetricRepositoryImplementation(
-                networkClient: container.require(NetworkClientProtocol.self),
+                apiClient: container.require(APIClientProtocol.self),
                 persistence: container.require(PersistenceServiceProtocol.self)
             )
         }

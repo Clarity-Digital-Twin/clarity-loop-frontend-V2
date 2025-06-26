@@ -31,18 +31,25 @@ func test_repositorySavesDataToDatabase()
 
 ### Clean Architecture Layers
 ```
-UI Layer       → SwiftUI Views + @Observable ViewModels
+UI Layer       → SwiftUI Views + @Observable ViewModels (MVVM)
 Domain Layer   → Use Cases + Domain Models + Repository Protocols  
 Data Layer     → Repositories + Services + DTOs
 Infrastructure → Network + SwiftData + AWS Amplify
 ```
 
-### Key Patterns
+### Key Design Patterns & Principles
+- **MVVM Architecture** - Clear separation of View and Business Logic
 - **@Observable ViewModels** (iOS 17+) - No more ObservableObject
-- **Environment Injection** - No singletons
+- **SOLID Principles** - Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion
+- **DRY (Don't Repeat Yourself)** - Reusable components and shared logic
+- **Repository Pattern** - Abstract data sources (Gang of Four)
+- **Factory Pattern** - For object creation in DI container
+- **Observer Pattern** - Built into SwiftUI's reactive system
+- **Strategy Pattern** - For interchangeable algorithms (e.g., auth providers)
+- **Decorator Pattern** - For extending functionality (e.g., middleware)
+- **Protocol-First Design** - Everything testable via protocols
+- **Dependency Injection** - No singletons, testable architecture
 - **ViewState<T>** - Consistent async state handling
-- **Repository Pattern** - Abstract data sources
-- **Protocol-First** - Everything testable via protocols
 
 ## Critical Swift Rules
 
@@ -56,6 +63,45 @@ internal protocol RepositoryProtocol { }  // Only when needed cross-module
 // ❌ WRONG - Don't make things public
 public class DataManager { }  // NO! This isn't a library!
 public func configure() { }   // NO! Keep it internal!
+```
+
+### Module Visibility Rules - CRITICAL FOR COMPILATION!
+
+**This is a modular Swift Package with separate targets!**
+
+Since we split the code into ClarityDomain, ClarityData, ClarityUI modules:
+- Each module is compiled separately (like mini frameworks)
+- Cross-module access requires `public` visibility
+- `@testable import ModuleName` only exposes internals of that specific module
+
+**What needs to be public:**
+```swift
+// ✅ MUST BE PUBLIC - Used across modules
+public struct HealthMetric { }           // Used by Data layer
+public protocol UserRepository { }       // Implemented in Data layer
+public enum ValidationError { }          // Thrown across modules
+public final class LoginUseCase { }      // Used by UI layer
+
+// ❌ KEEP INTERNAL - Only used within module
+internal class MockAPIClient { }         // Test helper
+private func parseResponse() { }         // Implementation detail
+```
+
+**Module Import Rules:**
+```swift
+// Domain tests
+@testable import ClarityDomain
+
+// Data layer tests (needs both)
+@testable import ClarityData
+@testable import ClarityDomain  // For domain types
+
+// UI tests
+@testable import ClarityUI
+import ClarityDomain  // For public types
+
+// ❌ NEVER DO THIS - Module doesn't exist!
+@testable import clarity_loop_frontend_v2  // NO SUCH MODULE!
 ```
 
 ### HIPAA Compliance Requirements

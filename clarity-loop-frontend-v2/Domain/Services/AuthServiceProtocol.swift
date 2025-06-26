@@ -8,25 +8,31 @@
 import Foundation
 
 /// Authentication token containing access credentials
-struct AuthToken: Codable, Equatable {
-    let accessToken: String
-    let refreshToken: String
-    let expiresIn: Int
+public struct AuthToken: Codable, Equatable, Sendable {
+    public let accessToken: String
+    public let refreshToken: String
+    public let expiresIn: Int
     
-    var expirationDate: Date {
+    public var expirationDate: Date {
         Date().addingTimeInterval(TimeInterval(expiresIn))
+    }
+    
+    public init(accessToken: String, refreshToken: String, expiresIn: Int) {
+        self.accessToken = accessToken
+        self.refreshToken = refreshToken
+        self.expiresIn = expiresIn
     }
 }
 
 /// Authentication errors
-enum AuthError: LocalizedError, Equatable {
+public enum AuthError: LocalizedError, Equatable {
     case invalidCredentials
     case tokenExpired
     case refreshFailed
     case networkError
     case unknown(String)
     
-    var errorDescription: String? {
+    public var errorDescription: String? {
         switch self {
         case .invalidCredentials:
             return "Invalid email or password"
@@ -43,7 +49,7 @@ enum AuthError: LocalizedError, Equatable {
 }
 
 /// Protocol for authentication operations
-protocol AuthServiceProtocol: Sendable {
+public protocol AuthServiceProtocol: Sendable {
     /// Authenticates user with email and password
     func login(email: String, password: String) async throws -> AuthToken
     
@@ -54,5 +60,6 @@ protocol AuthServiceProtocol: Sendable {
     func refreshToken(_ refreshToken: String) async throws -> AuthToken
     
     /// Gets the current authenticated user
+    @MainActor
     func getCurrentUser() async throws -> User?
 }

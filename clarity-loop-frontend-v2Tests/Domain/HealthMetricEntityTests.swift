@@ -6,12 +6,12 @@
 //
 
 import XCTest
-@testable import clarity_loop_frontend_v2
+@testable import ClarityDomain
 
 final class HealthMetricEntityTests: XCTestCase {
-    
+
     // MARK: - Test HealthMetric Creation
-    
+
     func test_whenCreatingHealthMetric_withValidData_shouldInitializeCorrectly() {
         // Given
         let id = UUID()
@@ -20,7 +20,7 @@ final class HealthMetricEntityTests: XCTestCase {
         let value = 72.0
         let unit = "BPM"
         let recordedAt = Date()
-        
+
         // When
         let metric = HealthMetric(
             id: id,
@@ -30,7 +30,7 @@ final class HealthMetricEntityTests: XCTestCase {
             unit: unit,
             recordedAt: recordedAt
         )
-        
+
         // Then
         XCTAssertEqual(metric.id, id)
         XCTAssertEqual(metric.userId, userId)
@@ -41,9 +41,9 @@ final class HealthMetricEntityTests: XCTestCase {
         XCTAssertNil(metric.source)
         XCTAssertNil(metric.notes)
     }
-    
+
     // MARK: - Test Metric Type Properties
-    
+
     func test_whenGettingMetricTypeProperties_shouldReturnCorrectValues() {
         // Given
         let testCases: [(HealthMetricType, String, String, ClosedRange<Double>?)] = [
@@ -58,7 +58,7 @@ final class HealthMetricEntityTests: XCTestCase {
             (.steps, "Steps", "steps", 0...100000),
             (.sleepDuration, "Sleep Duration", "hours", 0...24)
         ]
-        
+
         // When & Then
         for (type, expectedName, expectedUnit, expectedRange) in testCases {
             XCTAssertEqual(type.displayName, expectedName)
@@ -66,9 +66,9 @@ final class HealthMetricEntityTests: XCTestCase {
             XCTAssertEqual(type.validRange, expectedRange)
         }
     }
-    
+
     // MARK: - Test Value Validation
-    
+
     func test_whenValidatingValue_withinRange_shouldReturnTrue() {
         // Given
         let metric = HealthMetric(
@@ -79,14 +79,14 @@ final class HealthMetricEntityTests: XCTestCase {
             unit: "BPM",
             recordedAt: Date()
         )
-        
+
         // When
         let isValid = metric.isValueValid
-        
+
         // Then
         XCTAssertTrue(isValid)
     }
-    
+
     func test_whenValidatingValue_outsideRange_shouldReturnFalse() {
         // Given
         let metric = HealthMetric(
@@ -97,14 +97,14 @@ final class HealthMetricEntityTests: XCTestCase {
             unit: "BPM",
             recordedAt: Date()
         )
-        
+
         // When
         let isValid = metric.isValueValid
-        
+
         // Then
         XCTAssertFalse(isValid)
     }
-    
+
     func test_whenValidatingValue_forTypeWithoutRange_shouldAlwaysReturnTrue() {
         // Given
         let metric = HealthMetric(
@@ -115,16 +115,16 @@ final class HealthMetricEntityTests: XCTestCase {
             unit: "units",
             recordedAt: Date()
         )
-        
+
         // When
         let isValid = metric.isValueValid
-        
+
         // Then
         XCTAssertTrue(isValid)
     }
-    
+
     // MARK: - Test BMI Calculation
-    
+
     func test_whenCalculatingBMI_withWeightAndHeight_shouldReturnCorrectValue() {
         // Given
         let userId = UUID()
@@ -144,37 +144,35 @@ final class HealthMetricEntityTests: XCTestCase {
             unit: "cm",
             recordedAt: Date()
         )
-        
+
         // When
         let bmi = HealthMetric.calculateBMI(weight: weight, height: height)
-        
+
         // Then
         XCTAssertNotNil(bmi)
         XCTAssertEqual(bmi!, 22.86, accuracy: 0.01)
     }
-    
+
     // MARK: - Test Source Information
-    
-    func test_whenSettingSource_shouldStoreSourceInfo() {
-        // Given
-        var metric = HealthMetric(
+
+    func test_whenCreatingWithSource_shouldStoreSourceInfo() {
+        // Given & When
+        let metric = HealthMetric(
             id: UUID(),
             userId: UUID(),
             type: .steps,
             value: 10000,
             unit: "steps",
-            recordedAt: Date()
+            recordedAt: Date(),
+            source: .appleHealth
         )
-        
-        // When
-        metric.source = .appleHealth
-        
+
         // Then
         XCTAssertEqual(metric.source, .appleHealth)
     }
-    
+
     // MARK: - Test Codable
-    
+
     func test_whenEncodingAndDecoding_shouldPreserveAllData() throws {
         // Given
         let metric = HealthMetric(
@@ -187,14 +185,14 @@ final class HealthMetricEntityTests: XCTestCase {
             source: .manual,
             notes: "Before breakfast"
         )
-        
+
         // When
         let encoder = JSONEncoder()
         let data = try encoder.encode(metric)
-        
+
         let decoder = JSONDecoder()
         let decodedMetric = try decoder.decode(HealthMetric.self, from: data)
-        
+
         // Then
         XCTAssertEqual(metric.id, decodedMetric.id)
         XCTAssertEqual(metric.userId, decodedMetric.userId)

@@ -1,0 +1,193 @@
+//
+//  NetworkClient.swift
+//  clarity-loop-frontend-v2
+//
+//  Concrete implementation of network client for API communication
+//
+
+import Foundation
+
+/// URLSession protocol for dependency injection
+protocol URLSessionProtocol: Sendable {
+    func data(for request: URLRequest) async throws -> (Data, URLResponse)
+}
+
+extension URLSession: URLSessionProtocol {}
+
+/// Concrete implementation of network client
+final class NetworkClient: Sendable {
+    
+    private let session: URLSessionProtocol
+    private let baseURL: URL
+    private let decoder: JSONDecoder
+    private let encoder: JSONEncoder
+    
+    init(
+        session: URLSessionProtocol = URLSession.shared,
+        baseURL: URL = URL(string: "https://api.claritypulse.com")!
+    ) {
+        self.session = session
+        self.baseURL = baseURL
+        
+        // Configure decoder for API date format
+        self.decoder = JSONDecoder()
+        self.decoder.dateDecodingStrategy = .iso8601
+        
+        // Configure encoder for API date format
+        self.encoder = JSONEncoder()
+        self.encoder.dateEncodingStrategy = .iso8601
+    }
+    
+    func get<T: Decodable>(
+        _ path: String,
+        parameters: [String: String]?
+    ) async throws -> T {
+        let request = try buildRequest(
+            path: path,
+            method: "GET",
+            parameters: parameters,
+            body: nil as Data?
+        )
+        
+        return try await performRequest(request)
+    }
+    
+    func post<T: Decodable, B: Encodable>(
+        _ path: String,
+        body: B
+    ) async throws -> T {
+        let request = try buildRequest(
+            path: path,
+            method: "POST",
+            parameters: nil,
+            body: body
+        )
+        
+        return try await performRequest(request)
+    }
+    
+    func put<T: Decodable, B: Encodable>(
+        _ path: String,
+        body: B
+    ) async throws -> T {
+        let request = try buildRequest(
+            path: path,
+            method: "PUT",
+            parameters: nil,
+            body: body
+        )
+        
+        return try await performRequest(request)
+    }
+    
+    func delete<T: Decodable>(
+        _ path: String
+    ) async throws -> T {
+        let request = try buildRequest(
+            path: path,
+            method: "DELETE",
+            parameters: nil,
+            body: nil as Data?
+        )
+        
+        return try await performRequest(request)
+    }
+    
+    // MARK: - Private Methods
+    
+    private func buildRequest<B: Encodable>(
+        path: String,
+        method: String,
+        parameters: [String: String]?,
+        body: B?
+    ) throws -> URLRequest {
+        // Build URL with path
+        let url = baseURL.appendingPathComponent(path)
+        
+        // Add query parameters if provided
+        var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
+        if let parameters = parameters {
+            components.queryItems = parameters.map { URLQueryItem(name: $0.key, value: $0.value) }
+        }
+        
+        guard let finalURL = components.url else {
+            throw NetworkError.unknown
+        }
+        
+        // Create request
+        var request = URLRequest(url: finalURL)
+        request.httpMethod = method
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        
+        // Add body if provided
+        if let body = body {
+            request.httpBody = try encoder.encode(body)
+        }
+        
+        return request
+    }
+    
+    private func performRequest<T: Decodable>(_ request: URLRequest) async throws -> T {
+        do {
+            let (data, response) = try await session.data(for: request)
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw NetworkError.unknown
+            }
+            
+            // Check status code
+            switch httpResponse.statusCode {
+            case 200...299:
+                // Success - decode response
+                do {
+                    return try decoder.decode(T.self, from: data)
+                } catch {
+                    throw NetworkError.decodingFailed(error.localizedDescription)
+                }
+                
+            case 401:
+                throw NetworkError.unauthorized
+                
+            case 403:
+                throw NetworkError.forbidden
+                
+            case 404:
+                throw NetworkError.notFound
+                
+            case 500...599:
+                throw NetworkError.serverError
+                
+            default:
+                throw NetworkError.unknown
+            }
+            
+        } catch let error as URLError {
+            if error.code == .notConnectedToInternet {
+                throw NetworkError.noConnection
+            }
+            throw NetworkError.unknown
+            
+        } catch let error as NetworkError {
+            throw error
+            
+        } catch {
+            throw NetworkError.unknown
+        }
+    }
+}
+
+// MARK: - Conformance to APIClientProtocol
+
+extension NetworkClient: APIClientProtocol {
+    func delete<T: Identifiable>(
+        type: T.Type,
+        id: T.ID
+    ) async throws {
+        let _: VoidResponse = try await delete("/api/v1/\(String(describing: type).lowercased())s/\(id)")
+    }
+}
+
+// MARK: - Helper Types
+
+private struct VoidResponse: Decodable {}

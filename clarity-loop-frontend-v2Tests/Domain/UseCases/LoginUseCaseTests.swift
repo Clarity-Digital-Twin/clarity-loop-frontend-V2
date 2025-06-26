@@ -6,13 +6,13 @@
 //
 
 import XCTest
-@testable import clarity_loop_frontend_v2
+@testable import ClarityDomain
 
 final class LoginUseCaseTests: XCTestCase {
     
     // MARK: - Mocks
     
-    private class MockAuthService: AuthServiceProtocol {
+    private final class MockAuthService: AuthServiceProtocol, @unchecked Sendable {
         var shouldSucceed = true
         var mockUser: User?
         var loginCallCount = 0
@@ -43,12 +43,13 @@ final class LoginUseCaseTests: XCTestCase {
             )
         }
         
+        @MainActor
         func getCurrentUser() async throws -> User? {
             return mockUser
         }
     }
     
-    private class MockUserRepository: UserRepositoryProtocol {
+    private final class MockUserRepository: UserRepositoryProtocol, @unchecked Sendable {
         var users: [String: User] = [:]
         
         func create(_ user: User) async throws -> User {
@@ -64,6 +65,7 @@ final class LoginUseCaseTests: XCTestCase {
             users[email]
         }
         
+        @MainActor
         func update(_ user: User) async throws -> User {
             users[user.email] = user
             return user
@@ -80,6 +82,7 @@ final class LoginUseCaseTests: XCTestCase {
     
     // MARK: - Tests
     
+    @MainActor
     func test_whenExecutingLogin_withValidCredentials_shouldReturnUser() async throws {
         // Given
         let authService = MockAuthService()
@@ -105,11 +108,11 @@ final class LoginUseCaseTests: XCTestCase {
         let result = try await useCase.execute(email: email, password: password)
         
         // Then
-        XCTAssertEqual(result.user.email, email)
-        XCTAssertNotNil(result.token)
+        XCTAssertEqual(result.email, email)
         XCTAssertEqual(authService.loginCallCount, 1)
     }
     
+    @MainActor
     func test_whenExecutingLogin_withInvalidCredentials_shouldThrowError() async {
         // Given
         let authService = MockAuthService()
@@ -130,6 +133,7 @@ final class LoginUseCaseTests: XCTestCase {
         }
     }
     
+    @MainActor
     func test_whenExecutingLogin_shouldUpdateLastLoginTime() async throws {
         // Given
         let authService = MockAuthService()
@@ -155,7 +159,7 @@ final class LoginUseCaseTests: XCTestCase {
         let result = try await useCase.execute(email: email, password: "password")
         
         // Then
-        XCTAssertNotNil(result.user.lastLoginAt)
+        XCTAssertNotNil(result.lastLoginAt)
         let updatedUser = try await userRepository.findByEmail(email)
         XCTAssertNotNil(updatedUser?.lastLoginAt)
     }

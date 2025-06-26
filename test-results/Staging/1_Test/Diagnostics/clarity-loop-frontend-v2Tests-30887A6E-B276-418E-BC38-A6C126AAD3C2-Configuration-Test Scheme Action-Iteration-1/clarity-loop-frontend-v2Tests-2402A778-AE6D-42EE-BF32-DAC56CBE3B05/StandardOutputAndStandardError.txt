@@ -1,0 +1,4 @@
+
+
+*** If you believe this error represents a bug, please attach the log file at /Users/ray/Desktop/CLARITY-DIGITAL-TWIN/clarity-loop-frontend-V2/test-results/Staging/1_Test/Diagnostics/clarity-loop-frontend-v2Tests-30887A6E-B276-418E-BC38-A6C126AAD3C2-Configuration-Test Scheme Action-Iteration-1/clarity-loop-frontend-v2Tests-2402A778-AE6D-42EE-BF32-DAC56CBE3B05/Session-clarity-loop-frontend-v2Tests-2025-06-25_172546-LvEdmh.log
+

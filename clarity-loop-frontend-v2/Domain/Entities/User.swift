@@ -9,35 +9,35 @@ import Foundation
 
 /// Domain entity representing a user
 @Observable
-final class User: Identifiable, Equatable {
-    let id: UUID
-    let email: String
-    let firstName: String
-    let lastName: String
-    let createdAt: Date
-    var lastLoginAt: Date?
-    var dateOfBirth: Date?
-    var phoneNumber: String?
+public final class User: Identifiable, Equatable {
+    public let id: UUID
+    public let email: String
+    public let firstName: String
+    public let lastName: String
+    public let createdAt: Date
+    public var lastLoginAt: Date?
+    public var dateOfBirth: Date?
+    public var phoneNumber: String?
     
     /// Computed property for full name
-    var fullName: String {
+    public var fullName: String {
         let combined = "\(firstName) \(lastName)".trimmingCharacters(in: .whitespaces)
         return combined.isEmpty ? firstName : combined
     }
     
     /// Validates if the email format is correct
-    var hasValidEmail: Bool {
+    public var hasValidEmail: Bool {
         let emailRegex = #"^[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"#
         let predicate = NSPredicate(format: "SELF MATCHES %@", emailRegex)
         return predicate.evaluate(with: email)
     }
     
     /// Checks if user profile is complete
-    var isProfileComplete: Bool {
+    public var isProfileComplete: Bool {
         dateOfBirth != nil && phoneNumber != nil
     }
     
-    init(
+    public init(
         id: UUID = UUID(),
         email: String,
         firstName: String,
@@ -58,13 +58,13 @@ final class User: Identifiable, Equatable {
     }
     
     /// Updates the last login timestamp
-    func updateLastLogin() {
-        lastLoginAt = Date()
+    public func updateLastLogin(_ date: Date = Date()) {
+        lastLoginAt = date
     }
     
     // MARK: - Equatable
     
-    static func == (lhs: User, rhs: User) -> Bool {
+    public static func == (lhs: User, rhs: User) -> Bool {
         lhs.id == rhs.id
     }
 }

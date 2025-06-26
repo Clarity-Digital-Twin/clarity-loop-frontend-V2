@@ -8,13 +8,13 @@
 import Foundation
 
 /// Source of health metric data
-enum HealthMetricSource: String, Codable, CaseIterable {
+public enum HealthMetricSource: String, Codable, CaseIterable, Sendable {
     case manual = "manual"
     case appleHealth = "apple_health"
     case wearable = "wearable"
     case integration = "integration"
     
-    var displayName: String {
+    public var displayName: String {
         switch self {
         case .manual:
             return "Manual Entry"

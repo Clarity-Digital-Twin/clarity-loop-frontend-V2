@@ -6,13 +6,13 @@
 //
 
 import XCTest
-@testable import clarity_loop_frontend_v2
+@testable import ClarityDomain
 
 final class RecordHealthMetricUseCaseTests: XCTestCase {
     
     // MARK: - Mock
     
-    private class MockHealthMetricRepository: HealthMetricRepositoryProtocol {
+    private final class MockHealthMetricRepository: HealthMetricRepositoryProtocol, @unchecked Sendable {
         var metrics: [UUID: HealthMetric] = [:]
         var shouldThrowError = false
         

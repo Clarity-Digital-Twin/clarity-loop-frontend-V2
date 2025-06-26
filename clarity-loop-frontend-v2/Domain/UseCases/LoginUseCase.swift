@@ -8,17 +8,22 @@
 import Foundation
 
 /// Result of a successful login
-struct LoginResult {
-    let user: User
-    let token: AuthToken
+public struct LoginResult {
+    public let user: User
+    public let token: AuthToken
+    
+    public init(user: User, token: AuthToken) {
+        self.user = user
+        self.token = token
+    }
 }
 
 /// Use case for handling user login
-final class LoginUseCase: Sendable {
+public final class LoginUseCase: LoginUseCaseProtocol, Sendable {
     private let authService: AuthServiceProtocol
     private let userRepository: UserRepositoryProtocol
     
-    init(
+    public init(
         authService: AuthServiceProtocol,
         userRepository: UserRepositoryProtocol
     ) {
@@ -27,14 +32,15 @@ final class LoginUseCase: Sendable {
     }
     
     /// Executes the login process
-    func execute(email: String, password: String) async throws -> LoginResult {
+    @MainActor
+    public func execute(email: String, password: String) async throws -> User {
         // Validate input
         guard validateInput(email: email, password: password) else {
             throw AuthError.invalidCredentials
         }
         
         // Authenticate with the service
-        let token = try await authService.login(email: email, password: password)
+        _ = try await authService.login(email: email, password: password)
         
         // Get the authenticated user
         guard let user = try await authService.getCurrentUser() else {
@@ -45,11 +51,11 @@ final class LoginUseCase: Sendable {
         user.updateLastLogin()
         _ = try await userRepository.update(user)
         
-        return LoginResult(user: user, token: token)
+        return user
     }
     
     /// Validates login input
-    func validateInput(email: String, password: String) -> Bool {
+    public func validateInput(email: String, password: String) -> Bool {
         !email.isEmpty && !password.isEmpty
     }
 }

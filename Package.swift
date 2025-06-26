@@ -6,7 +6,8 @@ import PackageDescription
 let package = Package(
     name: "ClarityPulse",
     platforms: [
-        .iOS(.v18)
+        .iOS(.v18),
+        .macOS(.v14)
     ],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
@@ -33,16 +34,14 @@ let package = Package(
         .target(
             name: "ClarityCore",
             dependencies: [],
-            path: "clarity-loop-frontend-v2/Core",
-            exclude: []
+            path: "clarity-loop-frontend-v2/Core"
         ),
         
         // Domain module - Business logic and models
         .target(
             name: "ClarityDomain",
             dependencies: ["ClarityCore"],
-            path: "clarity-loop-frontend-v2/Domain",
-            exclude: []
+            path: "clarity-loop-frontend-v2/Domain"
         ),
         
         // Data module - Repositories and data sources
@@ -55,8 +54,7 @@ let package = Package(
                 .product(name: "AWSCognitoAuthPlugin", package: "amplify-swift"),
                 .product(name: "AWSAPIPlugin", package: "amplify-swift")
             ],
-            path: "clarity-loop-frontend-v2/Data",
-            exclude: []
+            path: "clarity-loop-frontend-v2/Data"
         ),
         
         // UI module - SwiftUI views and view models
@@ -68,31 +66,23 @@ let package = Package(
                 "ClarityData"
             ],
             path: "clarity-loop-frontend-v2/UI",
-            exclude: [],
-            resources: [
-                .process("Resources")
-            ]
+            exclude: []
         ),
         
         // Test targets
-        .testTarget(
-            name: "ClarityCoreTests",
-            dependencies: ["ClarityCore"],
-            path: "clarity-loop-frontend-v2Tests/Core"
-        ),
         .testTarget(
             name: "ClarityDomainTests",
             dependencies: ["ClarityDomain"],
             path: "clarity-loop-frontend-v2Tests/Domain"
         ),
         .testTarget(
-            name: "ClarityDataTests",
-            dependencies: ["ClarityData"],
-            path: "clarity-loop-frontend-v2Tests/Data"
+            name: "ClarityInfrastructureTests",
+            dependencies: ["ClarityData", "ClarityDomain"],
+            path: "clarity-loop-frontend-v2Tests/Infrastructure"
         ),
         .testTarget(
             name: "ClarityUITests",
-            dependencies: ["ClarityUI"],
+            dependencies: ["ClarityUI", "ClarityDomain", "ClarityData"],
             path: "clarity-loop-frontend-v2Tests/UI"
         )
     ]

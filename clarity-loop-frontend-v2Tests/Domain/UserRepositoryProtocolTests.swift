@@ -6,13 +6,13 @@
 //
 
 import XCTest
-@testable import clarity_loop_frontend_v2
+@testable import ClarityDomain
 
 final class UserRepositoryProtocolTests: XCTestCase {
     
     // MARK: - Mock Implementation
     
-    private class MockUserRepository: UserRepositoryProtocol {
+    private final class MockUserRepository: UserRepositoryProtocol, @unchecked Sendable {
         var users: [UUID: User] = [:]
         var shouldThrowError = false
         
@@ -38,6 +38,7 @@ final class UserRepositoryProtocolTests: XCTestCase {
             return users.values.first { $0.email == email }
         }
         
+        @MainActor
         func update(_ user: User) async throws -> User {
             if shouldThrowError {
                 throw RepositoryError.updateFailed
@@ -123,6 +124,7 @@ final class UserRepositoryProtocolTests: XCTestCase {
         XCTAssertEqual(foundUser?.email, email)
     }
     
+    @MainActor
     func test_whenUpdatingUser_shouldModifyExistingUser() async throws {
         // Given
         let repository = MockUserRepository()

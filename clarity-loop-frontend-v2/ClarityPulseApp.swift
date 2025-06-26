@@ -60,8 +60,9 @@ struct ClarityPulseApp: App {
 // MARK: - Dependency Container
 
 /// Container for dependency injection
-final class DependencyContainer {
+final class DependencyContainer: @unchecked Sendable {
     // Services will be added here as we implement them
+    // @unchecked is safe here as we'll manage thread safety internally
 }
 
 // MARK: - Environment Keys

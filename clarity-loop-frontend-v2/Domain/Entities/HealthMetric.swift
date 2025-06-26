@@ -8,24 +8,23 @@
 import Foundation
 
 /// Domain entity representing a health metric
-@Observable
-final class HealthMetric: Identifiable, Codable {
-    let id: UUID
-    let userId: UUID
-    let type: HealthMetricType
-    let value: Double
-    let unit: String
-    let recordedAt: Date
-    var source: HealthMetricSource?
-    var notes: String?
+public struct HealthMetric: Identifiable, Codable, Equatable, Sendable {
+    public let id: UUID
+    public let userId: UUID
+    public let type: HealthMetricType
+    public let value: Double
+    public let unit: String
+    public let recordedAt: Date
+    public let source: HealthMetricSource?
+    public let notes: String?
     
     /// Validates if the metric value is within acceptable range
-    var isValueValid: Bool {
+    public var isValueValid: Bool {
         guard let range = type.validRange else { return true }
         return range.contains(value)
     }
     
-    init(
+    public init(
         id: UUID = UUID(),
         userId: UUID,
         type: HealthMetricType,
@@ -48,7 +47,7 @@ final class HealthMetric: Identifiable, Codable {
     // MARK: - Static Methods
     
     /// Calculates BMI from weight and height metrics
-    static func calculateBMI(weight: HealthMetric, height: HealthMetric) -> Double? {
+    public static func calculateBMI(weight: HealthMetric, height: HealthMetric) -> Double? {
         guard weight.type == .weight,
               height.type == .height else { return nil }
         

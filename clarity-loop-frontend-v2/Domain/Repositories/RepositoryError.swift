@@ -8,7 +8,7 @@
 import Foundation
 
 /// Errors that can occur in repository operations
-enum RepositoryError: LocalizedError {
+public enum RepositoryError: LocalizedError {
     case saveFailed
     case fetchFailed
     case updateFailed
@@ -18,7 +18,7 @@ enum RepositoryError: LocalizedError {
     case unauthorized
     case networkError(underlying: Error)
     
-    var errorDescription: String? {
+    public var errorDescription: String? {
         switch self {
         case .saveFailed:
             return "Failed to save data"

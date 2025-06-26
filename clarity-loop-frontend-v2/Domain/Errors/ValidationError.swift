@@ -8,14 +8,14 @@
 import Foundation
 
 /// Errors that occur during validation
-enum ValidationError: LocalizedError, Equatable {
+public enum ValidationError: LocalizedError, Equatable {
     case invalidValue(field: String, reason: String)
     case missingRequiredField(field: String)
     case outOfRange(field: String, min: Double?, max: Double?)
     case invalidFormat(field: String)
     case duplicateEntry(field: String)
     
-    var errorDescription: String? {
+    public var errorDescription: String? {
         switch self {
         case .invalidValue(let field, let reason):
             return "\(field) is invalid: \(reason)"

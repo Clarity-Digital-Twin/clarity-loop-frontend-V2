@@ -8,15 +8,15 @@
 import Foundation
 
 /// Use case for recording health metrics
-final class RecordHealthMetricUseCase: Sendable {
+public final class RecordHealthMetricUseCase: Sendable {
     private let repository: HealthMetricRepositoryProtocol
     
-    init(repository: HealthMetricRepositoryProtocol) {
+    public init(repository: HealthMetricRepositoryProtocol) {
         self.repository = repository
     }
     
     /// Records a single health metric
-    func execute(
+    public func execute(
         userId: UUID,
         type: HealthMetricType,
         value: Double,
@@ -46,7 +46,7 @@ final class RecordHealthMetricUseCase: Sendable {
     }
     
     /// Records multiple health metrics in batch
-    func executeBatch(
+    public func executeBatch(
         userId: UUID,
         metrics: [(type: HealthMetricType, value: Double, unit: String?, source: HealthMetricSource?, notes: String?)]
     ) async throws -> [HealthMetric] {
@@ -72,7 +72,7 @@ final class RecordHealthMetricUseCase: Sendable {
     }
     
     /// Checks if a metric is a duplicate within a time window
-    func isDuplicateMetric(
+    public func isDuplicateMetric(
         userId: UUID,
         type: HealthMetricType,
         value: Double,

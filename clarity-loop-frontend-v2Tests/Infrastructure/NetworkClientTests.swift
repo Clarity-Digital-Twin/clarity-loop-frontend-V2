@@ -1,0 +1,195 @@
+//
+//  NetworkClientTests.swift
+//  clarity-loop-frontend-v2Tests
+//
+//  Tests for network client implementation following TDD
+//
+
+import XCTest
+@testable import ClarityData
+
+final class NetworkClientTests: XCTestCase {
+    
+    private var sut: NetworkClient!
+    private var mockSession: MockURLSession!
+    
+    override func setUp() {
+        super.setUp()
+        mockSession = MockURLSession()
+        sut = NetworkClient(session: mockSession)
+    }
+    
+    override func tearDown() {
+        sut = nil
+        mockSession = nil
+        super.tearDown()
+    }
+    
+    // MARK: - GET Request Tests
+    
+    func test_get_whenSuccessful_shouldReturnDecodedData() async throws {
+        // Given
+        let expectedUser = UserDTO(
+            id: UUID().uuidString,
+            email: "test@example.com",
+            firstName: "Test",
+            lastName: "User",
+            createdAt: ISO8601DateFormatter().string(from: Date()),
+            lastLoginAt: nil
+        )
+        
+        let responseData = try JSONEncoder().encode(expectedUser)
+        mockSession.mockData = responseData
+        mockSession.mockResponse = HTTPURLResponse(
+            url: URL(string: "https://api.example.com/users/123")!,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: nil
+        )
+        
+        // When
+        let result: UserDTO = try await sut.get("/users/123", parameters: nil)
+        
+        // Then
+        XCTAssertEqual(result.email, expectedUser.email)
+        XCTAssertEqual(mockSession.lastRequest?.httpMethod, "GET")
+    }
+    
+    func test_get_withParameters_shouldAppendQueryString() async throws {
+        // Given
+        let parameters = ["page": "1", "limit": "10"]
+        mockSession.mockData = "[]".data(using: .utf8)
+        mockSession.mockResponse = HTTPURLResponse(
+            url: URL(string: "https://api.example.com/users")!,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: nil
+        )
+        
+        // When
+        let _: [UserDTO] = try await sut.get("/users", parameters: parameters)
+        
+        // Then
+        let url = mockSession.lastRequest?.url?.absoluteString
+        XCTAssertTrue(url?.contains("page=1") ?? false)
+        XCTAssertTrue(url?.contains("limit=10") ?? false)
+    }
+    
+    // MARK: - POST Request Tests
+    
+    func test_post_whenSuccessful_shouldReturnDecodedData() async throws {
+        // Given
+        let newUser = UserDTO(
+            id: UUID().uuidString,
+            email: "new@example.com",
+            firstName: "New",
+            lastName: "User",
+            createdAt: ISO8601DateFormatter().string(from: Date()),
+            lastLoginAt: nil
+        )
+        
+        let responseData = try JSONEncoder().encode(newUser)
+        mockSession.mockData = responseData
+        mockSession.mockResponse = HTTPURLResponse(
+            url: URL(string: "https://api.example.com/users")!,
+            statusCode: 201,
+            httpVersion: nil,
+            headerFields: nil
+        )
+        
+        // When
+        let result: UserDTO = try await sut.post("/users", body: newUser)
+        
+        // Then
+        XCTAssertEqual(result.email, newUser.email)
+        XCTAssertEqual(mockSession.lastRequest?.httpMethod, "POST")
+        XCTAssertNotNil(mockSession.lastRequest?.httpBody)
+    }
+    
+    // MARK: - Error Handling Tests
+    
+    func test_whenServerReturns401_shouldThrowUnauthorizedError() async {
+        // Given
+        mockSession.mockResponse = HTTPURLResponse(
+            url: URL(string: "https://api.example.com/users")!,
+            statusCode: 401,
+            httpVersion: nil,
+            headerFields: nil
+        )
+        
+        // When/Then
+        do {
+            let _: UserDTO = try await sut.get("/users/123", parameters: nil)
+            XCTFail("Should have thrown error")
+        } catch {
+            XCTAssertTrue(error is NetworkError)
+            if let networkError = error as? NetworkError {
+                XCTAssertEqual(networkError, .unauthorized)
+            }
+        }
+    }
+    
+    func test_whenNetworkFails_shouldThrowNetworkError() async {
+        // Given
+        mockSession.mockError = URLError(.notConnectedToInternet)
+        
+        // When/Then
+        do {
+            let _: UserDTO = try await sut.get("/users", parameters: nil)
+            XCTFail("Should have thrown error")
+        } catch {
+            XCTAssertTrue(error is NetworkError)
+            if let networkError = error as? NetworkError {
+                XCTAssertEqual(networkError, .noConnection)
+            }
+        }
+    }
+    
+    func test_whenDecodingFails_shouldThrowDecodingError() async throws {
+        // Given
+        mockSession.mockData = "invalid json".data(using: .utf8)
+        mockSession.mockResponse = HTTPURLResponse(
+            url: URL(string: "https://api.example.com/users")!,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: nil
+        )
+        
+        // When/Then
+        do {
+            let _: UserDTO = try await sut.get("/users/123", parameters: nil)
+            XCTFail("Should have thrown error")
+        } catch {
+            XCTAssertTrue(error is NetworkError)
+            if let networkError = error as? NetworkError {
+                if case .decodingFailed = networkError {
+                    // Success
+                } else {
+                    XCTFail("Wrong error type")
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Mock URLSession
+
+private final class MockURLSession: URLSessionProtocol, @unchecked Sendable {
+    var mockData: Data?
+    var mockResponse: URLResponse?
+    var mockError: Error?
+    var lastRequest: URLRequest?
+    
+    func data(for request: URLRequest) async throws -> (Data, URLResponse) {
+        lastRequest = request
+        
+        if let error = mockError {
+            throw error
+        }
+        
+        let data = mockData ?? Data()
+        let response = mockResponse ?? URLResponse()
+        
+        return (data, response)
+    }
+}

@@ -8,7 +8,7 @@
 import Foundation
 
 /// Protocol for health metric data persistence operations
-protocol HealthMetricRepositoryProtocol: Sendable {
+public protocol HealthMetricRepositoryProtocol: Sendable {
     /// Creates a new health metric
     func create(_ metric: HealthMetric) async throws -> HealthMetric
     

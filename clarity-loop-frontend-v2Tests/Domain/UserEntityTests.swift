@@ -6,7 +6,7 @@
 //
 
 import XCTest
-@testable import clarity_loop_frontend_v2
+@testable import ClarityDomain
 
 final class UserEntityTests: XCTestCase {
     

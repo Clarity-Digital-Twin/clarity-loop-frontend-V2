@@ -7,10 +7,12 @@
 //
 
 import XCTest
-@testable import ClarityPulse
+@testable import ClarityUI
+import SwiftUI
 
 final class ClarityPulseAppTests: XCTestCase {
     
+    @MainActor
     func test_appInitializes_successfully() throws {
         // Given/When
         let app = ClarityPulseApp()

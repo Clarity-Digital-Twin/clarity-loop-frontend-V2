@@ -8,7 +8,7 @@
 import Foundation
 
 /// Protocol for user data persistence operations
-protocol UserRepositoryProtocol: Sendable {
+public protocol UserRepositoryProtocol: Sendable {
     /// Creates a new user
     func create(_ user: User) async throws -> User
     
@@ -19,6 +19,7 @@ protocol UserRepositoryProtocol: Sendable {
     func findByEmail(_ email: String) async throws -> User?
     
     /// Updates an existing user
+    @MainActor
     func update(_ user: User) async throws -> User
     
     /// Deletes a user by ID

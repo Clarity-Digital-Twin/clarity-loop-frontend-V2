@@ -8,7 +8,7 @@
 import Foundation
 
 /// Types of health metrics that can be tracked
-enum HealthMetricType: Codable, Equatable, CaseIterable {
+public enum HealthMetricType: Codable, Equatable, CaseIterable, Sendable {
     case heartRate
     case bloodPressureSystolic
     case bloodPressureDiastolic
@@ -22,7 +22,7 @@ enum HealthMetricType: Codable, Equatable, CaseIterable {
     case custom(String)
     
     /// Human-readable display name
-    var displayName: String {
+    public var displayName: String {
         switch self {
         case .heartRate:
             return "Heart Rate"
@@ -50,7 +50,7 @@ enum HealthMetricType: Codable, Equatable, CaseIterable {
     }
     
     /// Default unit for this metric type
-    var defaultUnit: String {
+    public var defaultUnit: String {
         switch self {
         case .heartRate:
             return "BPM"
@@ -76,7 +76,7 @@ enum HealthMetricType: Codable, Equatable, CaseIterable {
     }
     
     /// Valid range for this metric type
-    var validRange: ClosedRange<Double>? {
+    public var validRange: ClosedRange<Double>? {
         switch self {
         case .heartRate:
             return 40...200
@@ -103,9 +103,65 @@ enum HealthMetricType: Codable, Equatable, CaseIterable {
         }
     }
     
+    /// String representation for persistence
+    public var rawValue: String {
+        switch self {
+        case .heartRate:
+            return "heart_rate"
+        case .bloodPressureSystolic:
+            return "blood_pressure_systolic"
+        case .bloodPressureDiastolic:
+            return "blood_pressure_diastolic"
+        case .bloodGlucose:
+            return "blood_glucose"
+        case .weight:
+            return "weight"
+        case .height:
+            return "height"
+        case .bodyTemperature:
+            return "body_temperature"
+        case .oxygenSaturation:
+            return "oxygen_saturation"
+        case .steps:
+            return "steps"
+        case .sleepDuration:
+            return "sleep_duration"
+        case .custom(let name):
+            return name
+        }
+    }
+    
+    /// Initialize from string representation
+    public init?(rawValue: String) {
+        switch rawValue {
+        case "heart_rate":
+            self = .heartRate
+        case "blood_pressure_systolic":
+            self = .bloodPressureSystolic
+        case "blood_pressure_diastolic":
+            self = .bloodPressureDiastolic
+        case "blood_glucose":
+            self = .bloodGlucose
+        case "weight":
+            self = .weight
+        case "height":
+            self = .height
+        case "body_temperature":
+            self = .bodyTemperature
+        case "oxygen_saturation":
+            self = .oxygenSaturation
+        case "steps":
+            self = .steps
+        case "sleep_duration":
+            self = .sleepDuration
+        default:
+            self = .custom(rawValue)
+        }
+    }
+    
     // MARK: - CaseIterable conformance
     
-    static var allCases: [HealthMetricType] {
+    public static var allCases: [HealthMetricType] {
         [
             .heartRate,
             .bloodPressureSystolic,

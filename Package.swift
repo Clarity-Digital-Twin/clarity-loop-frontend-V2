@@ -22,7 +22,10 @@ let package = Package(
             targets: ["ClarityDomain"]),
         .library(
             name: "ClarityUI",
-            targets: ["ClarityUI"])
+            targets: ["ClarityUI"]),
+        .executable(
+            name: "ClarityPulseApp",
+            targets: ["ClarityPulseApp"])
     ],
     dependencies: [
         // AWS Amplify for backend integration

@@ -9,12 +9,12 @@ import Foundation
 import ClarityDomain
 
 /// Concrete implementation of HealthMetricRepositoryProtocol
-final class HealthMetricRepositoryImplementation: HealthMetricRepositoryProtocol {
+public final class HealthMetricRepositoryImplementation: HealthMetricRepositoryProtocol {
     
     private let apiClient: APIClientProtocol
     private let persistence: PersistenceServiceProtocol
     
-    init(apiClient: APIClientProtocol, persistence: PersistenceServiceProtocol) {
+    public init(apiClient: APIClientProtocol, persistence: PersistenceServiceProtocol) {
         self.apiClient = apiClient
         self.persistence = persistence
     }

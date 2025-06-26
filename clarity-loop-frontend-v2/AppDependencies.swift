@@ -94,8 +94,7 @@ public final class AppDependencies {
         // Record Health Metric Use Case
         container.register(RecordHealthMetricUseCase.self, scope: .transient) { container in
             RecordHealthMetricUseCase(
-                repository: container.require(HealthMetricRepositoryProtocol.self),
-                userRepository: container.require(UserRepositoryProtocol.self)
+                repository: container.require(HealthMetricRepositoryProtocol.self)
             )
         }
     }
@@ -110,7 +109,8 @@ public final class AppDependencies {
         
         container.register(DashboardViewModelFactory.self, scope: .singleton) { container in
             DashboardViewModelFactory { user in
-                DashboardViewModel(
+                // MainActor is handled at the view level when creating the view model
+                return DashboardViewModel(
                     user: user,
                     healthMetricRepository: container.require(HealthMetricRepositoryProtocol.self)
                 )
@@ -171,7 +171,7 @@ private final class AmplifyAuthService: AuthServiceProtocol {
         let session = try await Amplify.Auth.fetchAuthSession()
         
         guard let cognitoTokens = (session as? AuthCognitoTokensProvider)?.getCognitoTokens().get() else {
-            throw AuthError.serverError
+            throw NSError(domain: "AuthError", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to get Cognito tokens"])
         }
         
         return AuthToken(
@@ -189,7 +189,7 @@ private final class AmplifyAuthService: AuthServiceProtocol {
         let session = try await Amplify.Auth.fetchAuthSession(options: .forceRefresh())
         
         guard let cognitoTokens = (session as? AuthCognitoTokensProvider)?.getCognitoTokens().get() else {
-            throw AuthError.serverError
+            throw NSError(domain: "AuthError", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to get Cognito tokens"])
         }
         
         return AuthToken(

@@ -12,11 +12,12 @@ final class LoginScreenTests: BaseUITestCase {
     
     private var loginScreen: LoginScreen!
     
-    @MainActor
     override func setUp() {
         super.setUp()
-        let app = launchApp()
-        loginScreen = LoginScreen(app: app)
+        Task { @MainActor in
+            let app = launchApp()
+            loginScreen = LoginScreen(app: app)
+        }
     }
     
     // MARK: - Screen Object Pattern Tests

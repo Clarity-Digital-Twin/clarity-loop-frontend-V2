@@ -23,9 +23,11 @@ open class BaseUITestCase: XCTestCase {
         continueAfterFailure = false
     }
     
-    @MainActor
     open override func tearDown() {
-        app = nil
+        // Use Task to handle MainActor isolation
+        Task { @MainActor in
+            app = nil
+        }
         super.tearDown()
     }
     

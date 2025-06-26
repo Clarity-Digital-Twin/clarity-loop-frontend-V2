@@ -46,7 +46,8 @@ let package = Package(
         .target(
             name: "ClarityDomain",
             dependencies: ["ClarityCore"],
-            path: "clarity-loop-frontend-v2/Domain"
+            path: "clarity-loop-frontend-v2/Domain",
+            exclude: ["README.md"]
         ),
         
         // Data module - Repositories and data sources
@@ -59,7 +60,8 @@ let package = Package(
                 .product(name: "AWSCognitoAuthPlugin", package: "amplify-swift"),
                 .product(name: "AWSAPIPlugin", package: "amplify-swift")
             ],
-            path: "clarity-loop-frontend-v2/Data"
+            path: "clarity-loop-frontend-v2/Data",
+            exclude: ["README.md", "Infrastructure/README.md"]
         ),
         
         // UI module - SwiftUI views and view models
@@ -71,7 +73,7 @@ let package = Package(
                 "ClarityData"
             ],
             path: "clarity-loop-frontend-v2/UI",
-            exclude: []
+            exclude: ["README.md"]
         ),
         
         // Executable target - iOS App
@@ -84,7 +86,8 @@ let package = Package(
                 "ClarityUI"
             ],
             path: "clarity-loop-frontend-v2",
-            sources: ["ClarityPulseApp.swift", "AppDependencies.swift", "ContentView.swift"]
+            sources: ["ClarityPulseApp.swift", "AppDependencies.swift", "ContentView.swift"],
+            exclude: ["Info.plist", "clarity-loop-frontend-v2.entitlements", "Config"]
         ),
         
         // Test targets

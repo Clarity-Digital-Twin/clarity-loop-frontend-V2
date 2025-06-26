@@ -77,6 +77,7 @@ let package = Package(
             name: "ClarityPulseApp",
             dependencies: ["ClarityUI"],
             path: "clarity-loop-frontend-v2",
+            sources: ["ClarityPulseApp.swift", "ContentView.swift"],
             resources: [.process("Resources")]
         ),
         

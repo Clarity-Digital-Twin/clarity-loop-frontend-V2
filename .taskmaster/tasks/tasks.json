@@ -188,8 +188,8 @@
             "title": "Implement MockGenerator for test data",
             "description": "Create a utility class that generates mock data for testing various model objects",
             "dependencies": [],
-            "details": "1. Create MockGenerator.swift in a shared test utilities folder\n2. Implement factory methods for each model type\n3. Add parameters to customize generated data\n4. Include random data generation helpers\n5. Support generating collections of mock objects",
-            "status": "in-progress",
+            "details": "1. Create MockGenerator.swift in a shared test utilities folder\n2. Implement factory methods for each model type\n3. Add parameters to customize generated data\n4. Include random data generation helpers\n5. Support generating collections of mock objects\n<info added on 2025-06-26T15:46:34.722Z>\nImplementation complete with the following features:\n- generateUser() with customizable email and verification status\n- generateHealthMetric() with realistic values for all metric types\n- generateHealthMetrics() for generating multiple metrics\n- generateHealthMetricsByDay() for generating time-series data\n- randomEmail(), randomName(), randomPhoneNumber() helper methods\n- randomDate() for generating dates within ranges\n- generateAuthToken() for authentication testing\n- Seeded random generator for deterministic testing\n\nAll tests in MockGeneratorTests.swift are properly defined and passing. Implementation follows TDD principles with tests written before implementation.\n</info added on 2025-06-26T15:46:34.722Z>",
+            "status": "done",
             "testStrategy": "Write unit tests that verify mock objects have expected property values and relationships"
           },
           {
@@ -200,7 +200,7 @@
               1
             ],
             "details": "1. Create AsyncTestCase.swift that extends BaseUnitTestCase\n2. Add helpers for testing async/await functions\n3. Implement expectation wrappers for async code\n4. Add timeout management utilities\n5. Create convenience methods for testing @Observable properties",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Create tests that verify async operations complete correctly and handle timeouts appropriately"
           },
           {
@@ -221,7 +221,7 @@
             "description": "Create base classes and utilities for UI testing with SwiftUI",
             "dependencies": [],
             "details": "1. Create BaseUITestCase.swift in the UI test target\n2. Implement helpers for finding and interacting with SwiftUI elements\n3. Add screen object pattern support\n4. Create utilities for UI test assertions\n5. Add support for screenshot comparison testing",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Create a simple UI test that launches the app and verifies basic navigation works"
           },
           {
@@ -2861,7 +2861,7 @@
     ],
     "metadata": {
       "created": "2025-06-25T16:21:52.741Z",
-      "updated": "2025-06-26T10:19:33.585Z",
+      "updated": "2025-06-26T15:59:32.391Z",
       "description": "CLARITY Pulse V2 - Vertical Slice Development Tasks"
     }
   }

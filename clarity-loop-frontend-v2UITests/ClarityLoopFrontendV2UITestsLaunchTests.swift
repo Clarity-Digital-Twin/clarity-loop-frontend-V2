@@ -7,6 +7,7 @@
 
 import XCTest
 
+@MainActor
 final class ClarityLoopFrontendV2UITestsLaunchTests: XCTestCase {
 
     override class var runsForEachTargetApplicationUIConfiguration: Bool {

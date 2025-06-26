@@ -67,21 +67,22 @@ public final class MockGenerator {
     public func generateHealthMetric(
         id: UUID = UUID(),
         type: HealthMetricType? = nil,
-        userId: UUID = UUID(),
+        userId: UUID? = nil,
+        value: Double? = nil,
         source: HealthMetricSource? = nil
     ) -> HealthMetric {
         let metricType = type ?? HealthMetricType.allCases.randomElement()!
-        let value = generateRealisticValue(for: metricType)
+        let actualValue = value ?? generateRealisticValue(for: metricType)
+        let actualUserId = userId ?? UUID()
         
         return HealthMetric(
             id: id,
-            userId: userId,
+            userId: actualUserId,
             type: metricType,
-            value: value,
-            unit: metricType.unit,
+            value: actualValue,
+            unit: metricType.defaultUnit,
             recordedAt: dateProvider(),
             source: source ?? .manual,
-            metadata: nil,
             notes: nil
         )
     }
@@ -153,28 +154,63 @@ public final class MockGenerator {
             return Double.random(in: 95...100)
         case .respiratoryRate:
             return Double.random(in: 12...20).rounded()
-        case .activeCalories:
+        case .caloriesBurned:
             return Double.random(in: 200...800).rounded()
-        case .distance:
-            return Double.random(in: 1...10)
-        case .flightsClimbed:
-            return Double.random(in: 0...20).rounded()
-        case .vo2Max:
-            return Double.random(in: 35...55)
-        case .restingHeartRate:
-            return Double.random(in: 50...70).rounded()
-        case .walkingHeartRateAverage:
-            return Double.random(in: 80...110).rounded()
-        case .heartRateVariability:
-            return Double.random(in: 20...60)
-        case .mindfulMinutes:
-            return Double.random(in: 0...60).rounded()
-        case .standHours:
-            return Double.random(in: 6...16).rounded()
+        case .waterIntake:
+            return Double.random(in: 1...4)
+        case .exerciseDuration:
+            return Double.random(in: 0...120).rounded()
+        case .custom:
+            return Double.random(in: 0...100)
         }
     }
     
-    private func randomString(length: Int) -> String {
+    /// Generate multiple health metrics with different types
+    public func generateHealthMetrics(
+        type: HealthMetricType,
+        count: Int,
+        userId: UUID? = nil
+    ) -> [HealthMetric] {
+        let actualUserId = userId ?? UUID()
+        return (0..<count).map { _ in
+            generateHealthMetric(type: type, userId: actualUserId)
+        }
+    }
+    
+    /// Generate health metrics by day
+    public func generateHealthMetricsByDay(
+        type: HealthMetricType,
+        days: Int,
+        userId: UUID? = nil
+    ) -> [HealthMetric] {
+        let actualUserId = userId ?? UUID()
+        let calendar = Calendar.current
+        let now = Date()
+        
+        return (0..<days).map { dayOffset in
+            let date = calendar.date(byAdding: .day, value: -dayOffset, to: now)!
+            return HealthMetric(
+                userId: actualUserId,
+                type: type,
+                value: generateRealisticValue(for: type),
+                unit: type.defaultUnit,
+                recordedAt: date,
+                source: .manual,
+                notes: nil
+            )
+        }
+    }
+    
+    /// Generate a random date within a range
+    public func randomDate(daysAgo: Int = 30) -> Date {
+        let now = Date()
+        let secondsInDay = 86400.0
+        let maxSecondsAgo = Double(daysAgo) * secondsInDay
+        let randomSecondsAgo = Double.random(in: 0...maxSecondsAgo)
+        return now.addingTimeInterval(-randomSecondsAgo)
+    }
+    
+    public func randomString(length: Int) -> String {
         let letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
         return String((0..<length).map { _ in letters.randomElement()! })
     }
@@ -203,7 +239,7 @@ private struct SeededRandomGenerator: RandomNumberGenerator {
 
 // MARK: - LoginResponseDTO for Auth Token
 
-struct LoginResponseDTO: Codable {
+public struct LoginResponseDTO: Codable {
     let accessToken: String
     let refreshToken: String
     let expiresIn: Int

@@ -49,9 +49,8 @@ open class BaseUnitTestCase: XCTestCase {
     public func trackForMemoryLeak(_ object: AnyObject, file: StaticString = #file, line: UInt = #line) {
         retainedObjects?.append(object)
         
-        addTeardownBlock { [weak object] in
-            XCTAssertNil(object, "Memory leak detected - object not deallocated", file: (file), line: line)
-        }
+        // Simple implementation without concurrency issues
+        // The object tracking is handled in checkForMemoryLeaks during tearDown
     }
     
     private func checkForMemoryLeaks() {

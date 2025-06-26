@@ -29,7 +29,7 @@ public final class NetworkClient: Sendable {
     
     public init(
         session: URLSessionProtocol = URLSession.shared,
-        baseURL: URL = URL(string: "https://api.claritypulse.com")!
+        baseURL: URL = URL(string: "https://clarity.novamindnyc.com")!
     ) {
         self.session = session
         self.baseURL = baseURL

@@ -10,15 +10,15 @@ import SwiftData
 import ClarityDomain
 
 /// SwiftData persistence implementation
-final class SwiftDataPersistence: Sendable {
+public final class SwiftDataPersistence: Sendable {
     
     private let container: ModelContainer
     
-    init(container: ModelContainer) {
+    public init(container: ModelContainer) {
         self.container = container
     }
     
-    func save<T: Identifiable>(_ object: T) async throws {
+    public func save<T: Identifiable>(_ object: T) async throws {
         let context = ModelContext(container)
         
         // Convert domain model to persisted model
@@ -55,7 +55,7 @@ final class SwiftDataPersistence: Sendable {
         try context.save()
     }
     
-    func fetch<T: Identifiable>(_ id: T.ID) async throws -> T? {
+    public func fetch<T: Identifiable>(_ id: T.ID) async throws -> T? {
         guard let uuid = id as? UUID else { return nil }
         return try await fetchById(type: T.self, id: uuid)
     }
@@ -107,7 +107,7 @@ final class SwiftDataPersistence: Sendable {
         return nil
     }
     
-    func delete<T: Identifiable>(type: T.Type, id: T.ID) async throws {
+    public func delete<T: Identifiable>(type: T.Type, id: T.ID) async throws {
         guard let uuid = id as? UUID else { return }
         try await deleteById(type: type, id: uuid)
     }
@@ -139,7 +139,7 @@ final class SwiftDataPersistence: Sendable {
         }
     }
     
-    func fetchAll<T: Identifiable>() async throws -> [T] {
+    public func fetchAll<T: Identifiable>() async throws -> [T] {
         let context = ModelContext(container)
         
         if T.self == User.self {

@@ -127,7 +127,7 @@ async def register(
                     "Please contact an administrator to create an account."
                 ),
                 status=403,
-                instance="https://api.clarity.health/auth/register",
+                instance="https://clarity.novamindnyc.com/api/v1/auth/register",
             ).model_dump(),
         )
 
@@ -175,7 +175,7 @@ async def register(
                 title="Registration Failed",
                 detail="Failed to register user",
                 status=500,
-                instance=f"https://api.clarity.health/requests/{id(e)}",
+                instance=f"https://clarity.novamindnyc.com/api/v1/requests/{id(e)}",
             ).model_dump(),
         ) from e
 
@@ -235,7 +235,7 @@ async def login(
                 title="Account Temporarily Locked",
                 detail=str(e),
                 status=429,
-                instance=f"https://api.clarity.health/requests/{id(e)}",
+                instance=f"https://clarity.novamindnyc.com/api/v1/requests/{id(e)}",
             ).model_dump(),
         ) from e
 
@@ -266,7 +266,7 @@ async def login(
                 title="Email Not Verified",
                 detail=str(e),
                 status=403,
-                instance=f"https://api.clarity.health/requests/{id(e)}",
+                instance=f"https://clarity.novamindnyc.com/api/v1/requests/{id(e)}",
             ).model_dump(),
         ) from e
     except (InvalidCredentialsError, CoreAuthError) as e:
@@ -323,7 +323,7 @@ async def login(
                 title="Invalid Credentials",
                 detail="Invalid email or password.",
                 status=401,
-                instance=f"https://api.clarity.health/requests/{id(e)}",
+                instance=f"https://clarity.novamindnyc.com/api/v1/requests/{id(e)}",
             ).model_dump(),
         ) from e
     except Exception as e:
@@ -335,7 +335,7 @@ async def login(
                 title="Authentication Failed",
                 detail="Failed to authenticate user",
                 status=500,
-                instance=f"https://api.clarity.health/requests/{id(e)}",
+                instance=f"https://clarity.novamindnyc.com/api/v1/requests/{id(e)}",
             ).model_dump(),
         ) from e
 
@@ -407,7 +407,7 @@ async def update_user(
                 title="Update Failed",
                 detail="Failed to update user",
                 status=500,
-                instance=f"https://api.clarity.health/requests/{id(e)}",
+                instance=f"https://clarity.novamindnyc.com/api/v1/requests/{id(e)}",
             ).model_dump(),
         ) from e
 
@@ -448,7 +448,7 @@ async def logout(
                 title="Validation Error",
                 detail="Request body or Authorization header required for logout",
                 status=422,
-                instance=f"https://api.clarity.health/requests/{id(request)}",
+                instance=f"https://clarity.novamindnyc.com/api/v1/requests/{id(request)}",
             ).model_dump(),
         )
 
@@ -467,7 +467,7 @@ async def logout(
                         title="Authentication Required",
                         detail="Invalid authentication credentials",
                         status=401,
-                        instance=f"https://api.clarity.health/requests/{id(request)}",
+                        instance=f"https://clarity.novamindnyc.com/api/v1/requests/{id(request)}",
                     ).model_dump(),
                 ) from auth_err
 
@@ -527,7 +527,7 @@ async def refresh_token(
                 title="Missing Refresh Token",
                 detail="Refresh token is required",
                 status=422,
-                instance=f"https://api.clarity.health/requests/{id(request)}",
+                instance=f"https://clarity.novamindnyc.com/api/v1/requests/{id(request)}",
             ).model_dump(),
         )
 
@@ -578,7 +578,7 @@ async def refresh_token(
                 title="Token Refresh Failed",
                 detail="Failed to refresh access token",
                 status=500,
-                instance=f"https://api.clarity.health/requests/{id(e)}",
+                instance=f"https://clarity.novamindnyc.com/api/v1/requests/{id(e)}",
             ).model_dump(),
         ) from e
 
@@ -645,7 +645,7 @@ async def confirm_email(
                 title="Invalid Confirmation Code",
                 detail="The confirmation code is incorrect or expired",
                 status=400,
-                instance=f"https://api.clarity.health/requests/{id(request)}",
+                instance=f"https://clarity.novamindnyc.com/api/v1/requests/{id(request)}",
             ).model_dump(),
         ) from e
     except auth_provider.cognito_client.exceptions.UserNotFoundException as e:
@@ -656,7 +656,7 @@ async def confirm_email(
                 title="User Not Found",
                 detail="No user found with this email address",
                 status=404,
-                instance=f"https://api.clarity.health/requests/{id(request)}",
+                instance=f"https://clarity.novamindnyc.com/api/v1/requests/{id(request)}",
             ).model_dump(),
         ) from e
     except Exception as e:
@@ -668,7 +668,7 @@ async def confirm_email(
                 title="Confirmation Failed",
                 detail="Failed to confirm email address",
                 status=500,
-                instance=f"https://api.clarity.health/requests/{id(e)}",
+                instance=f"https://clarity.novamindnyc.com/api/v1/requests/{id(e)}",
             ).model_dump(),
         ) from e
 
@@ -701,7 +701,7 @@ async def resend_confirmation(
                 title="User Not Found",
                 detail="No user found with this email address",
                 status=404,
-                instance=f"https://api.clarity.health/requests/{id(request)}",
+                instance=f"https://clarity.novamindnyc.com/api/v1/requests/{id(request)}",
             ).model_dump(),
         ) from e
     except Exception as e:
@@ -713,7 +713,7 @@ async def resend_confirmation(
                 title="Resend Failed",
                 detail="Failed to resend confirmation code",
                 status=500,
-                instance=f"https://api.clarity.health/requests/{id(e)}",
+                instance=f"https://clarity.novamindnyc.com/api/v1/requests/{id(e)}",
             ).model_dump(),
         ) from e
 
@@ -746,7 +746,7 @@ async def forgot_password(
                 title="User Not Found",
                 detail="No user found with this email address",
                 status=404,
-                instance=f"https://api.clarity.health/requests/{id(request)}",
+                instance=f"https://clarity.novamindnyc.com/api/v1/requests/{id(request)}",
             ).model_dump(),
         ) from e
     except Exception as e:
@@ -758,7 +758,7 @@ async def forgot_password(
                 title="Password Reset Failed",
                 detail="Failed to initiate password reset",
                 status=500,
-                instance=f"https://api.clarity.health/requests/{id(e)}",
+                instance=f"https://clarity.novamindnyc.com/api/v1/requests/{id(e)}",
             ).model_dump(),
         ) from e
 
@@ -793,7 +793,7 @@ async def reset_password(
                 title="Invalid Reset Code",
                 detail="The reset code is incorrect or expired",
                 status=400,
-                instance=f"https://api.clarity.health/requests/{id(request)}",
+                instance=f"https://clarity.novamindnyc.com/api/v1/requests/{id(request)}",
             ).model_dump(),
         ) from e
     except auth_provider.cognito_client.exceptions.UserNotFoundException as e:
@@ -804,7 +804,7 @@ async def reset_password(
                 title="User Not Found",
                 detail="No user found with this email address",
                 status=404,
-                instance=f"https://api.clarity.health/requests/{id(request)}",
+                instance=f"https://clarity.novamindnyc.com/api/v1/requests/{id(request)}",
             ).model_dump(),
         ) from e
     except Exception as e:
@@ -816,6 +816,6 @@ async def reset_password(
                 title="Password Reset Failed",
                 detail="Failed to reset password",
                 status=500,
-                instance=f"https://api.clarity.health/requests/{id(e)}",
+                instance=f"https://clarity.novamindnyc.com/api/v1/requests/{id(e)}",
             ).model_dump(),
         ) from e

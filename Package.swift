@@ -116,6 +116,11 @@ let package = Package(
             dependencies: ["ClarityCore", "ClarityDomain", "ClarityData", "ClarityUI"],
             path: "clarity-loop-frontend-v2Tests",
             sources: ["DI/", "Architecture/", "ClarityPulseAppTests.swift"]
+        ),
+        .testTarget(
+            name: "ClarityPulseUITests",
+            dependencies: [],
+            path: "clarity-loop-frontend-v2UITests"
         )
     ]
 )

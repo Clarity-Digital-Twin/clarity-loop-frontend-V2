@@ -16,8 +16,8 @@
   },
   "servers": [
     {
-      "url": "http://clarity-alb-1762715656.us-east-1.elb.amazonaws.com",
-      "description": "Production server (AWS ALB)"
+      "url": "https://clarity.novamindnyc.com",
+      "description": "Production server (HTTPS)"
     },
     {
       "url": "http://localhost:8000",

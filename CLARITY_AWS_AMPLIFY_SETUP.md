@@ -794,9 +794,9 @@ final class AmplifyMockConfiguration {
                         ],
                         "CognitoUserPool": [
                             "Default": [
-                                "PoolId": "mock-pool-id",
+                                "PoolId": "us-east-1_efXaR5EcP",
                                 "Region": "us-east-1",
-                                "AppClientId": "mock-client-id"
+                                "AppClientId": "7sm7ckrkovg78b03n1595euc71"
                             ]
                         ]
                     ]

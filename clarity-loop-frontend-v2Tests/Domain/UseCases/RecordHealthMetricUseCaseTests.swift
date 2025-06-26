@@ -149,7 +149,7 @@ final class RecordHealthMetricUseCaseTests: XCTestCase {
         let results = try await useCase.executeBatch(
             userId: userId,
             metrics: metricsData.map { type, value, unit in
-                (type: type, value: value, unit: unit, source: .manual, notes: nil)
+                MetricData(type: type, value: value, unit: unit, source: .manual, notes: nil)
             }
         )
         

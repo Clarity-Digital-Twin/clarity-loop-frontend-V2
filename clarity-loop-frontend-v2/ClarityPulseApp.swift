@@ -8,6 +8,10 @@
 
 import SwiftUI
 import SwiftData
+import ClarityCore
+import ClarityDomain
+import ClarityUI
+import ClarityData
 
 @main
 struct ClarityPulseApp: App {
@@ -16,16 +20,20 @@ struct ClarityPulseApp: App {
     /// SwiftData model container
     private let modelContainer: ModelContainer
     
-    /// Dependency injection container
-    private let dependencies: DependencyContainer
+    /// App state management
+    @StateObject private var appState = AppState()
     
     // MARK: - Initialization
     
     init() {
-        // Initialize ModelContainer
+        // Configure dependencies first
+        AppDependencies().configure()
+        
+        // Initialize ModelContainer with our models
         do {
             let schema = Schema([
-                // Add model types here as we create them
+                PersistedUser.self,
+                PersistedHealthMetric.self
             ])
             
             let modelConfiguration = ModelConfiguration(
@@ -41,39 +49,67 @@ struct ClarityPulseApp: App {
         } catch {
             fatalError("Failed to create ModelContainer: \(error)")
         }
-        
-        // Initialize dependencies
-        self.dependencies = DependencyContainer()
     }
     
     // MARK: - Body
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
                 .modelContainer(modelContainer)
-                .environment(\.dependencies, dependencies)
+                .environmentObject(appState)
+                .task {
+                    await appState.initialize()
+                }
         }
     }
 }
 
-// MARK: - Dependency Container
+// MARK: - App State
 
-/// Container for dependency injection
-final class DependencyContainer: @unchecked Sendable {
-    // Services will be added here as we implement them
-    // @unchecked is safe here as we'll manage thread safety internally
-}
-
-// MARK: - Environment Keys
-
-private struct DependenciesKey: EnvironmentKey {
-    static let defaultValue = DependencyContainer()
-}
-
-extension EnvironmentValues {
-    var dependencies: DependencyContainer {
-        get { self[DependenciesKey.self] }
-        set { self[DependenciesKey.self] = newValue }
+@MainActor
+final class AppState: ObservableObject {
+    @Published var isAuthenticated = false
+    @Published var currentUser: User?
+    @Published var isLoading = true
+    
+    private let container = DIContainer.shared
+    
+    func initialize() async {
+        isLoading = true
+        
+        // Check authentication status
+        await checkAuthStatus()
+        
+        isLoading = false
+    }
+    
+    private func checkAuthStatus() async {
+        guard let authService = container.resolve(AuthServiceProtocol.self) else { 
+            print("AuthService not found in DI container")
+            return 
+        }
+        
+        do {
+            currentUser = try await authService.getCurrentUser()
+            isAuthenticated = currentUser != nil
+        } catch {
+            print("Auth check failed: \(error)")
+            isAuthenticated = false
+            currentUser = nil
+        }
+    }
+    
+    func login(with user: User) {
+        currentUser = user
+        isAuthenticated = true
+    }
+    
+    func logout() async {
+        if let authService = container.resolve(AuthServiceProtocol.self) {
+            try? await authService.logout()
+        }
+        currentUser = nil
+        isAuthenticated = false
     }
 }

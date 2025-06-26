@@ -29,8 +29,9 @@ let package = Package(
     ],
     dependencies: [
         // AWS Amplify for backend integration
-        .package(url: "https://github.com/aws-amplify/amplify-swift.git", from: "2.48.1")
-        // Add any additional dependencies here as needed
+        .package(url: "https://github.com/aws-amplify/amplify-swift.git", from: "2.48.1"),
+        // SwiftLint for code style enforcement
+        .package(url: "https://github.com/realm/SwiftLint.git", from: "0.57.0")
     ],
     targets: [
         // Core module - Infrastructure and shared utilities
@@ -75,10 +76,14 @@ let package = Package(
         // Executable target - iOS App
         .executableTarget(
             name: "ClarityPulseApp",
-            dependencies: ["ClarityUI"],
+            dependencies: [
+                "ClarityCore",
+                "ClarityDomain", 
+                "ClarityData",
+                "ClarityUI"
+            ],
             path: "clarity-loop-frontend-v2",
-            sources: ["ClarityPulseApp.swift", "ContentView.swift"],
-            resources: [.process("Resources")]
+            sources: ["ClarityPulseApp.swift", "AppDependencies.swift", "ContentView.swift"]
         ),
         
         // Test targets
@@ -96,6 +101,11 @@ let package = Package(
             name: "ClarityUITests",
             dependencies: ["ClarityUI", "ClarityDomain", "ClarityData"],
             path: "clarity-loop-frontend-v2Tests/UI"
+        ),
+        .testTarget(
+            name: "ClarityCoreTests",
+            dependencies: ["ClarityCore", "ClarityDomain", "ClarityData", "ClarityUI"],
+            path: "clarity-loop-frontend-v2Tests/DI"
         )
     ]
 )

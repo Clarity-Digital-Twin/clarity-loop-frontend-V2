@@ -1,5 +1,5 @@
 //
-//  clarity_loop_frontend_v2UITestsLaunchTests.swift
+//  ClarityLoopFrontendV2UITestsLaunchTests.swift
 //  clarity-loop-frontend-v2UITests
 //
 //  Launch performance tests for CLARITY Pulse V2
@@ -7,7 +7,7 @@
 
 import XCTest
 
-final class clarity_loop_frontend_v2UITestsLaunchTests: XCTestCase {
+final class ClarityLoopFrontendV2UITestsLaunchTests: XCTestCase {
 
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true

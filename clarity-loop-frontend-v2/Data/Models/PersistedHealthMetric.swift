@@ -25,9 +25,7 @@ final class PersistedHealthMetric {
         type: String,
         value: Double,
         unit: String,
-        recordedAt: Date,
-        source: String? = nil,
-        notes: String? = nil
+        recordedAt: Date
     ) {
         self.id = id
         self.userId = userId
@@ -35,7 +33,7 @@ final class PersistedHealthMetric {
         self.value = value
         self.unit = unit
         self.recordedAt = recordedAt
-        self.source = source
-        self.notes = notes
+        self.source = nil
+        self.notes = nil
     }
 }

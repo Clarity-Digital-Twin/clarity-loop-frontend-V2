@@ -9,7 +9,7 @@ import Foundation
 
 /// Domain entity representing a user
 @Observable
-public final class User: Identifiable, Equatable {
+public final class User: Identifiable, Equatable, @unchecked Sendable {
     public let id: UUID
     public let email: String
     public let firstName: String

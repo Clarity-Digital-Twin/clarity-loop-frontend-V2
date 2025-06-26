@@ -19,6 +19,10 @@ public enum HealthMetricType: Codable, Equatable, CaseIterable, Sendable {
     case oxygenSaturation
     case steps
     case sleepDuration
+    case respiratoryRate
+    case caloriesBurned
+    case waterIntake
+    case exerciseDuration
     case custom(String)
     
     /// Human-readable display name
@@ -44,6 +48,14 @@ public enum HealthMetricType: Codable, Equatable, CaseIterable, Sendable {
             return "Steps"
         case .sleepDuration:
             return "Sleep Duration"
+        case .respiratoryRate:
+            return "Respiratory Rate"
+        case .caloriesBurned:
+            return "Calories Burned"
+        case .waterIntake:
+            return "Water Intake"
+        case .exerciseDuration:
+            return "Exercise Duration"
         case .custom(let name):
             return name
         }
@@ -70,6 +82,14 @@ public enum HealthMetricType: Codable, Equatable, CaseIterable, Sendable {
             return "steps"
         case .sleepDuration:
             return "hours"
+        case .respiratoryRate:
+            return "breaths/min"
+        case .caloriesBurned:
+            return "kcal"
+        case .waterIntake:
+            return "L"
+        case .exerciseDuration:
+            return "min"
         case .custom:
             return "units"
         }
@@ -98,6 +118,14 @@ public enum HealthMetricType: Codable, Equatable, CaseIterable, Sendable {
             return 0...100000
         case .sleepDuration:
             return 0...24
+        case .respiratoryRate:
+            return 8...30
+        case .caloriesBurned:
+            return 0...10000
+        case .waterIntake:
+            return 0...10
+        case .exerciseDuration:
+            return 0...600
         case .custom:
             return nil
         }
@@ -126,6 +154,14 @@ public enum HealthMetricType: Codable, Equatable, CaseIterable, Sendable {
             return "steps"
         case .sleepDuration:
             return "sleep_duration"
+        case .respiratoryRate:
+            return "respiratory_rate"
+        case .caloriesBurned:
+            return "calories_burned"
+        case .waterIntake:
+            return "water_intake"
+        case .exerciseDuration:
+            return "exercise_duration"
         case .custom(let name):
             return name
         }
@@ -154,6 +190,14 @@ public enum HealthMetricType: Codable, Equatable, CaseIterable, Sendable {
             self = .steps
         case "sleep_duration":
             self = .sleepDuration
+        case "respiratory_rate":
+            self = .respiratoryRate
+        case "calories_burned":
+            self = .caloriesBurned
+        case "water_intake":
+            self = .waterIntake
+        case "exercise_duration":
+            self = .exerciseDuration
         default:
             self = .custom(rawValue)
         }
@@ -172,7 +216,11 @@ public enum HealthMetricType: Codable, Equatable, CaseIterable, Sendable {
             .bodyTemperature,
             .oxygenSaturation,
             .steps,
-            .sleepDuration
+            .sleepDuration,
+            .respiratoryRate,
+            .caloriesBurned,
+            .waterIntake,
+            .exerciseDuration
         ]
     }
 }

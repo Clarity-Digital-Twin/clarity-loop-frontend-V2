@@ -133,7 +133,7 @@
               8
             ],
             "details": "Implement a dependency injection container that will wire up all layers. Create factory methods for creating objects with their dependencies. Ensure proper separation between layers is maintained.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test the DI container by verifying it correctly resolves dependencies. Ensure circular dependencies are avoided."
           },
           {
@@ -144,7 +144,7 @@
               9
             ],
             "details": "Update the Xcode project file to reflect the new folder structure. Ensure all files are in the correct groups. Update the main README.md with an overview of the architecture and how the layers interact.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Create a test that verifies the correct architectural boundaries are maintained (e.g., UI doesn't directly access Infrastructure)."
           }
         ]
@@ -159,7 +159,7 @@
         "dependencies": [
           2
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": []
       },
       {
@@ -2768,7 +2768,7 @@
     ],
     "metadata": {
       "created": "2025-06-25T16:21:52.741Z",
-      "updated": "2025-06-26T00:32:18.453Z",
+      "updated": "2025-06-26T02:19:50.500Z",
       "description": "CLARITY Pulse V2 - Vertical Slice Development Tasks"
     }
   }

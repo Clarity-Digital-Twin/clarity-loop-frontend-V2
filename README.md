@@ -1,33 +1,98 @@
-# CLARITY Pulse
+# CLARITY Pulse V2
 
 ![CI/CD Status](https://img.shields.io/badge/CI/CD-Production-green)
-![Platform](https://img.shields.io/badge/Platform-iOS%2018.4%2B-blue)
-![SwiftUI](https://img.shields.io/badge/SwiftUI-5.9-orange)
-![License](https://img.shields.io/badge/License-MIT-green)
+![Platform](https://img.shields.io/badge/Platform-iOS%2018.0%2B-blue)
+![SwiftUI](https://img.shields.io/badge/SwiftUI-6.1-orange)
+![Swift](https://img.shields.io/badge/Swift-6.1-orange)
+![Architecture](https://img.shields.io/badge/Architecture-Clean%20Architecture-brightgreen)
+![Testing](https://img.shields.io/badge/Testing-TDD/BDD-brightgreen)
+![License](https://img.shields.io/badge/License-Apache%202.0-green)
 
-CLARITY Pulse is a secure, HIPAA-compliant iOS health application that empowers users with comprehensive health data insights through AI-driven analysis and seamless HealthKit integration.
+CLARITY Pulse V2 is a complete rewrite of the health tracking iOS application, built from the ground up with Test-Driven Development (TDD), Behavior-Driven Development (BDD), and Clean Architecture principles.
 
-## 🏗️ Architecture
+## 🏗️ Clean Architecture
 
-Built on modern, scalable iOS development principles with enterprise-grade security:
+This project follows Uncle Bob's Clean Architecture principles with strict layer separation:
 
-- **🎨 UI Framework**: SwiftUI with `@Observable` (iOS 17+)
-- **🏛️ Design Pattern**: MVVM + Clean Architecture + Protocol-Oriented Design
-- **🔐 Authentication**: AWS Amplify + Cognito with SRP authentication
-- **☁️ Backend**: FastAPI on AWS ECS with ALB (`https://clarity.novamindnyc.com`)
-- **💾 Persistence**: SwiftData for local storage (iOS 17+)
-- **🏥 Health Data**: HealthKit integration with background sync
-- **🔧 Dependency Injection**: Environment-based DI for testability
-- **⚡ Concurrency**: Swift Structured Concurrency (`async/await`)
+### 🎯 Core Principles
+- **🔄 Dependency Rule**: Dependencies only point inward (UI → Data → Domain)
+- **🧪 Testability**: Every component is testable in isolation
+- **🔌 Abstraction**: Layers communicate through protocols, not concrete types
+- **🎭 Independence**: Business logic is framework-independent
 
 ### 📁 Layer Structure
+
 ```
 clarity-loop-frontend-v2/
-├── 🎨 UI Layer (Features/, UI/)        → SwiftUI Views + ViewModels
-├── 🧠 Domain Layer (Domain/)           → Use Cases + Models + Protocols  
-├── 📊 Data Layer (Data/)               → Repositories + DTOs + Services
-└── ⚙️ Core Layer (Core/)               → Networking + Security + Utilities
+├── 🧠 Domain Layer (Domain/)           
+│   ├── Entities/                    # Business models (User, HealthMetric)
+│   ├── UseCases/                    # Business logic (LoginUseCase, etc.)
+│   ├── Repositories/                # Repository protocols (abstractions)
+│   ├── Services/                    # Service protocols (AuthService, etc.)
+│   └── Errors/                      # Domain-specific errors
+│
+├── 📊 Data Layer (Data/)               
+│   ├── Repositories/                # Repository implementations
+│   ├── DTOs/                        # Data Transfer Objects
+│   ├── Services/                    # Service implementations
+│   ├── Infrastructure/              
+│   │   ├── Network/                 # API client implementation
+│   │   └── Persistence/             # SwiftData implementation
+│   └── Errors/                      # Data layer errors
+│
+├── 🎨 UI Layer (UI/)                   
+│   ├── Views/                       # SwiftUI views
+│   ├── ViewModels/                  # @Observable ViewModels (iOS 17+)
+│   └── UIModule.swift               # UI layer module definition
+│
+└── ⚙️ Core Layer (Core/)               
+    ├── DI/                          # Dependency Injection Container
+    └── CoreModule.swift             # Core utilities and shared code
 ```
+
+### 🔄 Data Flow
+
+```mermaid
+graph TD
+    A[SwiftUI View] --> B[@Observable ViewModel]
+    B --> C[Use Case]
+    C --> D[Repository Protocol]
+    D --> E[Repository Implementation]
+    E --> F[Network/Persistence]
+    
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style B fill:#bbf,stroke:#333,stroke-width:2px
+    style C fill:#bfb,stroke:#333,stroke-width:2px
+    style D fill:#fbf,stroke:#333,stroke-width:2px
+    style E fill:#ffb,stroke:#333,stroke-width:2px
+    style F fill:#fbb,stroke:#333,stroke-width:2px
+```
+
+### 🧪 Test-Driven Development (TDD)
+
+**Every line of production code is justified by a failing test:**
+
+```swift
+// 1. RED - Write failing test
+func test_login_withValidCredentials_shouldReturnUser() async {
+    // Test fails - no implementation yet
+}
+
+// 2. GREEN - Write minimal code to pass
+func login(email: String, password: String) async -> User {
+    // Minimal implementation
+}
+
+// 3. REFACTOR - Improve code quality
+// Clean up while keeping tests green
+```
+
+### 📦 Module Dependencies
+
+- **Domain**: No dependencies (pure Swift)
+- **Data**: Depends on Domain
+- **UI**: Depends on Domain and Core
+- **Core**: Minimal dependencies (utilities only)
 
 ## ✨ Production Features
 
@@ -60,39 +125,46 @@ clarity-loop-frontend-v2/
 
 ### Prerequisites
 - **Xcode**: 16.0+
-- **iOS**: 18.4+ (for SwiftData and @Observable)
+- **Swift**: 6.1+
+- **iOS**: 18.0+ (minimum deployment target)
 - **Device**: Physical device recommended for HealthKit testing
-- **Apple Developer Account**: Required for HealthKit capabilities
+- **Apple Developer Account**: Required for app capabilities
 
 ### 🛠️ Setup
 
 1. **Clone Repository**
    ```bash
    git clone [repo-url]
-   cd clarity-loop-frontend
+   cd clarity-loop-frontend-V2
    ```
 
-2. **AWS Configuration (Already Included)**
-   - ✅ `amplifyconfiguration.json` is pre-configured
-   - ✅ Cognito User Pool: `us-east-1_efXaR5EcP`
-   - ✅ Backend: `https://clarity.novamindnyc.com`
-   - ✅ All AWS resources are production-ready
+2. **Open in Xcode**
+   ```bash
+   # Open Package.swift directly (NOT .xcodeproj!)
+   open Package.swift
+   ```
+   
+   Or in Xcode: File → Open → Select `Package.swift`
 
-3. **Xcode Setup**
-   - Open `clarity-loop-frontend.xcodeproj`
-   - Select your development team in "Signing & Capabilities"
+3. **Configure Signing**
+   - Select the `ClarityPulseApp` scheme
+   - Go to Signing & Capabilities
+   - Select your development team
    - Ensure these capabilities are enabled:
      - ✅ HealthKit
-     - ✅ Keychain Sharing  
-     - ✅ Background Modes (HealthKit, Processing)
+     - ✅ App Groups
+     - ✅ Background Modes
 
 4. **Build & Run**
    ```bash
-   # Clean build
-   ⇧⌥⌘K
+   # Command line
+   swift build
+   swift test
    
-   # Build and run
-   ⌘R
+   # Or in Xcode
+   ⌘B  # Build
+   ⌘R  # Run
+   ⌘U  # Test
    ```
 
 ### 🧪 Testing

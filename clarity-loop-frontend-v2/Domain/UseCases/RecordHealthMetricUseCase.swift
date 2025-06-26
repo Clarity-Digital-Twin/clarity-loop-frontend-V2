@@ -7,6 +7,29 @@
 
 import Foundation
 
+/// Data structure for batch metric creation
+public struct MetricData {
+    public let type: HealthMetricType
+    public let value: Double
+    public let unit: String?
+    public let source: HealthMetricSource?
+    public let notes: String?
+    
+    public init(
+        type: HealthMetricType,
+        value: Double,
+        unit: String? = nil,
+        source: HealthMetricSource? = nil,
+        notes: String? = nil
+    ) {
+        self.type = type
+        self.value = value
+        self.unit = unit
+        self.source = source
+        self.notes = notes
+    }
+}
+
 /// Use case for recording health metrics
 public final class RecordHealthMetricUseCase: Sendable {
     private let repository: HealthMetricRepositoryProtocol
@@ -48,7 +71,7 @@ public final class RecordHealthMetricUseCase: Sendable {
     /// Records multiple health metrics in batch
     public func executeBatch(
         userId: UUID,
-        metrics: [(type: HealthMetricType, value: Double, unit: String?, source: HealthMetricSource?, notes: String?)]
+        metrics: [MetricData]
     ) async throws -> [HealthMetric] {
         let healthMetrics = metrics.map { metricData in
             HealthMetric(

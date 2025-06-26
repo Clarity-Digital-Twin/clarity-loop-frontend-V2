@@ -42,10 +42,10 @@ final class SwiftDataPersistence: Sendable {
                 type: metric.type.rawValue,
                 value: metric.value,
                 unit: metric.unit,
-                recordedAt: metric.recordedAt,
-                source: metric.source?.rawValue,
-                notes: metric.notes
+                recordedAt: metric.recordedAt
             )
+            persistedMetric.source = metric.source?.rawValue
+            persistedMetric.notes = metric.notes
             context.insert(persistedMetric)
             
         } else {

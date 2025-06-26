@@ -14,6 +14,11 @@ protocol URLSessionProtocol: Sendable {
 
 extension URLSession: URLSessionProtocol {}
 
+/// Protocol for network client
+protocol NetworkClientProtocol: APIClientProtocol {
+    init(session: URLSessionProtocol, baseURL: URL)
+}
+
 /// Concrete implementation of network client
 final class NetworkClient: Sendable {
     
@@ -22,7 +27,7 @@ final class NetworkClient: Sendable {
     private let decoder: JSONDecoder
     private let encoder: JSONEncoder
     
-    init(
+    required init(
         session: URLSessionProtocol = URLSession.shared,
         baseURL: URL = URL(string: "https://api.claritypulse.com")!
     ) {
@@ -39,11 +44,11 @@ final class NetworkClient: Sendable {
     }
     
     func get<T: Decodable>(
-        _ path: String,
+        _ endpoint: String,
         parameters: [String: String]?
     ) async throws -> T {
         let request = try buildRequest(
-            path: path,
+            path: endpoint,
             method: "GET",
             parameters: parameters,
             body: nil as Data?
@@ -52,12 +57,12 @@ final class NetworkClient: Sendable {
         return try await performRequest(request)
     }
     
-    func post<T: Decodable, B: Encodable>(
-        _ path: String,
-        body: B
+    func post<T: Decodable, U: Encodable>(
+        _ endpoint: String,
+        body: U
     ) async throws -> T {
         let request = try buildRequest(
-            path: path,
+            path: endpoint,
             method: "POST",
             parameters: nil,
             body: body
@@ -66,12 +71,12 @@ final class NetworkClient: Sendable {
         return try await performRequest(request)
     }
     
-    func put<T: Decodable, B: Encodable>(
-        _ path: String,
-        body: B
+    func put<T: Decodable, U: Encodable>(
+        _ endpoint: String,
+        body: U
     ) async throws -> T {
         let request = try buildRequest(
-            path: path,
+            path: endpoint,
             method: "PUT",
             parameters: nil,
             body: body
@@ -81,10 +86,10 @@ final class NetworkClient: Sendable {
     }
     
     func delete<T: Decodable>(
-        _ path: String
+        _ endpoint: String
     ) async throws -> T {
         let request = try buildRequest(
-            path: path,
+            path: endpoint,
             method: "DELETE",
             parameters: nil,
             body: nil as Data?
@@ -186,6 +191,12 @@ extension NetworkClient: APIClientProtocol {
     ) async throws {
         let _: VoidResponse = try await delete("/api/v1/\(String(describing: type).lowercased())s/\(id)")
     }
+}
+
+// MARK: - Conformance to NetworkClientProtocol
+
+extension NetworkClient: NetworkClientProtocol {
+    // The protocol conformance is satisfied by the initializer and APIClientProtocol methods
 }
 
 // MARK: - Helper Types

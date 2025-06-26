@@ -72,6 +72,14 @@ let package = Package(
             exclude: []
         ),
         
+        // Executable target - iOS App
+        .executableTarget(
+            name: "ClarityPulseApp",
+            dependencies: ["ClarityUI"],
+            path: "clarity-loop-frontend-v2",
+            resources: [.process("Resources")]
+        ),
+        
         // Test targets
         .testTarget(
             name: "ClarityDomainTests",

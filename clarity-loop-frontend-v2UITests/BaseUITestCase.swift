@@ -18,13 +18,14 @@ open class BaseUITestCase: XCTestCase {
     
     // MARK: - Setup & Teardown
     
-    open override func setUp() {
+    nonisolated open override func setUp() {
         super.setUp()
-        continueAfterFailure = false
+        Task { @MainActor in
+            continueAfterFailure = false
+        }
     }
     
-    open override func tearDown() {
-        // Use Task to handle MainActor isolation
+    nonisolated open override func tearDown() {
         Task { @MainActor in
             app = nil
         }

@@ -12,12 +12,17 @@ final class LoginScreenTests: BaseUITestCase {
     
     private var loginScreen: LoginScreen!
     
-    override func setUp() {
+    nonisolated override func setUp() {
         super.setUp()
+        
+        let expectation = self.expectation(description: "Setup complete")
         Task { @MainActor in
             let app = launchApp()
             loginScreen = LoginScreen(app: app)
+            expectation.fulfill()
         }
+        
+        wait(for: [expectation], timeout: 5)
     }
     
     // MARK: - Screen Object Pattern Tests

@@ -19,7 +19,7 @@ public final class HealthMetricRepositoryImplementation: HealthMetricRepositoryP
         self.persistence = persistence
     }
     
-    func create(_ metric: HealthMetric) async throws -> HealthMetric {
+    public func create(_ metric: HealthMetric) async throws -> HealthMetric {
         // Convert to DTO and send to API
         let dto = metric.toDTO()
         let responseDTO: HealthMetricDTO = try await apiClient.post("/api/v1/health-metrics", body: dto)
@@ -33,7 +33,7 @@ public final class HealthMetricRepositoryImplementation: HealthMetricRepositoryP
         return createdMetric
     }
     
-    func createBatch(_ metrics: [HealthMetric]) async throws -> [HealthMetric] {
+    public func createBatch(_ metrics: [HealthMetric]) async throws -> [HealthMetric] {
         // Convert all to DTOs
         let dtos = metrics.map { $0.toDTO() }
         
@@ -52,7 +52,7 @@ public final class HealthMetricRepositoryImplementation: HealthMetricRepositoryP
         return createdMetrics
     }
     
-    func findById(_ id: UUID) async throws -> HealthMetric? {
+    public func findById(_ id: UUID) async throws -> HealthMetric? {
         // Check local cache first
         if let cachedMetric: HealthMetric = try await persistence.fetch(id) {
             return cachedMetric
@@ -72,7 +72,7 @@ public final class HealthMetricRepositoryImplementation: HealthMetricRepositoryP
         }
     }
     
-    func findByUserId(_ userId: UUID) async throws -> [HealthMetric] {
+    public func findByUserId(_ userId: UUID) async throws -> [HealthMetric] {
         // Fetch user's metrics from API
         let parameters = ["user_id": userId.uuidString]
         let response: MetricListResponse = try await apiClient.get("/api/v1/health-metrics", parameters: parameters)
@@ -87,7 +87,7 @@ public final class HealthMetricRepositoryImplementation: HealthMetricRepositoryP
         return metrics
     }
     
-    func findByUserIdAndDateRange(
+    public func findByUserIdAndDateRange(
         userId: UUID,
         startDate: Date,
         endDate: Date
@@ -125,7 +125,7 @@ public final class HealthMetricRepositoryImplementation: HealthMetricRepositoryP
         return metrics
     }
     
-    func findByUserIdAndType(
+    public func findByUserIdAndType(
         userId: UUID,
         type: HealthMetricType
     ) async throws -> [HealthMetric] {
@@ -180,7 +180,7 @@ public final class HealthMetricRepositoryImplementation: HealthMetricRepositoryP
         return metrics
     }
     
-    func update(_ metric: HealthMetric) async throws -> HealthMetric {
+    public func update(_ metric: HealthMetric) async throws -> HealthMetric {
         // Update via API
         let dto = metric.toDTO()
         let responseDTO: HealthMetricDTO = try await apiClient.put("/api/v1/health-metrics/\(metric.id.uuidString)", body: dto)
@@ -193,7 +193,7 @@ public final class HealthMetricRepositoryImplementation: HealthMetricRepositoryP
         return updatedMetric
     }
     
-    func delete(_ id: UUID) async throws {
+    public func delete(_ id: UUID) async throws {
         // Delete from API
         let _: VoidResponse = try await apiClient.delete("/api/v1/health-metrics/\(id.uuidString)")
         
@@ -201,7 +201,7 @@ public final class HealthMetricRepositoryImplementation: HealthMetricRepositoryP
         try await persistence.delete(type: HealthMetric.self, id: id)
     }
     
-    func deleteAllForUser(_ userId: UUID) async throws {
+    public func deleteAllForUser(_ userId: UUID) async throws {
         // Delete all metrics for user from API
         let _: VoidResponse = try await apiClient.delete("/api/v1/users/\(userId.uuidString)/health-metrics")
         
@@ -214,7 +214,7 @@ public final class HealthMetricRepositoryImplementation: HealthMetricRepositoryP
         }
     }
     
-    func getLatestByType(
+    public func getLatestByType(
         userId: UUID,
         type: HealthMetricType
     ) async throws -> HealthMetric? {
@@ -226,7 +226,7 @@ public final class HealthMetricRepositoryImplementation: HealthMetricRepositoryP
     }
     
     /// Sync pending metrics that were created offline
-    func syncPendingMetrics() async throws -> Int {
+    public func syncPendingMetrics() async throws -> Int {
         // In a real implementation, this would track metrics created offline
         // For now, return 0 as we don't have offline tracking yet
         return 0

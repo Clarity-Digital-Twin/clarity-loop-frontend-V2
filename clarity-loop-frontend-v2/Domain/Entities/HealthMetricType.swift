@@ -8,7 +8,7 @@
 import Foundation
 
 /// Types of health metrics that can be tracked
-public enum HealthMetricType: Codable, Equatable, CaseIterable, Sendable {
+public enum HealthMetricType: Codable, Equatable, CaseIterable, Sendable, Hashable {
     case heartRate
     case bloodPressureSystolic
     case bloodPressureDiastolic

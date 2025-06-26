@@ -46,24 +46,31 @@ final class HealthMetricEntityTests: XCTestCase {
 
     func test_whenGettingMetricTypeProperties_shouldReturnCorrectValues() {
         // Given
-        let testCases: [(HealthMetricType, String, String, ClosedRange<Double>?)] = [
-            (.heartRate, "Heart Rate", "BPM", 40...200),
-            (.bloodPressureSystolic, "Systolic Blood Pressure", "mmHg", 70...200),
-            (.bloodPressureDiastolic, "Diastolic Blood Pressure", "mmHg", 40...130),
-            (.bloodGlucose, "Blood Glucose", "mg/dL", 50...400),
-            (.weight, "Weight", "kg", 20...300),
-            (.height, "Height", "cm", 50...250),
-            (.bodyTemperature, "Body Temperature", "°C", 35...42),
-            (.oxygenSaturation, "Oxygen Saturation", "%", 70...100),
-            (.steps, "Steps", "steps", 0...100000),
-            (.sleepDuration, "Sleep Duration", "hours", 0...24)
+        struct TestCase {
+            let type: HealthMetricType
+            let displayName: String
+            let unit: String
+            let validRange: ClosedRange<Double>?
+        }
+        
+        let testCases = [
+            TestCase(type: .heartRate, displayName: "Heart Rate", unit: "BPM", validRange: 40...200),
+            TestCase(type: .bloodPressureSystolic, displayName: "Systolic Blood Pressure", unit: "mmHg", validRange: 70...200),
+            TestCase(type: .bloodPressureDiastolic, displayName: "Diastolic Blood Pressure", unit: "mmHg", validRange: 40...130),
+            TestCase(type: .bloodGlucose, displayName: "Blood Glucose", unit: "mg/dL", validRange: 50...400),
+            TestCase(type: .weight, displayName: "Weight", unit: "kg", validRange: 20...300),
+            TestCase(type: .height, displayName: "Height", unit: "cm", validRange: 50...250),
+            TestCase(type: .bodyTemperature, displayName: "Body Temperature", unit: "°C", validRange: 35...42),
+            TestCase(type: .oxygenSaturation, displayName: "Oxygen Saturation", unit: "%", validRange: 70...100),
+            TestCase(type: .steps, displayName: "Steps", unit: "steps", validRange: 0...100000),
+            TestCase(type: .sleepDuration, displayName: "Sleep Duration", unit: "hours", validRange: 0...24)
         ]
 
         // When & Then
-        for (type, expectedName, expectedUnit, expectedRange) in testCases {
-            XCTAssertEqual(type.displayName, expectedName)
-            XCTAssertEqual(type.defaultUnit, expectedUnit)
-            XCTAssertEqual(type.validRange, expectedRange)
+        for testCase in testCases {
+            XCTAssertEqual(testCase.type.displayName, testCase.displayName)
+            XCTAssertEqual(testCase.type.defaultUnit, testCase.unit)
+            XCTAssertEqual(testCase.type.validRange, testCase.validRange)
         }
     }
 

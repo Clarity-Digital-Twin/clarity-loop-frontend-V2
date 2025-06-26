@@ -8,6 +8,9 @@
 import SwiftUI
 import ClarityDomain
 import ClarityCore
+#if canImport(UIKit)
+import UIKit
+#endif
 
 public struct HealthMetricsView: View {
     @State private var selectedMetricType: HealthMetricType = .heartRate
@@ -17,7 +20,8 @@ public struct HealthMetricsView: View {
     @State private var alertMessage = ""
     @State private var isLoading = false
     
-    @EnvironmentObject private var appState: AppState
+    // TODO: Add AppState when implemented
+    // @EnvironmentObject private var appState: AppState
     
     private let metricTypes: [HealthMetricType] = [
         .heartRate,
@@ -65,7 +69,7 @@ public struct HealthMetricsView: View {
                                     .foregroundColor(.secondary)
                             }
                             .padding()
-                            .background(Color(.systemGray6))
+                            .background(Color.gray.opacity(0.1))
                             .cornerRadius(10)
                         }
                     }
@@ -93,7 +97,7 @@ public struct HealthMetricsView: View {
                         TextEditor(text: $notes)
                             .frame(height: 100)
                             .padding(8)
-                            .background(Color(.systemGray6))
+                            .background(Color.gray.opacity(0.1))
                             .cornerRadius(10)
                     }
                     
@@ -174,6 +178,7 @@ public struct HealthMetricsView: View {
         selectedMetricType.unit
     }
     
+    #if canImport(UIKit)
     private var keyboardType: UIKeyboardType {
         switch selectedMetricType {
         case .steps, .caloriesBurned:
@@ -182,6 +187,11 @@ public struct HealthMetricsView: View {
             return .decimalPad
         }
     }
+    #else
+    private var keyboardType: Int {
+        return 0 // Placeholder for non-UIKit platforms
+    }
+    #endif
     
     private var submitButtonEnabled: Bool {
         !metricValue.isEmpty && Double(metricValue) != nil
@@ -190,8 +200,10 @@ public struct HealthMetricsView: View {
     // MARK: - Actions
     
     private func submitMetric() {
-        guard let value = Double(metricValue),
-              let userId = appState.currentUser?.id else { return }
+        guard let value = Double(metricValue) else { return }
+        
+        // TODO: Get userId from appState when implemented
+        let userId = UUID() // Temporary placeholder
         
         isLoading = true
         
@@ -205,6 +217,7 @@ public struct HealthMetricsView: View {
                     type: selectedMetricType,
                     value: value,
                     unit: selectedMetricType.unit,
+                    recordedAt: Date(),
                     source: .manual,
                     notes: notes.isEmpty ? nil : notes
                 )

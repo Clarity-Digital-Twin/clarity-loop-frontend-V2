@@ -86,6 +86,14 @@ extension HealthMetricDTO {
             return .steps
         case "sleep_duration":
             return .sleepDuration
+        case "respiratory_rate":
+            return .respiratoryRate
+        case "calories_burned":
+            return .caloriesBurned
+        case "water_intake":
+            return .waterIntake
+        case "exercise_duration":
+            return .exerciseDuration
         default:
             return .custom(dtoType.replacingOccurrences(of: "_", with: " ").capitalized)
         }
@@ -119,6 +127,14 @@ extension HealthMetric {
             dtoType = "steps"
         case .sleepDuration:
             dtoType = "sleep_duration"
+        case .respiratoryRate:
+            dtoType = "respiratory_rate"
+        case .caloriesBurned:
+            dtoType = "calories_burned"
+        case .waterIntake:
+            dtoType = "water_intake"
+        case .exerciseDuration:
+            dtoType = "exercise_duration"
         case .custom(let name):
             dtoType = name.lowercased().replacingOccurrences(of: " ", with: "_")
         }

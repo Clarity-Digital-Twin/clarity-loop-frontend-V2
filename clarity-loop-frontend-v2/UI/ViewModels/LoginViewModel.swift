@@ -8,6 +8,7 @@
 import Foundation
 import ClarityDomain
 import ClarityData
+import ClarityCore
 
 @MainActor
 @Observable

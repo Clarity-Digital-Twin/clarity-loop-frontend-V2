@@ -8,6 +8,9 @@
 import SwiftUI
 import ClarityDomain
 import ClarityCore
+#if canImport(UIKit)
+import UIKit
+#endif
 
 public struct LoginView: View {
     @State private var viewModel: LoginViewModel
@@ -52,9 +55,11 @@ public struct LoginView: View {
                         
                         TextField("Enter your email", text: $viewModel.email)
                             .textFieldStyle(.roundedBorder)
+                            #if os(iOS)
                             .keyboardType(.emailAddress)
                             .textContentType(.emailAddress)
                             .autocapitalization(.none)
+                            #endif
                             .disabled(viewModel.viewState.isLoading)
                     }
                     
@@ -66,7 +71,9 @@ public struct LoginView: View {
                         
                         SecureField("Enter your password", text: $viewModel.password)
                             .textFieldStyle(.roundedBorder)
+                            #if os(iOS)
                             .textContentType(.password)
+                            #endif
                             .disabled(viewModel.viewState.isLoading)
                     }
                     
@@ -129,10 +136,12 @@ public struct LoginView: View {
                 .font(.footnote)
                 .padding(.bottom, 32)
             }
+            #if os(iOS)
             .navigationBarHidden(true)
+            #endif
         }
-        .onReceive(viewModel.$viewState) { state in
-            if case .success(let user) = state {
+        .onChange(of: viewModel.viewState) { _, newState in
+            if case .success(let user) = newState {
                 appState.login(with: user)
             }
         }
@@ -140,7 +149,11 @@ public struct LoginView: View {
     
     private func performLogin() async {
         // Hide keyboard
-        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        #if canImport(UIKit)
+        await MainActor.run {
+            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        }
+        #endif
         
         // Perform login
         await viewModel.login()

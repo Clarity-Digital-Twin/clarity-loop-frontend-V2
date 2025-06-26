@@ -38,7 +38,8 @@ let package = Package(
         .target(
             name: "ClarityCore",
             dependencies: [],
-            path: "clarity-loop-frontend-v2/Core"
+            path: "clarity-loop-frontend-v2/Core",
+            exclude: ["README.md"]
         ),
         
         // Domain module - Business logic and models

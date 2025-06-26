@@ -14,7 +14,7 @@ public struct ProfileView: View {
     
     @State private var showingLogoutAlert = false
     @State private var isLoggingOut = false
-    @EnvironmentObject private var appState: AppState
+    // @EnvironmentObject private var appState: AppState // TODO: Uncomment when needed
     
     public init(user: User) {
         self.user = user
@@ -146,7 +146,9 @@ public struct ProfileView: View {
                 }
             }
             .navigationTitle("Profile")
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+            #endif
         }
         .alert("Sign Out", isPresented: $showingLogoutAlert) {
             Button("Cancel", role: .cancel) {}
@@ -177,7 +179,7 @@ public struct ProfileView: View {
                 try await authService.logout()
                 
                 await MainActor.run {
-                    appState.logout()
+                    // appState.logout() // TODO: Uncomment when appState is available
                     isLoggingOut = false
                 }
             } catch {

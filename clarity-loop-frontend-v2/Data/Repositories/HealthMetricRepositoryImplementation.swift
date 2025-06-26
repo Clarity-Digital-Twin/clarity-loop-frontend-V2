@@ -152,6 +152,14 @@ final class HealthMetricRepositoryImplementation: HealthMetricRepositoryProtocol
             typeString = "steps"
         case .sleepDuration:
             typeString = "sleep_duration"
+        case .respiratoryRate:
+            typeString = "respiratory_rate"
+        case .caloriesBurned:
+            typeString = "calories_burned"
+        case .waterIntake:
+            typeString = "water_intake"
+        case .exerciseDuration:
+            typeString = "exercise_duration"
         case .custom(let name):
             typeString = name.lowercased().replacingOccurrences(of: " ", with: "_")
         }

@@ -11,7 +11,7 @@ import ClarityCore
 
 public struct DashboardView: View {
     @State private var viewModel: DashboardViewModel
-    @EnvironmentObject private var appState: AppState
+    // @EnvironmentObject private var appState: AppState // TODO: Uncomment when needed
     
     let user: User
     
@@ -73,7 +73,9 @@ public struct DashboardView: View {
                 .padding(.vertical)
             }
             .navigationTitle("Dashboard")
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { Task { await viewModel.refresh() } }) {
@@ -176,7 +178,11 @@ struct QuickStatCard: View {
         }
         .padding()
         .frame(width: 150)
+        #if os(iOS)
         .background(Color(.systemGray6))
+        #else
+        .background(Color.gray.opacity(0.1))
+        #endif
         .cornerRadius(12)
     }
 }
@@ -195,7 +201,11 @@ struct FilterChip: View {
                 .fontWeight(isSelected ? .semibold : .regular)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
+                #if os(iOS)
                 .background(isSelected ? Color.accentColor : Color(.systemGray5))
+                #else
+                .background(isSelected ? Color.accentColor : Color.gray.opacity(0.2))
+                #endif
                 .foregroundColor(isSelected ? .white : .primary)
                 .cornerRadius(20)
         }
@@ -282,7 +292,11 @@ struct MetricRow: View {
             }
         }
         .padding()
+        #if os(iOS)
         .background(Color(.systemGray6))
+        #else
+        .background(Color.gray.opacity(0.1))
+        #endif
         .cornerRadius(12)
     }
     

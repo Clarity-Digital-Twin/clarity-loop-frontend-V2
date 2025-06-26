@@ -10,21 +10,31 @@ import ClarityDomain
 import ClarityCore
 
 public struct RootView: View {
-    @EnvironmentObject private var appState: AppState
+    // TODO: Add AppState when implemented
+    // @EnvironmentObject private var appState: AppState
+    @State private var isAuthenticated = false
     
     public init() {}
     
     public var body: some View {
         Group {
-            if appState.isLoading {
-                LoadingView()
-            } else if appState.isAuthenticated, let user = appState.currentUser {
-                MainTabView(user: user)
+            // TODO: Implement navigation based on AppState
+            // For now, just show the login view
+            if isAuthenticated {
+                // Temporary user for testing
+                MainTabView(user: User(
+                    id: UUID(),
+                    email: "test@example.com",
+                    firstName: "Test",
+                    lastName: "User",
+                    createdAt: Date(),
+                    updatedAt: Date()
+                ))
             } else {
                 LoginView()
             }
         }
-        .animation(.easeInOut, value: appState.isAuthenticated)
+        .animation(.easeInOut, value: isAuthenticated)
     }
 }
 
@@ -41,7 +51,7 @@ struct LoadingView: View {
                 .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(.systemBackground))
+        .background(Color.primary.opacity(0.05))
     }
 }
 

@@ -86,8 +86,8 @@ let package = Package(
                 "ClarityUI"
             ],
             path: "clarity-loop-frontend-v2",
-            sources: ["ClarityPulseApp.swift", "AppDependencies.swift", "ContentView.swift"],
-            exclude: ["Info.plist", "clarity-loop-frontend-v2.entitlements", "Config"]
+            exclude: ["Info.plist", "clarity-loop-frontend-v2.entitlements", "Config"],
+            sources: ["ClarityPulseApp.swift", "AppDependencies.swift", "ContentView.swift"]
         ),
         
         // Test targets

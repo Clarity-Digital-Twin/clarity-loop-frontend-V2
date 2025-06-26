@@ -8,13 +8,11 @@
 import SwiftUI
 import ClarityDomain
 import ClarityCore
-#if canImport(UIKit)
-import UIKit
-#endif
 
 public struct LoginView: View {
     @State private var viewModel: LoginViewModel
     @EnvironmentObject private var appState: AppState
+    @FocusState private var focusedField: Field?
     
     public init() {
         let container = DIContainer.shared
@@ -55,12 +53,11 @@ public struct LoginView: View {
                         
                         TextField("Enter your email", text: $viewModel.email)
                             .textFieldStyle(.roundedBorder)
-                            #if os(iOS)
                             .keyboardType(.emailAddress)
                             .textContentType(.emailAddress)
-                            .autocapitalization(.none)
-                            #endif
+                            .textInputAutocapitalization(.never)
                             .disabled(viewModel.viewState.isLoading)
+                            .focused($focusedField, equals: .email)
                     }
                     
                     // Password Field
@@ -71,10 +68,9 @@ public struct LoginView: View {
                         
                         SecureField("Enter your password", text: $viewModel.password)
                             .textFieldStyle(.roundedBorder)
-                            #if os(iOS)
                             .textContentType(.password)
-                            #endif
                             .disabled(viewModel.viewState.isLoading)
+                            .focused($focusedField, equals: .password)
                     }
                     
                     // Error Message
@@ -136,9 +132,7 @@ public struct LoginView: View {
                 .font(.footnote)
                 .padding(.bottom, 32)
             }
-            #if os(iOS)
-            .navigationBarHidden(true)
-            #endif
+            .toolbar(.hidden, for: .navigationBar)
         }
         .onChange(of: viewModel.viewState) { _, newState in
             if case .success(let user) = newState {
@@ -149,13 +143,18 @@ public struct LoginView: View {
     
     private func performLogin() async {
         // Hide keyboard
-        #if canImport(UIKit)
-        await MainActor.run {
-            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-        }
-        #endif
+        focusedField = nil
         
         // Perform login
         await viewModel.login()
+    }
+}
+
+// MARK: - Field Enum
+
+private extension LoginView {
+    enum Field: Hashable {
+        case email
+        case password
     }
 }

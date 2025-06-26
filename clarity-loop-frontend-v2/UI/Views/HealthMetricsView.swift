@@ -8,9 +8,6 @@
 import SwiftUI
 import ClarityDomain
 import ClarityCore
-#if canImport(UIKit)
-import UIKit
-#endif
 
 public struct HealthMetricsView: View {
     @State private var selectedMetricType: HealthMetricType = .heartRate
@@ -81,7 +78,7 @@ public struct HealthMetricsView: View {
                         
                         HStack {
                             TextField(placeholderText, text: $metricValue)
-                                .keyboardType(keyboardType)
+                                .keyboardType(selectedMetricType.isWholeNumber ? .numberPad : .decimalPad)
                                 .textFieldStyle(.roundedBorder)
                             
                             Text(unitText)
@@ -178,21 +175,6 @@ public struct HealthMetricsView: View {
         selectedMetricType.unit
     }
     
-    #if canImport(UIKit)
-    private var keyboardType: UIKeyboardType {
-        switch selectedMetricType {
-        case .steps, .caloriesBurned:
-            return .numberPad
-        default:
-            return .decimalPad
-        }
-    }
-    #else
-    private var keyboardType: Int {
-        return 0 // Placeholder for non-UIKit platforms
-    }
-    #endif
-    
     private var submitButtonEnabled: Bool {
         !metricValue.isEmpty && Double(metricValue) != nil
     }
@@ -248,6 +230,15 @@ public struct HealthMetricsView: View {
 // MARK: - HealthMetricType Extension
 
 private extension HealthMetricType {
+    var isWholeNumber: Bool {
+        switch self {
+        case .steps, .caloriesBurned:
+            return true
+        default:
+            return false
+        }
+    }
+    
     var unit: String {
         switch self {
         case .heartRate: return "BPM"

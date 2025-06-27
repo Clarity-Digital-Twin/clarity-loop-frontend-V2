@@ -8,7 +8,8 @@
 import Foundation
 
 /// Protocol for mapping between domain entities and persistence models
-public protocol EntityMapper {
+/// Conforming types must be Sendable for Swift 6 concurrency compliance
+public protocol EntityMapper: Sendable {
     /// The domain entity type
     associatedtype Entity
     

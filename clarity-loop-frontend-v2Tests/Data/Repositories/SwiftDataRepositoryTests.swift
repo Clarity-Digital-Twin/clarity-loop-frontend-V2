@@ -40,7 +40,7 @@ final class SwiftDataRepositoryTests: XCTestCase {
     
     // MARK: - Test Entity
     
-    struct TestEntity: Entity {
+    struct TestEntity: Entity, Sendable {
         let id: UUID
         let createdAt: Date
         let updatedAt: Date
@@ -429,7 +429,7 @@ final class SwiftDataRepositoryTests: XCTestCase {
 
 // MARK: - Entity Mapper
 
-private struct TestEntityMapper: EntityMapper {
+private struct TestEntityMapper: EntityMapper, Sendable {
     typealias Entity = TestEntity
     typealias Model = SwiftDataRepositoryTests.TestModel
     

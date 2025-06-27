@@ -13,7 +13,7 @@ final class RepositoryProtocolTests: XCTestCase {
     
     // MARK: - Test Entity
     
-    struct TestEntity: Entity {
+    struct TestEntity: Entity, Sendable {
         let id: UUID
         let createdAt: Date
         let updatedAt: Date

@@ -401,6 +401,13 @@ final class AuthIntegrationTests: XCTestCase {
 3. Implement one endpoint at a time
 4. Build UI only after backend integration works
 
+## Related Documentation
+
+- **CLARITY_SWIFT6_SWIFTDATA_SENDABILITY_GUIDE.md** - Swift 6 concurrency solutions for SwiftData
+- **CLARITY_SWIFT_BEST_PRACTICES.md** - Common AI agent pitfalls and Swift patterns
+- **CLARITY_VERTICAL_SLICE_TASK_SUMMARY.md** - 200 tasks organized by features
+- **CLARITY_ENDPOINT_MAPPING.md** - All 44 backend endpoints with DTOs
+
 ---
 
 *Remember: If you're not writing a test first, you're doing it wrong!*

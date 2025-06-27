@@ -8,6 +8,16 @@
 import XCTest
 @testable import ClarityCore
 
+@Observable
+final class TestViewModel: @unchecked Sendable {
+    var value: Int = 0
+    
+    func updateValue() async {
+        try? await Task.sleep(nanoseconds: 100_000_000) // 0.1s
+        value = 42
+    }
+}
+
 final class AsyncTestCaseTests: XCTestCase {
     
     // MARK: - Test AsyncTestCase Functionality
@@ -44,8 +54,8 @@ final class AsyncTestCaseTests: XCTestCase {
         let testCase = TestCase()
         
         // When
-        let result = await testCase.waitForAsync(timeout: 1.0) { completion in
-            Task {
+        let result = await testCase.waitForAsync(timeout: 1.0) { @Sendable completion in
+            Task { @Sendable in
                 try await Task.sleep(nanoseconds: 100_000_000) // 0.1s
                 completion(42)
             }
@@ -57,22 +67,12 @@ final class AsyncTestCaseTests: XCTestCase {
     
     func test_asyncTestCase_providesObservableHelpers() async throws {
         // Given
-        @Observable
-        class TestViewModel {
-            var value: Int = 0
-            
-            func updateValue() async {
-                try? await Task.sleep(nanoseconds: 100_000_000) // 0.1s
-                value = 42
-            }
-        }
-        
         class TestCase: AsyncTestCase {}
         let testCase = TestCase()
         let viewModel = TestViewModel()
         
         // When
-        Task { await viewModel.updateValue() }
+        Task { @Sendable [viewModel] in await viewModel.updateValue() }
         
         // Then
         await testCase.waitForObservableChange(

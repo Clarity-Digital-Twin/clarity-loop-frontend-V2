@@ -10,6 +10,16 @@ import XCTest
 @testable import ClarityDomain
 @testable import ClarityData
 
+struct HealthMetricsListResponse: Codable {
+    let data: [HealthMetricDTO]
+    let total: Int
+}
+
+struct BatchHealthMetricsResponse: Codable {
+    let metrics: [HealthMetricDTO]
+    let created: Int
+}
+
 final class HealthMetricFlowIntegrationTests: BaseIntegrationTestCase {
     
     override func setUp() {
@@ -18,10 +28,9 @@ final class HealthMetricFlowIntegrationTests: BaseIntegrationTestCase {
     }
     
     override func tearDown() {
+        // Clean up happens in setUpIntegration for next test
+        // This avoids concurrency issues with tearDown
         super.tearDown()
-        Task {
-            await tearDownIntegration()
-        }
     }
     
     // MARK: - Health Metric Recording Flow
@@ -49,7 +58,7 @@ final class HealthMetricFlowIntegrationTests: BaseIntegrationTestCase {
             notes: nil
         )
         
-        givenNetworkResponse(
+        await givenNetworkResponse(
             for: "/api/v1/health-metrics",
             response: metricDTO
         )
@@ -68,7 +77,7 @@ final class HealthMetricFlowIntegrationTests: BaseIntegrationTestCase {
         XCTAssertEqual(recordedMetric.unit, "bpm")
         
         // Verify network request
-        verifyNetworkRequest(to: "/api/v1/health-metrics", method: "POST")
+        await verifyNetworkRequest(to: "/api/v1/health-metrics", method: "POST")
         
         // Verify persistence
         let persistedMetrics = try await testPersistence.fetchAll() as [HealthMetric]
@@ -99,7 +108,8 @@ final class HealthMetricFlowIntegrationTests: BaseIntegrationTestCase {
         }
         
         // Verify no network request was made
-        XCTAssertTrue(testNetworkClient.capturedRequests.isEmpty)
+        let capturedRequests = await testNetworkClient.capturedRequests
+        XCTAssertTrue(capturedRequests.isEmpty)
     }
     
     func test_batchRecordHealthMetrics_processesMultipleMetrics() async throws {
@@ -120,14 +130,13 @@ final class HealthMetricFlowIntegrationTests: BaseIntegrationTestCase {
                 unit: metric.type.defaultUnit,
                 recordedAt: ISO8601DateFormatter().string(from: Date()),
                 source: "manual",
-                notes: nil,
-                metadata: nil
+                notes: nil
             )
         }
         
-        givenNetworkResponse(
+        await givenNetworkResponse(
             for: "/api/v1/health-metrics/batch",
-            response: ["metrics": responseDTOs, "created": 3]
+            response: BatchHealthMetricsResponse(metrics: responseDTOs, created: 3)
         )
         
         // When - record batch
@@ -144,7 +153,7 @@ final class HealthMetricFlowIntegrationTests: BaseIntegrationTestCase {
         XCTAssertEqual(recordedMetrics[2].type, .bloodPressureDiastolic)
         
         // Verify network request
-        verifyNetworkRequest(to: "/api/v1/health-metrics/batch", method: "POST")
+        await verifyNetworkRequest(to: "/api/v1/health-metrics/batch", method: "POST")
         
         // Verify all persisted
         let persistedMetrics = try await testPersistence.fetchAll() as [HealthMetric]
@@ -175,17 +184,16 @@ final class HealthMetricFlowIntegrationTests: BaseIntegrationTestCase {
                 unit: "bpm",
                 recordedAt: ISO8601DateFormatter().string(from: data.date),
                 source: "manual",
-                notes: nil,
-                metadata: nil
+                notes: nil
             )
         }
         
         // Only return metrics from last 2 days
         let filteredDTOs = Array(metricDTOs.prefix(2))
         
-        givenNetworkResponse(
+        await givenNetworkResponse(
             for: "/api/v1/health-metrics",
-            response: ["data": filteredDTOs, "total": 2]
+            response: HealthMetricsListResponse(data: filteredDTOs, total: 2)
         )
         
         // When - retrieve with date range
@@ -201,7 +209,8 @@ final class HealthMetricFlowIntegrationTests: BaseIntegrationTestCase {
         XCTAssertTrue(metrics.allSatisfy { $0.recordedAt >= yesterday.addingTimeInterval(-3600) })
         
         // Verify correct API parameters were sent
-        let request = testNetworkClient.capturedRequests.first
+        let requests = await testNetworkClient.capturedRequests
+        let request = requests.first
         XCTAssertNotNil(request?.parameters?["start_date"])
         XCTAssertNotNil(request?.parameters?["end_date"])
     }

@@ -59,7 +59,7 @@ final class BaseIntegrationTestCaseTests: XCTestCase {
         let testCase = TestIntegrationCase()
         testCase.setUpIntegration()
         
-        let user = User(
+        let _ = User(
             id: UUID(),
             email: "test@example.com",
             firstName: "Test",

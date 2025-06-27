@@ -18,10 +18,9 @@ final class LoginFlowIntegrationTests: BaseIntegrationTestCase {
     }
     
     override func tearDown() {
+        // Clean up happens in setUpIntegration for next test
+        // This avoids concurrency issues with tearDown
         super.tearDown()
-        Task {
-            await tearDownIntegration()
-        }
     }
     
     // MARK: - Login Flow Integration Tests
@@ -41,10 +40,10 @@ final class LoginFlowIntegrationTests: BaseIntegrationTestCase {
             lastName: "User"
         )
         
-        testAuthService.mockAuthToken = expectedToken
-        testAuthService.mockUser = expectedUser
+        await testAuthService.setMockAuthToken(expectedToken)
+        await testAuthService.setMockUser(expectedUser)
         
-        givenNetworkResponse(
+        await givenNetworkResponse(
             for: "/api/v1/users/me",
             response: UserDTO(
                 id: expectedUser.id.uuidString,
@@ -52,7 +51,7 @@ final class LoginFlowIntegrationTests: BaseIntegrationTestCase {
                 firstName: expectedUser.firstName,
                 lastName: expectedUser.lastName,
                 createdAt: ISO8601DateFormatter().string(from: Date()),
-                updatedAt: ISO8601DateFormatter().string(from: Date())
+                lastLoginAt: ISO8601DateFormatter().string(from: Date())
             )
         )
         
@@ -64,11 +63,10 @@ final class LoginFlowIntegrationTests: BaseIntegrationTestCase {
         )
         
         // Then - verify complete flow
-        XCTAssertEqual(result.token.accessToken, expectedToken.accessToken)
-        XCTAssertEqual(result.user.email, expectedUser.email)
+        XCTAssertEqual(result.email, expectedUser.email)
         
         // Verify network request was made
-        verifyNetworkRequest(to: "/api/v1/users/me", method: "GET")
+        await verifyNetworkRequest(to: "/api/v1/users/me", method: "GET")
         
         // Verify user was persisted
         let persistedUsers = try await testPersistence.fetchAll() as [User]
@@ -78,7 +76,7 @@ final class LoginFlowIntegrationTests: BaseIntegrationTestCase {
     
     func test_loginFlow_withInvalidCredentials_throwsError() async throws {
         // Given
-        testAuthService.shouldFailLogin = true
+        await testAuthService.setShouldFailLogin(true)
         
         // When/Then
         let loginUseCase = testContainer.require(LoginUseCaseProtocol.self)
@@ -94,20 +92,21 @@ final class LoginFlowIntegrationTests: BaseIntegrationTestCase {
         }
         
         // Verify no network requests were made
-        XCTAssertTrue(testNetworkClient.capturedRequests.isEmpty)
+        let capturedRequests = await testNetworkClient.capturedRequests
+        XCTAssertTrue(capturedRequests.isEmpty)
     }
     
     func test_loginFlow_withNetworkError_throwsAppropriateError() async throws {
         // Given - auth succeeds but user fetch fails
-        testAuthService.mockAuthToken = AuthToken(
+        await testAuthService.setMockAuthToken(AuthToken(
             accessToken: "test-token",
             refreshToken: "test-refresh",
             expiresIn: 3600
-        )
+        ))
         
-        givenNetworkError(
+        await givenNetworkError(
             for: "/api/v1/users/me",
-            error: NetworkError.serverError(500, "Internal Server Error")
+            error: NetworkError.serverError
         )
         
         // When/Then
@@ -140,16 +139,16 @@ final class LoginFlowIntegrationTests: BaseIntegrationTestCase {
             firstName: "Flow",
             lastName: "Test",
             createdAt: ISO8601DateFormatter().string(from: Date()),
-            updatedAt: ISO8601DateFormatter().string(from: Date())
+            lastLoginAt: ISO8601DateFormatter().string(from: Date())
         )
         
-        testAuthService.mockAuthToken = AuthToken(
+        await testAuthService.setMockAuthToken(AuthToken(
             accessToken: "flow-token",
             refreshToken: "flow-refresh",
             expiresIn: 3600
-        )
+        ))
         
-        givenNetworkResponse(for: "/api/v1/users/me", response: userDTO)
+        await givenNetworkResponse(for: "/api/v1/users/me", response: userDTO)
         
         // When - execute through all layers
         let loginUseCase = testContainer.require(LoginUseCaseProtocol.self)
@@ -161,7 +160,7 @@ final class LoginFlowIntegrationTests: BaseIntegrationTestCase {
         // Then - verify data flows correctly through layers
         
         // 1. Use case returns correct data
-        XCTAssertEqual(loginResult.user.email, "flow@test.com")
+        XCTAssertEqual(loginResult.email, "flow@test.com")
         
         // 2. Repository received and processed the data
         let userRepository = testContainer.require(UserRepositoryProtocol.self)
@@ -174,7 +173,7 @@ final class LoginFlowIntegrationTests: BaseIntegrationTestCase {
         
         // 4. Verify data consistency across layers
         try await verifyDataFlow(
-            from: { loginResult.user },
+            from: { loginResult },
             to: { fetchedUser! }
         )
     }

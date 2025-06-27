@@ -26,17 +26,16 @@ open class AsyncTestCase: BaseUnitTestCase {
     // MARK: - Async Assertions
     
     /// Assert async operation succeeds
-    public func assertAsync<T>(
+    public func assertAsync<T: Sendable>(
         timeout: TimeInterval = 10,
         file: StaticString = #file,
         line: UInt = #line,
-        _ operation: () async throws -> T
+        _ operation: @Sendable @escaping () async throws -> T
     ) async {
         do {
-            let task = Task(timeout: timeout) {
+            _ = try await withTimeout(timeout, file: file, line: line) {
                 try await operation()
             }
-            _ = try await task.value
         } catch {
             XCTFail("Async operation failed: \(error)", file: file, line: line)
         }
@@ -48,13 +47,12 @@ open class AsyncTestCase: BaseUnitTestCase {
         timeout: TimeInterval = 10,
         file: StaticString = #file,
         line: UInt = #line,
-        _ operation: () async throws -> Void
+        _ operation: @Sendable @escaping () async throws -> Void
     ) async where E: Equatable {
         do {
-            let task = Task(timeout: timeout) {
+            _ = try await withTimeout(timeout, file: file, line: line) {
                 try await operation()
             }
-            try await task.value
             XCTFail("Expected error to be thrown", file: file, line: line)
         } catch let thrownError {
             if let expectedError = expectedError {
@@ -73,7 +71,7 @@ open class AsyncTestCase: BaseUnitTestCase {
         timeout: TimeInterval = 10,
         file: StaticString = #file,
         line: UInt = #line,
-        _ operation: () async throws -> Void
+        _ operation: @Sendable @escaping () async throws -> Void
     ) async {
         await assertAsyncThrows(error: nil as NSError?, timeout: timeout, file: file, line: line, operation)
     }
@@ -81,23 +79,23 @@ open class AsyncTestCase: BaseUnitTestCase {
     // MARK: - Expectation Wrappers
     
     /// Wait for async operation with completion handler
-    public func waitForAsync<T>(
+    public func waitForAsync<T: Sendable>(
         timeout: TimeInterval = 10,
         file: StaticString = #file,
         line: UInt = #line,
-        _ operation: (@escaping (T) -> Void) -> Void
+        _ operation: @Sendable (@escaping @Sendable (T) -> Void) -> Void
     ) async -> T? {
         await withCheckedContinuation { continuation in
-            var result: T?
+            let box = Box<T?>(value: nil)
             let expectation = self.expectation(description: "Async operation")
             
             operation { value in
-                result = value
+                box.value = value
                 expectation.fulfill()
             }
             
             wait(for: [expectation], timeout: timeout)
-            continuation.resume(returning: result)
+            continuation.resume(returning: box.value)
         }
     }
     
@@ -156,23 +154,28 @@ open class AsyncTestCase: BaseUnitTestCase {
     // MARK: - Timeout Management
     
     /// Execute async operation with timeout
-    public func withTimeout<T>(
+    public func withTimeout<T: Sendable>(
         _ timeout: TimeInterval,
         file: StaticString = #file,
         line: UInt = #line,
-        operation: () async throws -> T
+        operation: @Sendable @escaping () async throws -> T
     ) async throws -> T {
-        let task = Task(timeout: timeout) {
-            try await operation()
-        }
-        
-        do {
-            return try await task.value
-        } catch {
-            if error is CancellationError {
-                XCTFail("Operation timed out after \(timeout) seconds", file: file, line: line)
+        return try await withThrowingTaskGroup(of: T.self) { group in
+            group.addTask {
+                try await operation()
             }
-            throw error
+            
+            group.addTask {
+                try await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))
+                throw TimeoutError()
+            }
+            
+            if let result = try await group.next() {
+                group.cancelAll()
+                return result
+            }
+            
+            throw TimeoutError()
         }
     }
     
@@ -203,26 +206,15 @@ open class AsyncTestCase: BaseUnitTestCase {
 
 // MARK: - Task Extension
 
-private extension Task where Failure == Error {
-    init(timeout: TimeInterval, operation: @escaping () async throws -> Success) {
-        self = Task {
-            try await withThrowingTaskGroup(of: Success.self) { group in
-                group.addTask {
-                    try await operation()
-                }
-                
-                group.addTask {
-                    try await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))
-                    throw CancellationError()
-                }
-                
-                guard let result = try await group.next() else {
-                    throw CancellationError()
-                }
-                
-                group.cancelAll()
-                return result
-            }
-        }
+/// Error thrown when an async operation times out
+struct TimeoutError: Error, LocalizedError {
+    let errorDescription: String? = "Operation timed out"
+}
+
+/// Box to wrap mutable values for sendable contexts
+private final class Box<T>: @unchecked Sendable {
+    var value: T
+    init(value: T) {
+        self.value = value
     }
 }

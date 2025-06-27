@@ -164,12 +164,12 @@ open class BaseIntegrationTestCase: BaseUnitTestCase {
     }
     
     /// Set up mock network response
-    func givenNetworkResponse<T: Encodable>(
+    func givenNetworkResponse<T: Encodable & Sendable>(
         for path: String,
         response: T,
         statusCode: Int = 200
-    ) {
-        testNetworkClient.setMockResponse(
+    ) async {
+        await testNetworkClient.setMockResponse(
             for: path,
             response: response,
             statusCode: statusCode
@@ -180,8 +180,8 @@ open class BaseIntegrationTestCase: BaseUnitTestCase {
     func givenNetworkError(
         for path: String,
         error: NetworkError
-    ) {
-        testNetworkClient.setMockError(
+    ) async {
+        await testNetworkClient.setMockError(
             for: path,
             error: error
         )
@@ -192,8 +192,8 @@ open class BaseIntegrationTestCase: BaseUnitTestCase {
         to path: String,
         method: String? = nil,
         times: Int = 1
-    ) {
-        let requests = testNetworkClient.capturedRequests.filter { request in
+    ) async {
+        let requests = await testNetworkClient.capturedRequests.filter { request in
             request.path == path && (method == nil || request.method == method)
         }
         
@@ -207,33 +207,67 @@ open class BaseIntegrationTestCase: BaseUnitTestCase {
 
 // MARK: - Mock Services
 
+/// Wrapper to make Any sendable for test purposes
+struct SendableValue: @unchecked Sendable {
+    let value: Any?
+}
+
 /// Mock network client for integration tests
-final class MockNetworkClient: APIClientProtocol {
+final class MockNetworkClient: APIClientProtocol, @unchecked Sendable {
     
-    struct CapturedRequest {
+    struct CapturedRequest: @unchecked Sendable {
         let path: String
         let method: String
         let body: Any?
         let parameters: [String: String]?
     }
     
-    private let mockResponses = NSMutableDictionary()
-    private let mockErrors = NSMutableDictionary()
-    private let capturedRequestsLock = NSLock()
-    private var _capturedRequests: [CapturedRequest] = []
+    struct EmptyResponse: Codable {}
+    
+    private actor Storage {
+        private var mockResponses: [String: SendableValue] = [:]
+        private var mockErrors: [String: any Error] = [:]
+        private var capturedRequests: [CapturedRequest] = []
+        
+        func setMockResponse(for path: String, response: Any) {
+            mockResponses[path] = SendableValue(value: response)
+        }
+        
+        func setMockError(for path: String, error: any Error) {
+            mockErrors[path] = error
+        }
+        
+        func captureRequest(_ request: CapturedRequest) {
+            capturedRequests.append(request)
+        }
+        
+        func getCapturedRequests() -> [CapturedRequest] {
+            return capturedRequests
+        }
+        
+        func getMockError(for path: String) -> (any Error)? {
+            return mockErrors[path]
+        }
+        
+        func getMockResponse(for path: String) -> SendableValue? {
+            return mockResponses[path]
+        }
+    }
+    
+    private let storage = Storage()
     
     var capturedRequests: [CapturedRequest] {
-        capturedRequestsLock.lock()
-        defer { capturedRequestsLock.unlock() }
-        return _capturedRequests
+        get async {
+            await storage.getCapturedRequests()
+        }
     }
     
-    func setMockResponse<T: Encodable>(for path: String, response: T, statusCode: Int = 200) {
-        mockResponses[path] = response
+    func setMockResponse<T: Encodable & Sendable>(for path: String, response: T, statusCode: Int = 200) async {
+        await storage.setMockResponse(for: path, response: response)
     }
     
-    func setMockError(for path: String, error: Error) {
-        mockErrors[path] = error
+    func setMockError(for path: String, error: any Error) async {
+        await storage.setMockError(for: path, error: error)
     }
     
     func request<T: Decodable, E: Encodable>(
@@ -244,22 +278,26 @@ final class MockNetworkClient: APIClientProtocol {
         headers: [String: String]?
     ) async throws -> T {
         // Capture request
-        capturedRequestsLock.lock()
-        _capturedRequests.append(CapturedRequest(
+        await storage.captureRequest(CapturedRequest(
             path: path,
             method: method,
             body: body,
             parameters: parameters
         ))
-        capturedRequestsLock.unlock()
         
         // Check for mock error
-        if let error = mockErrors[path] {
+        if let error = await storage.getMockError(for: path) {
             throw error
         }
         
         // Check for mock response
-        if let response = mockResponses[path] {
+        if let wrappedResponse = await storage.getMockResponse(for: path),
+           let response = wrappedResponse.value {
+            if let data = try? JSONSerialization.data(withJSONObject: response),
+               let typedResponse = try? JSONDecoder().decode(T.self, from: data) {
+                return typedResponse
+            }
+            
             if let typedResponse = response as? T {
                 return typedResponse
             }
@@ -268,7 +306,7 @@ final class MockNetworkClient: APIClientProtocol {
             throw NetworkError.decodingFailed("Mock response type mismatch")
         }
         
-        throw NetworkError.requestFailed("No mock response configured")
+        throw NetworkError.noConnection
     }
     
     func get<T: Decodable>(_ path: String, parameters: [String: String]?) async throws -> T {
@@ -286,24 +324,28 @@ final class MockNetworkClient: APIClientProtocol {
     func delete<T: Decodable>(_ path: String) async throws -> T {
         return try await request("DELETE", path: path, body: nil as String?, parameters: nil, headers: nil)
     }
+    
+    func delete<T: Identifiable>(type: T.Type, id: T.ID) async throws {
+        let _: EmptyResponse = try await delete("/api/v1/\(String(describing: type).lowercased())s/\(id)")
+    }
 }
 
 /// Mock persistence service for integration tests
-final class MockPersistenceService: PersistenceServiceProtocol {
+final class MockPersistenceService: PersistenceServiceProtocol, @unchecked Sendable {
     
     private actor Storage {
-        private var storage: [String: Any] = [:]
+        private var storage: [String: SendableValue] = [:]
         
         func save(key: String, value: Any) {
-            storage[key] = value
+            storage[key] = SendableValue(value: value)
         }
         
-        func fetch(key: String) -> Any? {
+        func fetch(key: String) -> SendableValue? {
             return storage[key]
         }
         
         func fetchAll<T>() -> [T] {
-            return storage.values.compactMap { $0 as? T }
+            return storage.values.compactMap { $0.value as? T }
         }
         
         func delete(key: String) {
@@ -317,17 +359,18 @@ final class MockPersistenceService: PersistenceServiceProtocol {
     
     private let storage = Storage()
     
-    func save<T>(_ object: T) async throws where T: Identifiable {
+    func save<T>(_ object: T) async throws where T: Identifiable & Sendable {
         let key = "\(type(of: object))-\(object.id)"
         await storage.save(key: key, value: object)
     }
     
     func fetch<T>(_ id: T.ID) async throws -> T? where T: Identifiable {
         let key = "\(T.self)-\(id)"
-        return await storage.fetch(key: key) as? T
+        let wrapped = await storage.fetch(key: key)
+        return wrapped?.value as? T
     }
     
-    func fetchAll<T>() async throws -> [T] where T: Identifiable {
+    func fetchAll<T>() async throws -> [T] where T: Identifiable & Sendable {
         return await storage.fetchAll()
     }
     
@@ -342,58 +385,76 @@ final class MockPersistenceService: PersistenceServiceProtocol {
 }
 
 /// Mock auth service for integration tests
-final class MockAuthService: AuthServiceProtocol {
+final class MockAuthService: AuthServiceProtocol, @unchecked Sendable {
     
-    private let lock = NSLock()
-    private var _mockAuthToken: AuthToken?
-    private var _mockUser: User?
-    private var _shouldFailLogin = false
+    private actor Storage {
+        private var mockAuthToken: AuthToken?
+        private var mockUser: User?
+        private var shouldFailLogin = false
+        
+        func setMockAuthToken(_ token: AuthToken?) {
+            mockAuthToken = token
+        }
+        
+        func getMockAuthToken() -> AuthToken? {
+            return mockAuthToken
+        }
+        
+        func setMockUser(_ user: User?) {
+            mockUser = user
+        }
+        
+        func getMockUser() -> User? {
+            return mockUser
+        }
+        
+        func setShouldFailLogin(_ value: Bool) {
+            shouldFailLogin = value
+        }
+        
+        func getShouldFailLogin() -> Bool {
+            return shouldFailLogin
+        }
+    }
+    
+    private let storage = Storage()
     
     var mockAuthToken: AuthToken? {
-        get {
-            lock.lock()
-            defer { lock.unlock() }
-            return _mockAuthToken
+        get async {
+            await storage.getMockAuthToken()
         }
-        set {
-            lock.lock()
-            _mockAuthToken = newValue
-            lock.unlock()
-        }
+    }
+    
+    func setMockAuthToken(_ token: AuthToken?) async {
+        await storage.setMockAuthToken(token)
     }
     
     var mockUser: User? {
-        get {
-            lock.lock()
-            defer { lock.unlock() }
-            return _mockUser
+        get async {
+            await storage.getMockUser()
         }
-        set {
-            lock.lock()
-            _mockUser = newValue
-            lock.unlock()
-        }
+    }
+    
+    func setMockUser(_ user: User?) async {
+        await storage.setMockUser(user)
     }
     
     var shouldFailLogin: Bool {
-        get {
-            lock.lock()
-            defer { lock.unlock() }
-            return _shouldFailLogin
-        }
-        set {
-            lock.lock()
-            _shouldFailLogin = newValue
-            lock.unlock()
+        get async {
+            await storage.getShouldFailLogin()
         }
     }
     
+    func setShouldFailLogin(_ value: Bool) async {
+        await storage.setShouldFailLogin(value)
+    }
+    
     func login(email: String, password: String) async throws -> AuthToken {
-        if shouldFailLogin {
+        if await storage.getShouldFailLogin() {
             throw AuthError.invalidCredentials
         }
         
-        return mockAuthToken ?? AuthToken(
+        return await storage.getMockAuthToken() ?? AuthToken(
             accessToken: "mock-access-token",
             refreshToken: "mock-refresh-token",
             expiresIn: 3600
@@ -401,12 +462,12 @@ final class MockAuthService: AuthServiceProtocol {
     }
     
     func logout() async throws {
-        mockAuthToken = nil
-        mockUser = nil
+        await storage.setMockAuthToken(nil)
+        await storage.setMockUser(nil)
     }
     
     func refreshToken(_ refreshToken: String) async throws -> AuthToken {
-        return mockAuthToken ?? AuthToken(
+        return await storage.getMockAuthToken() ?? AuthToken(
             accessToken: "mock-refreshed-token",
             refreshToken: "mock-refresh-token",
             expiresIn: 3600
@@ -415,6 +476,6 @@ final class MockAuthService: AuthServiceProtocol {
     
     @MainActor
     func getCurrentUser() async throws -> User? {
-        return mockUser
+        return await storage.getMockUser()
     }
 }

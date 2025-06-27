@@ -428,7 +428,7 @@ final class SwiftDataRepositoryTests: XCTestCase {
 // MARK: - Entity Mapper
 
 private struct TestEntityMapper: EntityMapper, Sendable {
-    typealias Entity = TestEntity
+    typealias Entity = SwiftDataRepositoryTests.TestEntity
     typealias Model = SwiftDataRepositoryTests.TestModel
     
     func toModel(_ entity: Entity) -> Model {

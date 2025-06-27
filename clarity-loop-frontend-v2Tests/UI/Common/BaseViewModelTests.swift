@@ -13,13 +13,14 @@ final class BaseViewModelTests: XCTestCase {
     
     // MARK: - Test ViewModel
     
-    @Observable
+    // Don't use @Observable in test classes - it causes compilation issues
     final class TestViewModel: BaseViewModel<String> {
         var loadDataCalled = false
         var mockData: String?
         var mockError: Error?
         var mockDelay: TimeInterval = 0
         
+        @MainActor
         override func loadData() async throws -> String? {
             loadDataCalled = true
             

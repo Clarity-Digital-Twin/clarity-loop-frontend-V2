@@ -29,26 +29,8 @@ struct ClarityPulseApp: App {
         // Configure dependencies first
         AppDependencies().configure()
         
-        // Initialize ModelContainer with our models
-        do {
-            let schema = Schema([
-                PersistedUser.self,
-                PersistedHealthMetric.self
-            ])
-            
-            let modelConfiguration = ModelConfiguration(
-                schema: schema,
-                isStoredInMemoryOnly: false,
-                allowsSave: true
-            )
-            
-            self.modelContainer = try ModelContainer(
-                for: schema,
-                configurations: [modelConfiguration]
-            )
-        } catch {
-            fatalError("Failed to create ModelContainer: \(error)")
-        }
+        // Get the ModelContainer from DI
+        self.modelContainer = DIContainer.shared.require(ModelContainer.self)
     }
     
     // MARK: - Body

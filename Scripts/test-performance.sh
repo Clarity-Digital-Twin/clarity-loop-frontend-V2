@@ -7,8 +7,18 @@ set -e
 echo "⚡ Running Performance Tests..."
 echo "=============================="
 
+# Kill any zombie Swift processes before starting
+echo "🧹 Cleaning up any stuck processes..."
+pkill -f swift-frontend 2>/dev/null || true
+pkill -f swift-driver 2>/dev/null || true
+pkill -f swift-test 2>/dev/null || true
+
 # Create performance results directory
 mkdir -p .build/performance-results
+
+# Build once for performance consistency
+echo "🔨 Building project in release mode for performance testing..."
+swift build --configuration release
 
 # Run tests with performance metrics collection
 echo "🏃 Executing performance test suite..."

@@ -38,26 +38,21 @@ extension UserDTO {
         
         let dateFormatter = ISO8601DateFormatter()
         
-        guard dateFormatter.date(from: createdAt) != nil else {
+        guard let createdDate = dateFormatter.date(from: createdAt) else {
             throw DTOError.invalidDate(createdAt)
         }
         
-        let user = User(
+        let lastLoginDate = lastLoginAt.flatMap { dateFormatter.date(from: $0) }
+        
+        return User(
             id: uuid,
             email: email,
             firstName: firstName,
-            lastName: lastName
+            lastName: lastName,
+            createdAt: createdDate,
+            updatedAt: createdDate,
+            lastLoginAt: lastLoginDate
         )
-        
-        // Set creation date using reflection (not ideal, but necessary for immutable properties)
-        // In production, consider making User properties mutable or using a builder pattern
-        
-        if let lastLoginString = lastLoginAt,
-           let lastLoginDate = dateFormatter.date(from: lastLoginString) {
-            user.updateLastLogin(lastLoginDate)
-        }
-        
-        return user
     }
 }
 

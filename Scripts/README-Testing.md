@@ -148,12 +148,29 @@ For GitHub Actions or other CI systems:
 
 ## Troubleshooting
 
-### Tests Timing Out
+### Tests Timing Out - SOLVED
 
-If `swift test` times out:
-1. Check for infinite loops in tests
-2. Verify async test expectations have timeouts
-3. Run specific test targets to isolate issues
+**Root Cause**: Swift Package Manager rebuilds all dependencies (including Amplify) on every test run, causing 2+ minute build times that exceed default timeouts.
+
+**Professional Solution Implemented**:
+1. **Automatic zombie process cleanup** - All scripts now kill stuck `swift-frontend` processes
+2. **Build-once, test-many strategy** - Scripts use `swift build` then `swift test --skip-build`
+3. **Fast test script** - Use `./Scripts/test-fast.sh` for rapid TDD cycles
+
+### Preventing Future Timeouts
+
+All test scripts now include:
+```bash
+# Kill zombie processes
+pkill -f swift-frontend 2>/dev/null || true
+pkill -f swift-driver 2>/dev/null || true
+
+# Build once
+swift build --configuration debug
+
+# Test without rebuilding
+swift test --skip-build --parallel
+```
 
 ### Coverage Not Generated
 

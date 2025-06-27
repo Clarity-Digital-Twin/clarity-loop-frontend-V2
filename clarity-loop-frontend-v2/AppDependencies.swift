@@ -40,13 +40,24 @@ public final class AppDependencies {
         container.register(APIClientProtocol.self, scope: .singleton) { _ in
             NetworkClient(
                 session: URLSession.shared,
-                baseURL: URL(string: "https://api.clarity-pulse.com")!
+                baseURL: URL(string: "https://clarity.novamindnyc.com")!
             )
         }
         
+        // Model Container Factory
+        container.register(ModelContainerFactory.self, scope: .singleton) { _ in
+            ModelContainerFactory()
+        }
+        
+        // Model Container
+        container.register(ModelContainer.self, scope: .singleton) { container in
+            let factory = container.require(ModelContainerFactory.self)
+            return try! factory.createContainer()
+        }
+        
         // Persistence
-        container.register(PersistenceServiceProtocol.self, scope: .singleton) { _ in
-            let modelContainer = try! ModelContainer(for: PersistedUser.self, PersistedHealthMetric.self)
+        container.register(PersistenceServiceProtocol.self, scope: .singleton) { container in
+            let modelContainer = container.require(ModelContainer.self)
             return SwiftDataPersistence(container: modelContainer)
         }
         
@@ -168,15 +179,21 @@ private final class AmplifyAuthService: AuthServiceProtocol {
             throw AuthError.invalidCredentials
         }
         
-        // Get session tokens
-        _ = try await Amplify.Auth.fetchAuthSession()
+        // Get session tokens from AWS Cognito
+        let session = try await Amplify.Auth.fetchAuthSession()
         
-        // For now, return a mock token as we need to investigate the correct AWS Amplify v2 API
-        // TODO: Replace with actual token retrieval once we confirm the AWS Amplify API
+        // Cast to AuthCognitoTokensProvider to get tokens
+        guard let cognitoTokenProvider = session as? AuthCognitoTokensProvider else {
+            throw AuthError.unknown("Failed to retrieve Cognito session")
+        }
+        
+        // Get the user pool tokens
+        let tokens = try cognitoTokenProvider.getCognitoTokens().get()
+        
         return AuthToken(
-            accessToken: "mock-access-token",
-            refreshToken: "mock-refresh-token",
-            expiresIn: 3600
+            accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken,
+            expiresIn: 3600 // AWS Cognito default
         )
     }
     
@@ -185,15 +202,25 @@ private final class AmplifyAuthService: AuthServiceProtocol {
     }
     
     func refreshToken(_ refreshToken: String) async throws -> AuthToken {
-        _ = try await Amplify.Auth.fetchAuthSession(options: .forceRefresh())
+        // Force refresh the session
+        let session = try await Amplify.Auth.fetchAuthSession(options: .forceRefresh())
         
-        // For now, return a mock refreshed token
-        // TODO: Replace with actual token refresh once we confirm the AWS Amplify API
-        return AuthToken(
-            accessToken: "mock-refreshed-token",
-            refreshToken: "mock-refresh-token",
-            expiresIn: 3600
-        )
+        // Cast to AuthCognitoTokensProvider to get tokens
+        guard let cognitoTokenProvider = session as? AuthCognitoTokensProvider else {
+            throw AuthError.unknown("Failed to retrieve Cognito session")
+        }
+        
+        // Get the refreshed tokens
+        do {
+            let tokens = try cognitoTokenProvider.getCognitoTokens().get()
+            return AuthToken(
+                accessToken: tokens.accessToken,
+                refreshToken: tokens.refreshToken,
+                expiresIn: 3600 // AWS Cognito default
+            )
+        } catch {
+            throw AuthError.tokenExpired
+        }
     }
     
     @MainActor

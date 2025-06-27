@@ -7,11 +7,23 @@ set -e
 echo "🚀 Running All Tests with Coverage..."
 echo "=================================="
 
+# Kill any zombie Swift processes before starting
+echo "🧹 Cleaning up any stuck processes..."
+pkill -f swift-frontend 2>/dev/null || true
+pkill -f swift-driver 2>/dev/null || true
+pkill -f swift-test 2>/dev/null || true
+
 # Create test results directory
 mkdir -p .build/test-results
 
-# Run all available tests with coverage
+# Build once strategy - compile all dependencies first
+echo "🔨 Building project (one-time compilation)..."
+swift build --configuration debug
+
+# Run all available tests with coverage using skip-build
+echo "🧪 Running tests without rebuilding..."
 swift test \
+    --skip-build \
     --enable-code-coverage \
     --parallel
 

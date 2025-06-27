@@ -6,19 +6,31 @@ set -e
 
 echo "🔗 Running Integration Tests with Coverage..."
 
-# Note: Integration tests are currently disabled in Package.swift
-# Uncomment when tests are re-enabled
-echo "⚠️  Integration tests are currently disabled in Package.swift"
-echo "   Uncomment the ClarityIntegrationTests target to enable"
+# Kill any zombie Swift processes before starting
+echo "🧹 Cleaning up any stuck processes..."
+pkill -f swift-frontend 2>/dev/null || true
+pkill -f swift-driver 2>/dev/null || true
+pkill -f swift-test 2>/dev/null || true
 
-# When enabled, use:
-# swift test \
-#     --enable-code-coverage \
-#     --parallel \
-#     --filter "ClarityIntegrationTests" \
-#     --xunit-output .build/test-results/integration-tests.xml
+# Build once strategy - compile dependencies first
+echo "🔨 Building project (one-time compilation)..."
+swift build --configuration debug
 
-# Generate coverage report when tests are enabled
-# xcrun xcresulttool get --path .build/debug/codecov/action.xccovreport --format json > coverage-integration.json
+# Run integration tests with coverage
+echo "🧪 Running integration tests without rebuilding..."
+swift test \
+    --skip-build \
+    --enable-code-coverage \
+    --parallel \
+    --filter "ClarityIntegrationTests" \
+    --xunit-output .build/test-results/integration-tests.xml
 
-echo "⏭️  Skipping integration tests (disabled)"
+# Generate coverage report if tests passed
+if [ $? -eq 0 ]; then
+    echo "📊 Generating Coverage Report..."
+    if [ -f .build/debug/codecov/action.xccovreport ]; then
+        xcrun xcresulttool get --path .build/debug/codecov/action.xccovreport --format json > coverage-integration.json
+    fi
+fi
+
+echo "✅ Integration tests completed successfully!"

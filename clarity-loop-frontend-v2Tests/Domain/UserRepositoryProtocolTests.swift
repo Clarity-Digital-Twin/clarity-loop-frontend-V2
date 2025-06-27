@@ -18,7 +18,7 @@ final class UserRepositoryProtocolTests: XCTestCase {
         
         func create(_ user: User) async throws -> User {
             if shouldThrowError {
-                throw RepositoryError.saveFailed
+                throw RepositoryError.saveFailed("Test error")
             }
             users[user.id] = user
             return user
@@ -26,14 +26,14 @@ final class UserRepositoryProtocolTests: XCTestCase {
         
         func findById(_ id: UUID) async throws -> User? {
             if shouldThrowError {
-                throw RepositoryError.fetchFailed
+                throw RepositoryError.fetchFailed("Test error")("Test error")
             }
             return users[id]
         }
         
         func findByEmail(_ email: String) async throws -> User? {
             if shouldThrowError {
-                throw RepositoryError.fetchFailed
+                throw RepositoryError.fetchFailed("Test error")
             }
             return users.values.first { $0.email == email }
         }
@@ -41,7 +41,7 @@ final class UserRepositoryProtocolTests: XCTestCase {
         @MainActor
         func update(_ user: User) async throws -> User {
             if shouldThrowError {
-                throw RepositoryError.updateFailed
+                throw RepositoryError.updateFailed("Test error")
             }
             guard users[user.id] != nil else {
                 throw RepositoryError.notFound
@@ -52,14 +52,14 @@ final class UserRepositoryProtocolTests: XCTestCase {
         
         func delete(_ id: UUID) async throws {
             if shouldThrowError {
-                throw RepositoryError.deleteFailed
+                throw RepositoryError.deleteFailed("Test error")
             }
             users.removeValue(forKey: id)
         }
         
         func findAll() async throws -> [User] {
             if shouldThrowError {
-                throw RepositoryError.fetchFailed
+                throw RepositoryError.fetchFailed("Test error")
             }
             return Array(users.values)
         }

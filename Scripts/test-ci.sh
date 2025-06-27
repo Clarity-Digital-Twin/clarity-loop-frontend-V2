@@ -25,19 +25,25 @@ check_coverage() {
     fi
 }
 
-# Clean previous build artifacts
-echo "🧹 Cleaning build artifacts..."
-swift package clean
+# Kill any zombie Swift processes before starting
+echo "🧹 Cleaning up any stuck processes..."
+pkill -f swift-frontend 2>/dev/null || true
+pkill -f swift-driver 2>/dev/null || true
+pkill -f swift-test 2>/dev/null || true
+
+# Clean previous test results only (keep build cache)
+echo "🧹 Cleaning test results..."
 rm -rf .build/test-results
 mkdir -p .build/test-results
 
-# Build the project
-echo "🔨 Building project..."
+# Build the project once
+echo "🔨 Building project (one-time compilation)..."
 swift build --configuration debug
 
-# Run tests with coverage and JUnit output
-echo "🧪 Running tests..."
+# Run tests with coverage and JUnit output using skip-build
+echo "🧪 Running tests without rebuilding..."
 swift test \
+    --skip-build \
     --enable-code-coverage \
     --parallel \
     --xunit-output .build/test-results/tests.xml \

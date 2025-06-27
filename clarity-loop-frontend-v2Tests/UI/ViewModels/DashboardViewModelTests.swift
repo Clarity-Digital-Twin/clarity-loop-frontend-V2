@@ -302,7 +302,7 @@ private final class MockHealthMetricRepository: HealthMetricRepositoryProtocol, 
         }
         
         if shouldThrowError {
-            throw RepositoryError.fetchFailed
+            throw RepositoryError.fetchFailed("Test error")
         }
         
         return mockMetrics.filter { $0.userId == userId }

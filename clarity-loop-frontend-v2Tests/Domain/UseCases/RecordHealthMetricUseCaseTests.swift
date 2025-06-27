@@ -18,7 +18,7 @@ final class RecordHealthMetricUseCaseTests: XCTestCase {
         
         func create(_ metric: HealthMetric) async throws -> HealthMetric {
             if shouldThrowError {
-                throw RepositoryError.saveFailed
+                throw RepositoryError.saveFailed("Test error")
             }
             metrics[metric.id] = metric
             return metric
@@ -26,7 +26,7 @@ final class RecordHealthMetricUseCaseTests: XCTestCase {
         
         func createBatch(_ metrics: [HealthMetric]) async throws -> [HealthMetric] {
             if shouldThrowError {
-                throw RepositoryError.saveFailed
+                throw RepositoryError.saveFailed("Test error")
             }
             for metric in metrics {
                 self.metrics[metric.id] = metric

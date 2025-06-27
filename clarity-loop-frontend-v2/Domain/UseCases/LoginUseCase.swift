@@ -48,10 +48,10 @@ public final class LoginUseCase: LoginUseCaseProtocol, Sendable {
         }
         
         // Update last login time
-        user.updateLastLogin()
-        _ = try await userRepository.update(user)
+        let updatedUser = user.withUpdatedLastLogin()
+        _ = try await userRepository.update(updatedUser)
         
-        return user
+        return updatedUser
     }
     
     /// Validates login input

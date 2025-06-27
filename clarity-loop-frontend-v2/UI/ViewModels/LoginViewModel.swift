@@ -53,12 +53,8 @@ public final class LoginViewModel {
             // Clear sensitive data
             password = ""
             
-        } catch let error as NetworkError {
-            viewState = .error(error.localizedDescription)
-        } catch let error as AuthError {
-            viewState = .error(error.localizedDescription)
         } catch {
-            viewState = .error("An unexpected error occurred")
+            viewState = .error(error)
         }
     }
     

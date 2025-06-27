@@ -119,7 +119,24 @@ final class DashboardViewModelTests: XCTestCase {
         await sut.loadRecentMetrics()
         
         // Then
-        XCTAssertEqual(sut.metricsState, .error("Failed to load health metrics"))
+        if case .error(let error) = sut.metricsState {
+            XCTAssertTrue(error is RepositoryError)
+        } else {
+            XCTFail("Expected error state")
+        }
+        XCTAssertTrue(sut.recentMetrics.isEmpty)
+    }
+    
+    @MainActor
+    func test_whenLoadingMetrics_withNoData_shouldShowEmpty() async {
+        // Given
+        mockHealthMetricRepository.mockMetrics = []
+        
+        // When
+        await sut.loadRecentMetrics()
+        
+        // Then
+        XCTAssertEqual(sut.metricsState, .empty)
         XCTAssertTrue(sut.recentMetrics.isEmpty)
     }
     

@@ -132,7 +132,12 @@ final class LoginViewModelTests: XCTestCase {
         await sut.login()
         
         // Then
-        XCTAssertEqual(sut.viewState, .error("Invalid email or password"))
+        if case .error(let error) = sut.viewState {
+            XCTAssertTrue(error is AuthError)
+            XCTAssertEqual(error as? AuthError, AuthError.invalidCredentials)
+        } else {
+            XCTFail("Expected error state")
+        }
     }
     
     @MainActor
@@ -146,7 +151,12 @@ final class LoginViewModelTests: XCTestCase {
         await sut.login()
         
         // Then
-        XCTAssertEqual(sut.viewState, .error("No internet connection"))
+        if case .error(let error) = sut.viewState {
+            XCTAssertTrue(error is NetworkError)
+            XCTAssertEqual(error as? NetworkError, NetworkError.noConnection)
+        } else {
+            XCTFail("Expected error state")
+        }
     }
     
     // MARK: - Clear Error Tests
@@ -158,7 +168,11 @@ final class LoginViewModelTests: XCTestCase {
         sut.email = "test@example.com"
         sut.password = "wrong"
         await sut.login()
-        XCTAssertEqual(sut.viewState, .error("Invalid email or password"))
+        if case .error = sut.viewState {
+            // Success - we have an error state
+        } else {
+            XCTFail("Expected error state before clearing")
+        }
         
         // When
         sut.clearError()

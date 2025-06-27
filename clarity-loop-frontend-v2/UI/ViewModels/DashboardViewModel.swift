@@ -60,10 +60,10 @@ public final class DashboardViewModel {
             let sortedMetrics = metrics.sorted { $0.recordedAt > $1.recordedAt }
             
             recentMetrics = sortedMetrics
-            metricsState = .success(sortedMetrics)
+            metricsState = sortedMetrics.isEmpty ? .empty : .success(sortedMetrics)
             
         } catch {
-            metricsState = .error("Failed to load health metrics")
+            metricsState = .error(error)
             recentMetrics = []
         }
     }

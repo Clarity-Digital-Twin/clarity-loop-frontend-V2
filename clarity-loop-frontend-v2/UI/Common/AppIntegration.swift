@@ -7,6 +7,7 @@
 
 import SwiftUI
 import ClarityCore
+import ClarityDomain
 
 /// Example of how to integrate dependencies in the main App struct
 ///

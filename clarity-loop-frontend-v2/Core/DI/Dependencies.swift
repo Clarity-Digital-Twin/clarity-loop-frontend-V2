@@ -9,7 +9,6 @@ import Foundation
 import SwiftUI
 
 /// Thread-safe dependency container for SwiftUI Environment
-@MainActor
 public final class Dependencies: ObservableObject {
     
     // MARK: - Types

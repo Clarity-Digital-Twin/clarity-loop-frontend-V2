@@ -8,8 +8,8 @@
 import Foundation
 import SwiftUI
 import SwiftData
+import ClarityCore
 import ClarityDomain
-import ClarityData
 @preconcurrency import Amplify
 import AWSCognitoAuthPlugin
 import AWSAPIPlugin

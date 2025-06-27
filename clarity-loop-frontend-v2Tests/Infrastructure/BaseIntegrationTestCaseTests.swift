@@ -40,13 +40,13 @@ final class BaseIntegrationTestCaseTests: XCTestCase {
         XCTAssertNotNil(testCase.testContainer.resolve(AuthServiceProtocol.self))
     }
     
-    func test_baseIntegrationTestCase_cleansUpAfterTest() {
+    func test_baseIntegrationTestCase_cleansUpAfterTest() async {
         // Given
         let testCase = TestIntegrationCase()
         testCase.setUpIntegration()
         
         // When
-        testCase.tearDownIntegration()
+        await testCase.tearDownIntegration()
         
         // Then
         XCTAssertTrue(testCase.tearDownCalled)

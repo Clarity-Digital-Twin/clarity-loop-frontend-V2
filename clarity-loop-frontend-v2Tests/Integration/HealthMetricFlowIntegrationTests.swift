@@ -18,8 +18,10 @@ final class HealthMetricFlowIntegrationTests: BaseIntegrationTestCase {
     }
     
     override func tearDown() {
-        tearDownIntegration()
         super.tearDown()
+        Task {
+            await tearDownIntegration()
+        }
     }
     
     // MARK: - Health Metric Recording Flow

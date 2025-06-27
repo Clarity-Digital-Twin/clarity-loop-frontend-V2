@@ -18,8 +18,10 @@ final class LoginFlowIntegrationTests: BaseIntegrationTestCase {
     }
     
     override func tearDown() {
-        tearDownIntegration()
         super.tearDown()
+        Task {
+            await tearDownIntegration()
+        }
     }
     
     // MARK: - Login Flow Integration Tests

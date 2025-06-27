@@ -80,7 +80,6 @@ final class SwiftDataRepositoryTests: XCTestCase {
         // Create repository
         sut = SwiftDataRepository(
             modelContainer: modelContainer,
-            modelType: TestModel.self,
             mapper: TestEntityMapper()
         )
     }
@@ -289,8 +288,7 @@ final class SwiftDataRepositoryTests: XCTestCase {
         }
         
         let sortDescriptor = RepositorySortDescriptor<TestEntity>(
-            keyPath: \TestEntity.value,
-            ascending: true
+            compare: { $0.value < $1.value }
         )
         
         // When

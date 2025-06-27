@@ -370,8 +370,129 @@
         "dependencies": [
           12
         ],
-        "status": "pending",
-        "subtasks": []
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Define ViewState enum",
+            "description": "Create a ViewState enum to represent different UI states (loading, success, error, etc.)",
+            "dependencies": [],
+            "details": "Create an enum ViewState in UI/Common/ViewState.swift with cases for loading, success, error (with associated error value), and empty states. Include helper methods for state checking.",
+            "status": "done",
+            "testStrategy": "Write unit tests to verify state transitions and helper methods work correctly."
+          },
+          {
+            "id": 2,
+            "title": "Create BaseViewModel protocol",
+            "description": "Define a protocol that outlines the core functionality of the BaseViewModel",
+            "dependencies": [
+              1
+            ],
+            "details": "Create UI/Common/BaseViewModelProtocol.swift with requirements for viewState property, load() method, and error handling methods. This will serve as a contract for the concrete implementation.",
+            "status": "done",
+            "testStrategy": "No direct tests needed as this is just a protocol definition."
+          },
+          {
+            "id": 3,
+            "title": "Implement BaseViewModel class with @Observable",
+            "description": "Create the base class with @Observable macro and ViewState property",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Create UI/Common/BaseViewModel.swift with @Observable macro. Include a viewState property of type ViewState with a default value of .loading. Ensure Swift 6 compatibility.",
+            "status": "done",
+            "testStrategy": "Write tests to verify the observable behavior works correctly when viewState changes."
+          },
+          {
+            "id": 4,
+            "title": "Implement load() template method",
+            "description": "Add the load() method that subclasses will override",
+            "dependencies": [
+              3
+            ],
+            "details": "Add a load() method in BaseViewModel that sets viewState to .loading and calls an internal loadData() method that subclasses will override. Make loadData() a required override method.",
+            "status": "done",
+            "testStrategy": "Create a test subclass to verify the template method pattern works correctly and that viewState changes to loading when load() is called."
+          },
+          {
+            "id": 5,
+            "title": "Add error handling helpers",
+            "description": "Implement methods to handle and process errors",
+            "dependencies": [
+              3
+            ],
+            "details": "Add handleError(error:) method that sets viewState to .error with the provided error. Include utility methods for common error scenarios and error transformation.",
+            "status": "done",
+            "testStrategy": "Test that errors are properly captured in viewState and that error handling methods work as expected."
+          },
+          {
+            "id": 6,
+            "title": "Implement success state handling",
+            "description": "Add methods to set and handle success states",
+            "dependencies": [
+              3
+            ],
+            "details": "Add setSuccess() and setEmpty() methods to update viewState appropriately. Include logic to determine if a successful result should be considered empty.",
+            "status": "done",
+            "testStrategy": "Test that success and empty states are correctly set based on different input scenarios."
+          },
+          {
+            "id": 7,
+            "title": "Add state observation utilities",
+            "description": "Create helper methods for state observation in views",
+            "dependencies": [
+              3,
+              5,
+              6
+            ],
+            "details": "Implement isLoading, isError, isSuccess, and isEmpty computed properties to make state checking more convenient in SwiftUI views.",
+            "status": "done",
+            "testStrategy": "Test each computed property to ensure it correctly reflects the current viewState."
+          },
+          {
+            "id": 8,
+            "title": "Create a mock BaseViewModel for testing",
+            "description": "Implement a testable version of BaseViewModel for unit tests",
+            "dependencies": [
+              4,
+              5,
+              6,
+              7
+            ],
+            "details": "Create UI/Common/Testing/MockBaseViewModel.swift that extends BaseViewModel with additional methods to manipulate state directly for testing purposes.",
+            "status": "done",
+            "testStrategy": "Use this mock in other tests to verify view behavior with different viewState values."
+          },
+          {
+            "id": 9,
+            "title": "Implement BaseViewModel documentation",
+            "description": "Add comprehensive documentation with examples",
+            "dependencies": [
+              4,
+              5,
+              6,
+              7
+            ],
+            "details": "Add detailed documentation comments to BaseViewModel.swift explaining usage patterns, subclassing requirements, and providing code examples. Include Swift DocC compatible markup.",
+            "status": "done",
+            "testStrategy": "Verify documentation builds correctly with DocC and examples compile without errors."
+          },
+          {
+            "id": 10,
+            "title": "Create a sample implementation",
+            "description": "Implement a concrete example ViewModel using BaseViewModel",
+            "dependencies": [
+              4,
+              5,
+              6,
+              7
+            ],
+            "details": "Create Examples/SampleViewModel.swift that extends BaseViewModel to demonstrate proper implementation patterns, including overriding loadData() and handling different states.",
+            "status": "done",
+            "testStrategy": "Write comprehensive tests for SampleViewModel to demonstrate testing patterns for concrete implementations."
+          }
+        ]
       },
       {
         "id": 14,
@@ -964,7 +1085,120 @@
           12
         ],
         "status": "pending",
-        "subtasks": []
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create DashboardViewModel test file structure",
+            "description": "Set up the test file structure for DashboardViewModel following TDD principles",
+            "dependencies": [],
+            "details": "Create DashboardViewModelTests.swift with proper imports, test class declaration, and setup/teardown methods. Include mock dependencies that will be needed for testing (UserService, HealthMetricsService, etc.). Prepare test doubles and stubs for all external dependencies.",
+            "status": "pending",
+            "testStrategy": "Create empty test methods for all expected functionality to guide implementation"
+          },
+          {
+            "id": 2,
+            "title": "Implement DashboardViewModel base structure",
+            "description": "Create the basic structure of DashboardViewModel that extends BaseViewModel",
+            "dependencies": [
+              1
+            ],
+            "details": "Create UI/Dashboard/DashboardViewModel.swift file. Implement class that extends BaseViewModel. Define required properties for state management (loading state, error state, user profile data, health metrics data). Add necessary service dependencies via dependency injection in the initializer.",
+            "status": "pending",
+            "testStrategy": "Test initializer and verify default state values are set correctly"
+          },
+          {
+            "id": 3,
+            "title": "Implement user profile data fetching",
+            "description": "Add functionality to fetch user profile data from the UserService",
+            "dependencies": [
+              2
+            ],
+            "details": "Create a method fetchUserProfile() that calls the UserService to retrieve user data. Handle the async response and update the viewModel state accordingly. Implement proper error handling and loading state management during the fetch operation.",
+            "status": "pending",
+            "testStrategy": "Test successful fetch scenario, error scenarios, and loading state transitions"
+          },
+          {
+            "id": 4,
+            "title": "Implement health metrics data fetching",
+            "description": "Add functionality to fetch health metrics data from the HealthMetricsService",
+            "dependencies": [
+              2
+            ],
+            "details": "Create a method fetchHealthMetrics() that calls the HealthMetricsService to retrieve health data. Handle the async response and update the viewModel state. Implement proper error handling and loading state management during the fetch operation.",
+            "status": "pending",
+            "testStrategy": "Test successful fetch scenario, error scenarios, and loading state transitions"
+          },
+          {
+            "id": 5,
+            "title": "Implement dashboard data initialization",
+            "description": "Create a method to initialize all dashboard data at once",
+            "dependencies": [
+              3,
+              4
+            ],
+            "details": "Implement loadDashboardData() method that calls both fetchUserProfile() and fetchHealthMetrics() methods. Handle the combined state management to show loading during any active fetch and properly aggregate errors if they occur in either fetch operation.",
+            "status": "pending",
+            "testStrategy": "Test combined loading scenarios, partial success scenarios (one fetch succeeds, one fails), and full success scenario"
+          },
+          {
+            "id": 6,
+            "title": "Implement refresh functionality",
+            "description": "Add functionality to refresh all dashboard data",
+            "dependencies": [
+              5
+            ],
+            "details": "Create a refresh() method that clears current data and triggers loadDashboardData(). Ensure proper loading state management during refresh. Add timestamp tracking for last refresh time.",
+            "status": "pending",
+            "testStrategy": "Test refresh behavior, verify data is cleared before fetching new data, and test loading state transitions"
+          },
+          {
+            "id": 7,
+            "title": "Implement error handling and retry logic",
+            "description": "Add comprehensive error handling and retry functionality",
+            "dependencies": [
+              5
+            ],
+            "details": "Enhance error handling to categorize different error types (network, authentication, server, etc.). Implement a retry mechanism for failed operations with exponential backoff. Create user-friendly error messages based on error types.",
+            "status": "pending",
+            "testStrategy": "Test different error scenarios and verify correct error categorization. Test retry logic with different failure patterns."
+          },
+          {
+            "id": 8,
+            "title": "Implement real-time updates subscription",
+            "description": "Add functionality to subscribe to real-time updates for dashboard data",
+            "dependencies": [
+              5
+            ],
+            "details": "Create methods to subscribe to real-time updates from relevant services. Implement handlers to process incoming updates and merge them with existing data. Ensure proper resource management by unsubscribing when appropriate.",
+            "status": "pending",
+            "testStrategy": "Test subscription setup, update handling, and proper cleanup on deinitialization"
+          },
+          {
+            "id": 9,
+            "title": "Implement dashboard state persistence",
+            "description": "Add functionality to save and restore dashboard state",
+            "dependencies": [
+              5
+            ],
+            "details": "Implement methods to serialize dashboard state and persist it locally. Add functionality to restore state from persistence on initialization. Handle migration of persisted data between app versions.",
+            "status": "pending",
+            "testStrategy": "Test state serialization, persistence, and restoration with various data scenarios"
+          },
+          {
+            "id": 10,
+            "title": "Implement dashboard analytics tracking",
+            "description": "Add analytics tracking for dashboard interactions and state changes",
+            "dependencies": [
+              6,
+              7,
+              8,
+              9
+            ],
+            "details": "Integrate with analytics service to track dashboard views, data refresh actions, error occurrences, and feature usage. Implement proper event naming and parameter passing according to analytics requirements.",
+            "status": "pending",
+            "testStrategy": "Test that correct analytics events are triggered with appropriate parameters for different user actions and state changes"
+          }
+        ]
       },
       {
         "id": 58,
@@ -2861,7 +3095,7 @@
     ],
     "metadata": {
       "created": "2025-06-25T16:21:52.741Z",
-      "updated": "2025-06-27T17:34:29.158Z",
+      "updated": "2025-06-27T23:11:40.600Z",
       "description": "CLARITY Pulse V2 - Vertical Slice Development Tasks"
     }
   }

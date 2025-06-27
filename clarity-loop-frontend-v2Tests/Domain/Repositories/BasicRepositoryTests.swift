@@ -69,8 +69,7 @@ final class BasicRepositoryTests: XCTestCase {
         ]
         
         let sortDescriptor = RepositorySortDescriptor<TestEntity>(
-            keyPath: \TestEntity.name,
-            ascending: true
+            compare: { $0.name < $1.name }
         )
         
         // When
@@ -89,8 +88,7 @@ final class BasicRepositoryTests: XCTestCase {
         ]
         
         let sortDescriptor = RepositorySortDescriptor<TestEntity>(
-            keyPath: \TestEntity.name,
-            ascending: false
+            compare: { $0.name > $1.name }
         )
         
         // When

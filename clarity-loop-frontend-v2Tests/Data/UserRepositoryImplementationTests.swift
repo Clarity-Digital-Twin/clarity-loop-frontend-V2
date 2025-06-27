@@ -144,21 +144,21 @@ final class UserRepositoryImplementationTests: XCTestCase {
         mockPersistence.savedUsers[user.id] = user
         
         // Update the user
-        user.updateLastLogin()
+        let userWithLogin = user.withUpdatedLastLogin()
         
         let updatedDTO = UserDTO(
-            id: user.id.uuidString,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            createdAt: ISO8601DateFormatter().string(from: user.createdAt),
-            lastLoginAt: user.lastLoginAt.map { ISO8601DateFormatter().string(from: $0) }
+            id: userWithLogin.id.uuidString,
+            email: userWithLogin.email,
+            firstName: userWithLogin.firstName,
+            lastName: userWithLogin.lastName,
+            createdAt: ISO8601DateFormatter().string(from: userWithLogin.createdAt),
+            lastLoginAt: userWithLogin.lastLoginAt.map { ISO8601DateFormatter().string(from: $0) }
         )
         
         mockAPIClient.mockResponse = updatedDTO
         
         // When
-        let updatedUser = try await sut.update(user)
+        let updatedUser = try await sut.update(userWithLogin)
         
         // Then
         XCTAssertNotNil(updatedUser.lastLoginAt)
@@ -247,7 +247,7 @@ private final class MockPersistenceService: PersistenceServiceProtocol, @uncheck
     
     func save<T>(_ object: T) async throws where T: Identifiable {
         if let user = object as? User {
-            savedUsers[user.id as! UUID] = user
+            savedUsers[user.id] = user
         }
     }
     

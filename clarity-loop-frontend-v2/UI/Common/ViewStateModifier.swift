@@ -8,7 +8,7 @@
 import SwiftUI
 
 /// View modifier that renders content based on ViewState
-public struct ViewStateModifier<T: Equatable, IdleView: View, LoadingView: View, EmptyView: View, ErrorView: View>: ViewModifier {
+public struct ViewStateModifier<T: Equatable & Sendable, IdleView: View, LoadingView: View, EmptyView: View, ErrorView: View>: ViewModifier {
     let state: ViewState<T>
     let idleView: () -> IdleView
     let loadingView: () -> LoadingView
@@ -54,7 +54,7 @@ public extension View {
     ///         }
     ///     }
     /// ```
-    func viewState<T: Equatable, IdleView: View, LoadingView: View, EmptyContentView: View, ErrorView: View, SuccessView: View>(
+    func viewState<T: Equatable & Sendable, IdleView: View, LoadingView: View, EmptyContentView: View, ErrorView: View, SuccessView: View>(
         _ state: ViewState<T>,
         idle: @escaping () -> IdleView = { SwiftUI.EmptyView() },
         loading: @escaping () -> LoadingView = { ProgressView() },
@@ -85,7 +85,7 @@ public extension View {
     ///         }
     ///     }
     /// ```
-    func viewState<T: Equatable, SuccessView: View>(
+    func viewState<T: Equatable & Sendable, SuccessView: View>(
         _ state: ViewState<T>,
         success: @escaping (T) -> SuccessView
     ) -> some View {

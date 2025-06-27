@@ -30,7 +30,7 @@ import Foundation
 ///     }
 /// }
 /// ```
-public enum ViewState<T: Equatable>: Equatable {
+public enum ViewState<T: Equatable>: Equatable, Sendable where T: Sendable {
     /// Initial state before any operation
     case idle
     
@@ -121,7 +121,7 @@ public extension ViewState {
     ///
     /// - Parameter transform: Closure to transform the value
     /// - Returns: A new ViewState with the transformed value
-    func map<U: Equatable>(_ transform: (T) -> U) -> ViewState<U> {
+    func map<U: Equatable & Sendable>(_ transform: (T) -> U) -> ViewState<U> {
         switch self {
         case .idle:
             return .idle

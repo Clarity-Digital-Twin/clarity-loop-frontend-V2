@@ -313,7 +313,7 @@ final class RepositoryProtocolTests: XCTestCase {
             _ = try await repository.create(entity)
         }
         
-        let sortDescriptor = RepositorySortDescriptor<TestEntity>(keyPath: \.name, ascending: true)
+        let sortDescriptor = RepositorySortDescriptor<TestEntity>(compare: { $0.name < $1.name })
         
         // When
         let results = try await repository.list(sortBy: [sortDescriptor])

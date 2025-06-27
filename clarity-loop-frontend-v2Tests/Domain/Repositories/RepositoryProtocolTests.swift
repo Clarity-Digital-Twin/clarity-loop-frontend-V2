@@ -34,7 +34,7 @@ final class RepositoryProtocolTests: XCTestCase {
     
     // MARK: - Mock Repository
     
-    actor MockRepository<T: Entity>: Repository {
+    actor MockRepository<T: Entity & Sendable>: Repository {
         typealias EntityType = T
         
         private var storage: [UUID: T] = [:]

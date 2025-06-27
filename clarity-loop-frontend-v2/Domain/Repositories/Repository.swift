@@ -53,20 +53,20 @@ public protocol Repository: Actor {
     /// - Returns: Array of entities matching the criteria
     /// - Throws: RepositoryError if the query fails
     func list(
-        predicate: RepositoryRepositoryPredicate<EntityType>?,
-        sortBy: [RepositoryRepositorySortDescriptor<EntityType>]
+        predicate: RepositoryPredicate<EntityType>?,
+        sortBy: [RepositorySortDescriptor<EntityType>]
     ) async throws -> [EntityType]
     
     /// Counts entities matching optional criteria
     /// - Parameter predicate: Optional predicate to filter counted entities
     /// - Returns: The count of matching entities
     /// - Throws: RepositoryError if the count operation fails
-    func count(predicate: RepositoryRepositoryPredicate<EntityType>?) async throws -> Int
+    func count(predicate: RepositoryPredicate<EntityType>?) async throws -> Int
     
     /// Deletes all entities matching optional criteria
     /// - Parameter predicate: Optional predicate to filter entities to delete
     /// - Throws: RepositoryError if the delete operation fails
-    func deleteAll(predicate: RepositoryRepositoryPredicate<EntityType>?) async throws
+    func deleteAll(predicate: RepositoryPredicate<EntityType>?) async throws
 }
 
 // MARK: - Default Implementations
@@ -78,12 +78,12 @@ public extension Repository {
     }
     
     /// Lists entities with filtering but no sorting
-    func list(predicate: RepositoryRepositoryPredicate<EntityType>?) async throws -> [EntityType] {
+    func list(predicate: RepositoryPredicate<EntityType>?) async throws -> [EntityType] {
         try await list(predicate: predicate, sortBy: [])
     }
     
     /// Lists entities with sorting but no filtering
-    func list(sortBy: [RepositoryRepositorySortDescriptor<EntityType>]) async throws -> [EntityType] {
+    func list(sortBy: [RepositorySortDescriptor<EntityType>]) async throws -> [EntityType] {
         try await list(predicate: nil, sortBy: sortBy)
     }
     
@@ -101,7 +101,7 @@ public extension Repository {
 // MARK: - Query Support Types
 
 /// Type-safe predicate for filtering entities
-public struct RepositoryRepositoryPredicate<T> {
+public struct RepositoryPredicate<T> {
     /// The evaluation closure
     public let evaluate: (T) -> Bool
     
@@ -113,7 +113,7 @@ public struct RepositoryRepositoryPredicate<T> {
 }
 
 /// Type-safe sort descriptor for ordering entities
-public struct RepositoryRepositorySortDescriptor<T> {
+public struct RepositorySortDescriptor<T> {
     /// The comparison closure
     public let compare: (T, T) -> Bool
     

@@ -164,11 +164,11 @@ final class UserEntityTests: XCTestCase {
         XCTAssertNil(user.lastLoginAt)
         
         // When
-        user.updateLastLogin()
+        let updatedUser = user.withUpdatedLastLogin()
         
         // Then
-        XCTAssertNotNil(user.lastLoginAt)
-        XCTAssertTrue(user.lastLoginAt! <= Date())
+        XCTAssertNotNil(updatedUser.lastLoginAt)
+        XCTAssertTrue(updatedUser.lastLoginAt! <= Date())
     }
     
     // MARK: - Test Equatable

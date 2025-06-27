@@ -12,7 +12,7 @@ import Foundation
 /// The User entity encapsulates all user-related data and business logic,
 /// following Domain-Driven Design principles. It represents a registered
 /// user who can track health metrics and interact with the system.
-public struct User: Entity, Equatable, Hashable, Codable {
+public struct User: Entity, Equatable, Hashable, Codable, Sendable {
     // MARK: - Entity Protocol Requirements
     
     public let id: UUID

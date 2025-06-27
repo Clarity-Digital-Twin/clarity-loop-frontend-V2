@@ -26,7 +26,7 @@ final class UserRepositoryProtocolTests: XCTestCase {
         
         func findById(_ id: UUID) async throws -> User? {
             if shouldThrowError {
-                throw RepositoryError.fetchFailed("Test error")("Test error")
+                throw RepositoryError.fetchFailed("Test error")
             }
             return users[id]
         }
@@ -137,12 +137,12 @@ final class UserRepositoryProtocolTests: XCTestCase {
         _ = try await repository.create(user)
         
         // When
-        user.updateLastLogin()
-        let updatedUser = try await repository.update(user)
+        let userWithUpdatedLogin = user.withUpdatedLastLogin()
+        let updatedUser = try await repository.update(userWithUpdatedLogin)
         
         // Then
         XCTAssertNotNil(updatedUser.lastLoginAt)
-        XCTAssertEqual(repository.users[user.id]?.lastLoginAt, user.lastLoginAt)
+        XCTAssertEqual(repository.users[user.id]?.lastLoginAt, updatedUser.lastLoginAt)
     }
     
     func test_whenDeletingUser_shouldRemoveFromRepository() async throws {

@@ -45,9 +45,11 @@ open class BaseIntegrationTestCase: BaseUnitTestCase {
     }
     
     /// Clean up integration test environment
-    open func tearDownIntegration() {
+    open func tearDownIntegration() async {
         // Clean up test data
-        testPersistence?.clearAll()
+        if let persistence = testPersistence {
+            await persistence.clearAll()
+        }
         
         // Reset container
         testContainer = nil
@@ -289,40 +291,53 @@ final class MockNetworkClient: APIClientProtocol {
 /// Mock persistence service for integration tests
 final class MockPersistenceService: PersistenceServiceProtocol {
     
-    private let storageLock = NSLock()
-    private var storage: [String: Any] = [:]
+    private actor Storage {
+        private var storage: [String: Any] = [:]
+        
+        func save(key: String, value: Any) {
+            storage[key] = value
+        }
+        
+        func fetch(key: String) -> Any? {
+            return storage[key]
+        }
+        
+        func fetchAll<T>() -> [T] {
+            return storage.values.compactMap { $0 as? T }
+        }
+        
+        func delete(key: String) {
+            storage.removeValue(forKey: key)
+        }
+        
+        func clear() {
+            storage.removeAll()
+        }
+    }
+    
+    private let storage = Storage()
     
     func save<T>(_ object: T) async throws where T: Identifiable {
         let key = "\(type(of: object))-\(object.id)"
-        storageLock.lock()
-        storage[key] = object
-        storageLock.unlock()
+        await storage.save(key: key, value: object)
     }
     
     func fetch<T>(_ id: T.ID) async throws -> T? where T: Identifiable {
         let key = "\(T.self)-\(id)"
-        storageLock.lock()
-        defer { storageLock.unlock() }
-        return storage[key] as? T
+        return await storage.fetch(key: key) as? T
     }
     
     func fetchAll<T>() async throws -> [T] where T: Identifiable {
-        storageLock.lock()
-        defer { storageLock.unlock() }
-        return storage.values.compactMap { $0 as? T }
+        return await storage.fetchAll()
     }
     
     func delete<T>(type: T.Type, id: T.ID) async throws where T: Identifiable {
         let key = "\(type)-\(id)"
-        storageLock.lock()
-        storage.removeValue(forKey: key)
-        storageLock.unlock()
+        await storage.delete(key: key)
     }
     
-    func clearAll() {
-        storageLock.lock()
-        storage.removeAll()
-        storageLock.unlock()
+    func clearAll() async {
+        await storage.clear()
     }
 }
 

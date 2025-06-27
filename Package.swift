@@ -101,18 +101,16 @@ let package = Package(
             dependencies: ["ClarityData", "ClarityDomain", "ClarityCore"],
             path: "clarity-loop-frontend-v2Tests/Data"
         ),
-        // Infrastructure tests temporarily disabled due to compilation issues
-        // .testTarget(
-        //     name: "ClarityInfrastructureTests",
-        //     dependencies: ["ClarityData", "ClarityDomain", "ClarityCore"],
-        //     path: "clarity-loop-frontend-v2Tests/Infrastructure"
-        // ),
-        // Integration tests temporarily disabled due to compilation issues
-        // .testTarget(
-        //     name: "ClarityIntegrationTests",
-        //     dependencies: ["ClarityCore", "ClarityDomain", "ClarityData"],
-        //     path: "clarity-loop-frontend-v2Tests/Integration"
-        // ),
+        .testTarget(
+            name: "ClarityInfrastructureTests",
+            dependencies: ["ClarityData", "ClarityDomain", "ClarityCore", "ClarityUI"],
+            path: "clarity-loop-frontend-v2Tests/Infrastructure"
+        ),
+        .testTarget(
+            name: "ClarityIntegrationTests",
+            dependencies: ["ClarityCore", "ClarityDomain", "ClarityData", "ClarityUI"],
+            path: "clarity-loop-frontend-v2Tests/Integration"
+        ),
         .testTarget(
             name: "ClarityUITests",
             dependencies: ["ClarityUI", "ClarityDomain", "ClarityData"],

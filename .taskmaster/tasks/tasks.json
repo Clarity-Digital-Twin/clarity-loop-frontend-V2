@@ -246,7 +246,7 @@
               5
             ],
             "details": "1. Create separate schemes for unit, integration, and UI tests\n2. Configure code coverage settings for each scheme\n3. Set up test plans with different configurations\n4. Configure CI-friendly test execution options\n5. Add performance testing baseline configurations",
-            "status": "in-progress",
+            "status": "done",
             "testStrategy": "Manually verify that each scheme runs the correct tests and generates appropriate coverage reports"
           },
           {
@@ -2861,7 +2861,7 @@
     ],
     "metadata": {
       "created": "2025-06-25T16:21:52.741Z",
-      "updated": "2025-06-26T19:03:33.327Z",
+      "updated": "2025-06-27T00:17:53.808Z",
       "description": "CLARITY Pulse V2 - Vertical Slice Development Tasks"
     }
   }

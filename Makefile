@@ -369,16 +369,15 @@ reset: clean simulator-reset ## Full reset (clean + simulator reset)
 debug-env: ## Show build environment
 	@echo "$(BLUE)Build Environment:$(NC)"
 	@echo "PROJECT_NAME: $(PROJECT_NAME)"
-	@echo "PROJECT: $(PROJECT)"
-	@echo "SCHEME: $(SCHEME)"
-	@echo "SIMULATOR_NAME: $(SIMULATOR_NAME)"
-	@echo "DESTINATION: $(DESTINATION)"
-	@echo ""
-	@echo "$(BLUE)Xcode Version:$(NC)"
-	@xcodebuild -version
+	@echo "PACKAGE_NAME: $(PACKAGE_NAME)"
+	@echo "EXECUTABLE_NAME: $(EXECUTABLE_NAME)"
+	@echo "TEST_TARGETS: $(TEST_TARGETS)"
 	@echo ""
 	@echo "$(BLUE)Swift Version:$(NC)"
 	@swift --version
+	@echo ""
+	@echo "$(BLUE)Package Dependencies:$(NC)"
+	@swift package show-dependencies
 
 # Keep build directory
 .PRECIOUS: $(BUILD_DIR)/

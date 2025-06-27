@@ -27,10 +27,12 @@ final class DashboardViewModelTests: XCTestCase {
         )
         
         mockHealthMetricRepository = MockHealthMetricRepository()
+        let user = mockUser!
+        let repository = mockHealthMetricRepository!
         sut = MainActor.assumeIsolated {
             DashboardViewModel(
-                user: mockUser,
-                healthMetricRepository: mockHealthMetricRepository
+                user: user,
+                healthMetricRepository: repository
             )
         }
     }

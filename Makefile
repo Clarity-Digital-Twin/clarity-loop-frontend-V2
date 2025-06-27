@@ -3,11 +3,9 @@
 
 # Configuration
 PROJECT_NAME = clarity-loop-frontend-v2
-WORKSPACE = $(PROJECT_NAME).xcworkspace
-PROJECT = $(PROJECT_NAME).xcodeproj
-SCHEME = $(PROJECT_NAME)
-TEST_SCHEME = $(PROJECT_NAME)Tests
-UI_TEST_SCHEME = $(PROJECT_NAME)UITests
+PACKAGE_NAME = ClarityPulse
+EXECUTABLE_NAME = ClarityPulseApp
+TEST_TARGETS = ClarityDomainTests ClarityDataTests ClarityUITests ClarityCoreTests
 
 # Simulator Configuration
 SIMULATOR_NAME = iPhone 16
@@ -85,84 +83,117 @@ task-expand: ## Expand task with TDD subtasks (usage: make task-expand ID=15)
 .PHONY: clean
 clean: ## Clean all build artifacts
 	@echo "$(BLUE)Cleaning build artifacts...$(NC)"
-	@./$(SCRIPTS_DIR)/clean.sh
+	@swift package clean
+	@rm -rf .build $(BUILD_DIR)
 	@echo "$(GREEN)✓ Clean complete$(NC)"
 
 .PHONY: build
-build: ## Build for Debug (simulator)
+build: ## Build for Debug
 	@echo "$(BLUE)Building $(PROJECT_NAME) (Debug)...$(NC)"
-	@./$(SCRIPTS_DIR)/build-debug.sh
+	@swift build --configuration debug
 	@echo "$(GREEN)✓ Build complete$(NC)"
 
 .PHONY: build-release
-build-release: ## Build for Release (simulator)
+build-release: ## Build for Release
 	@echo "$(BLUE)Building $(PROJECT_NAME) (Release)...$(NC)"
-	@./$(SCRIPTS_DIR)/build-release.sh
+	@swift build --configuration release
 	@echo "$(GREEN)✓ Release build complete$(NC)"
 
-.PHONY: build-device
-build-device: ## Build for physical device
-	@echo "$(BLUE)Building for device...$(NC)"
-	@xcodebuild build \
-		-project $(PROJECT) \
-		-scheme $(SCHEME) \
-		-configuration $(CONFIGURATION_DEBUG) \
-		-destination generic/platform=iOS \
-		-derivedDataPath $(DERIVED_DATA) \
-		| xcpretty
-	@echo "$(GREEN)✓ Device build complete$(NC)"
+.PHONY: build-ios
+build-ios: ## Build iOS app (requires Xcode)
+	@echo "$(BLUE)Building iOS app...$(NC)"
+	@echo "$(YELLOW)Note: This is a Swift Package. To build for iOS:$(NC)"
+	@echo "$(YELLOW)1. Open Package.swift in Xcode$(NC)"
+	@echo "$(YELLOW)2. Select iOS target and build$(NC)"
+	@echo "$(YELLOW)Or use the MCP XcodeBuild tools for automation$(NC)"
 
 # MARK: - Testing
 
 .PHONY: test
-test: ## Run all tests
+test: ## Run all tests with coverage
 	@echo "$(BLUE)Running all tests...$(NC)"
-	@./$(SCRIPTS_DIR)/run-tests.sh all
+	@./$(SCRIPTS_DIR)/test-all.sh
 	@echo "$(GREEN)✓ Tests complete$(NC)"
 
 .PHONY: test-unit
 test-unit: ## Run unit tests only
 	@echo "$(BLUE)Running unit tests...$(NC)"
-	@./$(SCRIPTS_DIR)/run-tests.sh unit
+	@./$(SCRIPTS_DIR)/test-unit.sh
 	@echo "$(GREEN)✓ Unit tests complete$(NC)"
+
+.PHONY: test-integration
+test-integration: ## Run integration tests only
+	@echo "$(BLUE)Running integration tests...$(NC)"
+	@./$(SCRIPTS_DIR)/test-integration.sh
+	@echo "$(GREEN)✓ Integration tests complete$(NC)"
 
 .PHONY: test-ui
 test-ui: ## Run UI tests only
 	@echo "$(BLUE)Running UI tests...$(NC)"
-	@./$(SCRIPTS_DIR)/run-tests.sh ui
+	@./$(SCRIPTS_DIR)/test-ui.sh
 	@echo "$(GREEN)✓ UI tests complete$(NC)"
+
+.PHONY: test-performance
+test-performance: ## Run performance tests
+	@echo "$(BLUE)Running performance tests...$(NC)"
+	@./$(SCRIPTS_DIR)/test-performance.sh
+	@echo "$(GREEN)✓ Performance tests complete$(NC)"
+
+.PHONY: test-ci
+test-ci: ## Run tests in CI mode with strict coverage
+	@echo "$(BLUE)Running CI tests...$(NC)"
+	@./$(SCRIPTS_DIR)/test-ci.sh
+	@echo "$(GREEN)✓ CI tests complete$(NC)"
 
 .PHONY: test-tdd
 test-tdd: ## Run tests in TDD watch mode
 	@echo "$(BLUE)Starting TDD watch mode...$(NC)"
 	@echo "$(YELLOW)Watching for changes... (Ctrl+C to stop)$(NC)"
 	@while true; do \
-		fswatch -o Sources Tests | xargs -n1 -I{} make test-unit; \
+		fswatch -o clarity-loop-frontend-v2 clarity-loop-frontend-v2Tests | xargs -n1 -I{} swift test; \
 	done
 
 .PHONY: coverage
-coverage: test ## Generate test coverage report
+coverage: ## Generate test coverage report
 	@echo "$(BLUE)Generating coverage report...$(NC)"
 	@mkdir -p $(COVERAGE_DIR)
-	@xcrun xccov view --report $(DERIVED_DATA)/Logs/Test/*.xcresult > $(COVERAGE_DIR)/coverage.txt
+	@swift test --enable-code-coverage
+	@COVERAGE_PATH=$$(swift test --show-codecov-path); \
+	xcrun --sdk macosx llvm-cov report \
+		-instr-profile=$$COVERAGE_PATH \
+		.build/debug/ClarityPulsePackageTests.xctest/Contents/MacOS/ClarityPulsePackageTests \
+		> $(COVERAGE_DIR)/coverage.txt
 	@echo "$(GREEN)✓ Coverage report: $(COVERAGE_DIR)/coverage.txt$(NC)"
+
+.PHONY: coverage-html
+coverage-html: ## Generate HTML coverage report
+	@echo "$(BLUE)Generating HTML coverage report...$(NC)"
+	@mkdir -p $(COVERAGE_DIR)/html
+	@swift test --enable-code-coverage
+	@COVERAGE_PATH=$$(swift test --show-codecov-path); \
+	xcrun --sdk macosx llvm-cov show \
+		-format=html \
+		-instr-profile=$$COVERAGE_PATH \
+		-output-dir=$(COVERAGE_DIR)/html \
+		.build/debug/ClarityPulsePackageTests.xctest/Contents/MacOS/ClarityPulsePackageTests
+	@echo "$(GREEN)✓ HTML coverage report: $(COVERAGE_DIR)/html/index.html$(NC)"
+	@open $(COVERAGE_DIR)/html/index.html
 
 # MARK: - Running
 
 .PHONY: run
-run: build ## Build and run in simulator
-	@echo "$(BLUE)Installing and running...$(NC)"
-	@xcrun simctl boot "$(SIMULATOR_NAME)" 2>/dev/null || true
-	@open -a Simulator
-	@xcrun simctl install booted build/Build/Products/Debug-iphonesimulator/$(SCHEME).app
-	@xcrun simctl launch booted com.clarity.pulse
-	@echo "$(GREEN)✓ App launched$(NC)"
+run: build ## Build and run executable
+	@echo "$(BLUE)Running executable...$(NC)"
+	@swift run ClarityPulseApp
 
-.PHONY: stop
-stop: ## Stop running app in simulator
-	@echo "$(BLUE)Stopping app...$(NC)"
-	@xcrun simctl terminate booted com.clarity.pulse || true
-	@echo "$(GREEN)✓ App stopped$(NC)"
+.PHONY: run-ios
+run-ios: ## Run on iOS simulator (requires Xcode)
+	@echo "$(BLUE)Running on iOS simulator...$(NC)"
+	@echo "$(YELLOW)This is a Swift Package. To run on iOS:$(NC)"
+	@echo "$(YELLOW)1. Open Package.swift in Xcode$(NC)"
+	@echo "$(YELLOW)2. Select ClarityPulseApp scheme$(NC)"
+	@echo "$(YELLOW)3. Select iOS simulator and run$(NC)"
+	@echo "$(YELLOW)Or use: mcp__XcodeBuildMCP__build_run_sim_name_ws$(NC)"
 
 # MARK: - Code Quality
 
@@ -187,12 +218,7 @@ format: ## Format code with SwiftFormat
 .PHONY: analyze
 analyze: ## Run static analysis
 	@echo "$(BLUE)Running static analysis...$(NC)"
-	@xcodebuild analyze \
-		-project $(PROJECT) \
-		-scheme $(SCHEME) \
-		-configuration $(CONFIGURATION_DEBUG) \
-		-destination $(DESTINATION) \
-		| xcpretty
+	@swift build --configuration debug -Xswiftc -warnings-as-errors
 	@echo "$(GREEN)✓ Analysis complete$(NC)"
 
 # MARK: - Documentation
@@ -249,10 +275,10 @@ simulator-reset: ## Reset simulator content
 .PHONY: check-deps
 check-deps: ## Check dependencies
 	@echo "$(BLUE)Checking dependencies...$(NC)"
-	@command -v xcodebuild >/dev/null 2>&1 || { echo "$(RED)❌ xcodebuild not found$(NC)"; exit 1; }
-	@command -v xcpretty >/dev/null 2>&1 || echo "$(YELLOW)⚠️  xcpretty not found (optional)$(NC)"
+	@command -v swift >/dev/null 2>&1 || { echo "$(RED)❌ swift not found$(NC)"; exit 1; }
 	@command -v swiftlint >/dev/null 2>&1 || echo "$(YELLOW)⚠️  swiftlint not found (optional)$(NC)"
 	@command -v taskmaster >/dev/null 2>&1 || echo "$(YELLOW)⚠️  taskmaster not found (recommended)$(NC)"
+	@command -v fswatch >/dev/null 2>&1 || echo "$(YELLOW)⚠️  fswatch not found (needed for TDD watch mode)$(NC)"
 	@echo "$(GREEN)✓ Essential dependencies found$(NC)"
 
 .PHONY: size
@@ -263,25 +289,15 @@ size: ## Show app size
 # MARK: - CI/CD
 
 .PHONY: ci-test
-ci-test: ## Run tests for CI
-	@xcodebuild test \
-		-project $(PROJECT) \
-		-scheme $(TEST_SCHEME) \
-		-destination $(DESTINATION) \
-		-enableCodeCoverage YES \
-		-resultBundlePath $(BUILD_DIR)/test-results \
-		CODE_SIGN_IDENTITY="" \
-		CODE_SIGNING_REQUIRED=NO
+ci-test: test-ci ## Run tests for CI (alias for test-ci)
 
 .PHONY: archive
-archive: ## Create release archive
-	@echo "$(BLUE)Creating archive...$(NC)"
-	@xcodebuild archive \
-		-project $(PROJECT) \
-		-scheme $(SCHEME) \
-		-configuration $(CONFIGURATION_RELEASE) \
-		-archivePath $(BUILD_DIR)/ClarityPulse.xcarchive
-	@echo "$(GREEN)✓ Archive created: $(BUILD_DIR)/ClarityPulse.xcarchive$(NC)"
+archive: ## Create release build
+	@echo "$(BLUE)Creating release build...$(NC)"
+	@swift build --configuration release
+	@mkdir -p $(BUILD_DIR)/release
+	@cp -r .build/release $(BUILD_DIR)/release/
+	@echo "$(GREEN)✓ Release build created: $(BUILD_DIR)/release/$(NC)"
 
 # MARK: - SwiftData Migration
 
@@ -335,14 +351,10 @@ q: quick-test ## Quick test (alias)
 .PHONY: quick-test
 quick-test: ## Run last modified test file
 	@echo "$(BLUE)Running last modified test...$(NC)"
-	@LAST_TEST=$$(find $(TEST_SCHEME) -name "*.swift" -exec ls -t {} + | head -1); \
+	@LAST_TEST=$$(find clarity-loop-frontend-v2Tests -name "*.swift" -exec ls -t {} + | head -1); \
 	if [ -n "$$LAST_TEST" ]; then \
-		xcodebuild test \
-			-project $(PROJECT) \
-			-scheme $(TEST_SCHEME) \
-			-only-testing:$(TEST_SCHEME)/$$(basename $$LAST_TEST .swift) \
-			-destination $(DESTINATION) \
-			| xcpretty; \
+		TEST_NAME=$$(basename $$LAST_TEST .swift); \
+		swift test --filter $$TEST_NAME; \
 	else \
 		echo "$(RED)No test files found$(NC)"; \
 	fi

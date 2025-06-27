@@ -32,6 +32,6 @@ final class ClarityPulseAppTests: XCTestCase {
         
         // Then
         XCTAssertFalse(appState.isAuthenticated)
-        XCTAssertNil(appState.currentUser)
+        XCTAssertNil(appState.currentUserId)
     }
 }

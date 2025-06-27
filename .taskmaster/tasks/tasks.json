@@ -233,7 +233,7 @@
               5
             ],
             "details": "1. Create PreviewTestHelpers.swift\n2. Implement utilities for testing @Observable state changes\n3. Add helpers for verifying view hierarchy\n4. Create utilities for simulating user interactions in previews\n5. Add support for testing animations and transitions",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Create tests that verify preview helpers correctly identify and interact with SwiftUI components"
           },
           {
@@ -246,7 +246,7 @@
               5
             ],
             "details": "1. Create separate schemes for unit, integration, and UI tests\n2. Configure code coverage settings for each scheme\n3. Set up test plans with different configurations\n4. Configure CI-friendly test execution options\n5. Add performance testing baseline configurations",
-            "status": "pending",
+            "status": "in-progress",
             "testStrategy": "Manually verify that each scheme runs the correct tests and generates appropriate coverage reports"
           },
           {
@@ -2861,7 +2861,7 @@
     ],
     "metadata": {
       "created": "2025-06-25T16:21:52.741Z",
-      "updated": "2025-06-26T18:12:16.588Z",
+      "updated": "2025-06-26T19:03:33.327Z",
       "description": "CLARITY Pulse V2 - Vertical Slice Development Tasks"
     }
   }

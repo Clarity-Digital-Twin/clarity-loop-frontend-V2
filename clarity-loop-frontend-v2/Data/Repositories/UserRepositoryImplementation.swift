@@ -9,17 +9,17 @@ import Foundation
 import ClarityDomain
 
 /// Concrete implementation of UserRepositoryProtocol
-final class UserRepositoryImplementation: UserRepositoryProtocol {
+public final class UserRepositoryImplementation: UserRepositoryProtocol {
     
     private let apiClient: APIClientProtocol
     private let persistence: PersistenceServiceProtocol
     
-    init(apiClient: APIClientProtocol, persistence: PersistenceServiceProtocol) {
+    public init(apiClient: APIClientProtocol, persistence: PersistenceServiceProtocol) {
         self.apiClient = apiClient
         self.persistence = persistence
     }
     
-    func create(_ user: User) async throws -> User {
+    public func create(_ user: User) async throws -> User {
         // Convert to DTO and send to API
         let dto = user.toDTO()
         let responseDTO: UserDTO = try await apiClient.post("/api/v1/users", body: dto)
@@ -33,7 +33,7 @@ final class UserRepositoryImplementation: UserRepositoryProtocol {
         return createdUser
     }
     
-    func findById(_ id: UUID) async throws -> User? {
+    public func findById(_ id: UUID) async throws -> User? {
         // First check local cache
         if let cachedUser: User = try await persistence.fetch(id) {
             return cachedUser
@@ -54,7 +54,7 @@ final class UserRepositoryImplementation: UserRepositoryProtocol {
         }
     }
     
-    func findByEmail(_ email: String) async throws -> User? {
+    public func findByEmail(_ email: String) async throws -> User? {
         // Search API by email
         let parameters = ["email": email]
         
@@ -76,7 +76,7 @@ final class UserRepositoryImplementation: UserRepositoryProtocol {
         }
     }
     
-    func update(_ user: User) async throws -> User {
+    public func update(_ user: User) async throws -> User {
         // Update via API
         let dto = user.toDTO()
         let responseDTO: UserDTO = try await apiClient.put("/api/v1/users/\(user.id.uuidString)", body: dto)
@@ -89,7 +89,7 @@ final class UserRepositoryImplementation: UserRepositoryProtocol {
         return updatedUser
     }
     
-    func delete(_ id: UUID) async throws {
+    public func delete(_ id: UUID) async throws {
         // Delete from API
         let _: VoidResponse = try await apiClient.delete("/api/v1/users/\(id.uuidString)")
         
@@ -97,7 +97,7 @@ final class UserRepositoryImplementation: UserRepositoryProtocol {
         try await persistence.delete(type: User.self, id: id)
     }
     
-    func findAll() async throws -> [User] {
+    public func findAll() async throws -> [User] {
         // For now, fetch from API
         // In a real app, might implement pagination
         let response: UserListResponse = try await apiClient.get("/api/v1/users", parameters: nil)

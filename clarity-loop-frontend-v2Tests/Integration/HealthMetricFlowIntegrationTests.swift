@@ -44,8 +44,7 @@ final class HealthMetricFlowIntegrationTests: BaseIntegrationTestCase {
             unit: expectedMetric.unit,
             recordedAt: ISO8601DateFormatter().string(from: expectedMetric.recordedAt),
             source: "manual",
-            notes: nil,
-            metadata: nil
+            notes: nil
         )
         
         givenNetworkResponse(

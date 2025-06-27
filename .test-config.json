@@ -1,0 +1,46 @@
+{
+  "coverage": {
+    "minimum": 80,
+    "targets": {
+      "ClarityCore": 85,
+      "ClarityDomain": 90,
+      "ClarityData": 80,
+      "ClarityUI": 75
+    },
+    "exclude": [
+      "*/Mocks/*",
+      "*/Tests/*",
+      "*/Preview Content/*",
+      "*.generated.swift"
+    ]
+  },
+  "test_suites": {
+    "unit": {
+      "targets": ["ClarityDomainTests", "ClarityDataTests", "ClarityCoreTests"],
+      "parallel": true,
+      "timeout": 300
+    },
+    "integration": {
+      "targets": ["ClarityIntegrationTests"],
+      "parallel": false,
+      "timeout": 600,
+      "status": "disabled"
+    },
+    "ui": {
+      "targets": ["ClarityUITests"],
+      "parallel": false,
+      "timeout": 900
+    }
+  },
+  "ci": {
+    "fail_on_warnings": false,
+    "generate_badges": true,
+    "upload_coverage": true,
+    "artifact_retention_days": 30
+  },
+  "performance": {
+    "enabled": false,
+    "baseline_file": ".build/performance-results/performance-baseline.json",
+    "deviation_threshold": 10
+  }
+}

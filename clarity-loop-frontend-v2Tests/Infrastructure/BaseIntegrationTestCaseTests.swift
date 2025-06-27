@@ -105,8 +105,8 @@ final class BaseIntegrationTestCaseTests: XCTestCase {
 class TestIntegrationCase: BaseIntegrationTestCase {
     var tearDownCalled = false
     
-    override func tearDownIntegration() {
-        super.tearDownIntegration()
+    override func tearDownIntegration() async {
+        await super.tearDownIntegration()
         tearDownCalled = true
     }
 }

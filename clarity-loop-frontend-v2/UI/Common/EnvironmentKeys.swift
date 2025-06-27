@@ -130,7 +130,7 @@ public extension View {
     }
     
     /// Inject model container into the environment
-    func modelContainer(_ container: ModelContainer) -> some View {
+    func customModelContainer(_ container: ModelContainer) -> some View {
         self.environment(\.modelContainer, container)
     }
     

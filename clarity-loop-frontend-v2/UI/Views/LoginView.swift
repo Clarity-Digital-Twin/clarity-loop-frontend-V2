@@ -78,7 +78,7 @@ public struct LoginView: View {
                             Image(systemName: "exclamationmark.circle.fill")
                                 .foregroundColor(.red)
                             
-                            Text(message)
+                            Text(message.localizedDescription)
                                 .font(.caption)
                                 .foregroundColor(.red)
                             

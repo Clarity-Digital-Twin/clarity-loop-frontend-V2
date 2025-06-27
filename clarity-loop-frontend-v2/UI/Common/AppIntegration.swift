@@ -8,6 +8,7 @@
 import SwiftUI
 import ClarityCore
 import ClarityDomain
+import ClarityData
 
 /// Example of how to integrate dependencies in the main App struct
 ///
@@ -65,7 +66,7 @@ private struct ContentView: View {
 // MARK: - View Model Factory Pattern
 
 /// Example of creating ViewModels with dependencies from environment
-public struct ViewModelFactory: Sendable {
+public struct ViewModelFactory {
     let dependencies: Dependencies
     
     public init(dependencies: Dependencies) {
@@ -91,7 +92,7 @@ public struct ViewModelFactory: Sendable {
 // MARK: - Environment View Model Factory
 
 public struct ViewModelFactoryKey: EnvironmentKey {
-    public static let defaultValue: ViewModelFactory? = nil
+    nonisolated(unsafe) public static let defaultValue: ViewModelFactory? = nil
 }
 
 public extension EnvironmentValues {
@@ -135,19 +136,23 @@ public extension Dependencies {
 
 private struct MockAPIClient: APIClientProtocol {
     func get<T: Decodable>(_ endpoint: String, parameters: [String: String]?) async throws -> T {
-        throw NetworkError.offline
+        throw NetworkError.noConnection
     }
     
     func post<T: Decodable, U: Encodable>(_ endpoint: String, body: U) async throws -> T {
-        throw NetworkError.offline
+        throw NetworkError.noConnection
     }
     
     func put<T: Decodable, U: Encodable>(_ endpoint: String, body: U) async throws -> T {
-        throw NetworkError.offline
+        throw NetworkError.noConnection
     }
     
-    func delete(_ endpoint: String) async throws {
-        throw NetworkError.offline
+    func delete<T: Decodable>(_ endpoint: String) async throws -> T {
+        throw NetworkError.noConnection
+    }
+    
+    func delete<T: Identifiable>(type: T.Type, id: T.ID) async throws {
+        throw NetworkError.noConnection
     }
 }
 

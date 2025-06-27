@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ClarityDomain
 
 /// # ViewState Pattern Documentation
 ///
@@ -229,6 +230,7 @@ struct LoginExample: View {
             self.loginUseCase = loginUseCase
         }
         
+        @MainActor
         func login(email: String, password: String) async {
             loginState = .loading
             
@@ -300,7 +302,7 @@ struct MetricsListExample: View {
                     }
                 ) { metrics in
                     List(metrics) { metric in
-                        MetricRow(metric: metric)
+                        ExampleMetricRow(metric: metric)
                     }
                 }
                 .navigationTitle("Health Metrics")
@@ -321,9 +323,7 @@ struct MetricsListExample: View {
 }
 
 // Placeholder types for examples
-private struct MetricRow: View {
+private struct ExampleMetricRow: View {
     let metric: HealthMetric
     var body: some View { Text("Metric") }
 }
-
-private protocol HealthMetric: Identifiable {}

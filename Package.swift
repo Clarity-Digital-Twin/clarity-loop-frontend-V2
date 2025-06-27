@@ -106,7 +106,8 @@ let package = Package(
         .testTarget(
             name: "ClarityInfrastructureTests",
             dependencies: ["ClarityData", "ClarityDomain", "ClarityCore", "ClarityUI"],
-            path: "clarity-loop-frontend-v2Tests/Infrastructure"
+            path: "clarity-loop-frontend-v2Tests/Infrastructure",
+            exclude: []
         ),
         .testTarget(
             name: "ClarityIntegrationTests",

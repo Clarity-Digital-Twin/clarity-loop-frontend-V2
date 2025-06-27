@@ -220,6 +220,18 @@ struct MetricsListView: View {
             case .idle:
                 EmptyView()
                 
+            case .empty:
+                VStack(spacing: 16) {
+                    Image(systemName: "heart.slash")
+                        .font(.system(size: 50))
+                        .foregroundColor(.secondary)
+                    
+                    Text("No health data yet")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                }
+                .frame(height: 200)
+                
             case .loading:
                 ProgressView("Loading metrics...")
                     .frame(height: 200)
@@ -248,7 +260,7 @@ struct MetricsListView: View {
                         .font(.system(size: 50))
                         .foregroundColor(.orange)
                     
-                    Text(message)
+                    Text(message.localizedDescription)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)

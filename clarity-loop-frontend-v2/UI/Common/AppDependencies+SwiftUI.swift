@@ -10,9 +10,11 @@ import SwiftUI
 import SwiftData
 import ClarityCore
 import ClarityDomain
+import ClarityData
 @preconcurrency import Amplify
 import AWSCognitoAuthPlugin
 import AWSAPIPlugin
+import AWSPluginsCore
 
 /// Configures app dependencies for SwiftUI Environment injection
 public extension AppDependencyConfigurator {
@@ -62,9 +64,9 @@ public extension AppDependencyConfigurator {
     // MARK: - Data Layer Configuration
     
     private func configureDataLayer(_ container: Dependencies) {
-        // Auth Service
+        // Auth Service - Use mock for now until Amplify is properly configured
         container.register(AuthServiceProtocol.self) {
-            AmplifyAuthService()
+            MockAuthService()
         }
         
         // User Repository
@@ -127,8 +129,47 @@ public extension View {
             .healthMetricRepository(dependencies.require(HealthMetricRepositoryProtocol.self))
             .apiClient(dependencies.require(APIClientProtocol.self))
             .persistenceService(dependencies.require(PersistenceServiceProtocol.self))
-            .modelContainer(dependencies.require(ModelContainer.self))
+            .customModelContainer(dependencies.require(ModelContainer.self))
             .loginUseCase(dependencies.require(LoginUseCaseProtocol.self))
+    }
+}
+
+// MARK: - Mock Auth Service
+
+private struct MockAuthService: AuthServiceProtocol {
+    func login(email: String, password: String) async throws -> AuthToken {
+        // Simulate network delay
+        try await Task.sleep(nanoseconds: 1_000_000_000)
+        
+        // Return mock token
+        return AuthToken(
+            accessToken: "mock-access-token",
+            refreshToken: "mock-refresh-token",
+            expiresIn: 3600
+        )
+    }
+    
+    func logout() async throws {
+        // Mock logout
+    }
+    
+    @MainActor
+    func getCurrentUser() async throws -> User? {
+        // Return mock user
+        return User(
+            id: UUID(),
+            email: "test@example.com",
+            firstName: "Test",
+            lastName: "User"
+        )
+    }
+    
+    func refreshToken(_ refreshToken: String) async throws -> AuthToken {
+        return AuthToken(
+            accessToken: "mock-refreshed-access-token",
+            refreshToken: "mock-refreshed-refresh-token",
+            expiresIn: 3600
+        )
     }
 }
 

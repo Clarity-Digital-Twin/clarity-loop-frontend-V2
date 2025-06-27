@@ -54,11 +54,11 @@ public extension View {
     ///         }
     ///     }
     /// ```
-    func viewState<T: Equatable, IdleView: View, LoadingView: View, EmptyView: View, ErrorView: View, SuccessView: View>(
+    func viewState<T: Equatable, IdleView: View, LoadingView: View, EmptyContentView: View, ErrorView: View, SuccessView: View>(
         _ state: ViewState<T>,
-        idle: @escaping () -> IdleView = { EmptyView() },
+        idle: @escaping () -> IdleView = { SwiftUI.EmptyView() },
         loading: @escaping () -> LoadingView = { ProgressView() },
-        empty: @escaping () -> EmptyView = { Text("No data") },
+        empty: @escaping () -> EmptyContentView = { Text("No data") },
         error: @escaping (Error) -> ErrorView = { Text("Error: \($0.localizedDescription)") },
         success: @escaping (T) -> SuccessView
     ) -> some View {
@@ -146,7 +146,7 @@ public struct LoadingView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(UIColor.systemBackground))
+        .background(Color(red: 0.95, green: 0.95, blue: 0.97))
     }
 }
 
@@ -189,7 +189,7 @@ public struct ErrorView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(UIColor.systemBackground))
+        .background(Color(red: 0.95, green: 0.95, blue: 0.97))
     }
 }
 
@@ -246,6 +246,6 @@ public struct EmptyStateView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(UIColor.systemBackground))
+        .background(Color(red: 0.95, green: 0.95, blue: 0.97))
     }
 }

@@ -101,37 +101,29 @@ public extension Repository {
 // MARK: - Query Support Types
 
 /// Type-safe predicate for filtering entities
-public struct RepositoryPredicate<T> {
+public struct RepositoryPredicate<T>: Sendable {
     /// The evaluation closure
-    public let evaluate: (T) -> Bool
+    public let evaluate: @Sendable (T) -> Bool
     
     /// Creates a new predicate with the given evaluation closure
     /// - Parameter evaluate: Closure that returns true for matching entities
-    public init(_ evaluate: @escaping (T) -> Bool) {
+    public init(_ evaluate: @escaping @Sendable (T) -> Bool) {
         self.evaluate = evaluate
     }
 }
 
 /// Type-safe sort descriptor for ordering entities
-public struct RepositorySortDescriptor<T> {
+public struct RepositorySortDescriptor<T>: Sendable {
     /// The comparison closure
-    public let compare: (T, T) -> Bool
+    public let compare: @Sendable (T, T) -> Bool
     
-    /// Creates a sort descriptor for a comparable property
-    /// - Parameters:
-    ///   - keyPath: Key path to the property to sort by
-    ///   - ascending: Whether to sort in ascending order (default: true)
-    public init<Value: Comparable>(
-        keyPath: KeyPath<T, Value>,
-        ascending: Bool = true
-    ) {
-        self.compare = { lhs, rhs in
-            let lhsValue = lhs[keyPath: keyPath]
-            let rhsValue = rhs[keyPath: keyPath]
-            return ascending ? lhsValue < rhsValue : lhsValue > rhsValue
-        }
+    /// Creates a sort descriptor with a custom comparison closure
+    /// - Parameter compare: The comparison closure
+    public init(compare: @escaping @Sendable (T, T) -> Bool) {
+        self.compare = compare
     }
 }
+
 
 
 // MARK: - Usage Documentation
@@ -179,14 +171,28 @@ public struct RepositorySortDescriptor<T> {
  ## Using Sort Descriptors
  
  ```swift
+ // Swift 6 requires using closures since KeyPath is not Sendable
+ 
  // Sort by creation date, newest first
- let dateSort = RepositorySortDescriptor<User>(keyPath: \.createdAt, ascending: false)
+ let dateSort = RepositorySortDescriptor<User> { lhs, rhs in
+     lhs.createdAt > rhs.createdAt
+ }
  
  // Sort by name alphabetically
- let nameSort = RepositorySortDescriptor<User>(keyPath: \.lastName, ascending: true)
+ let nameSort = RepositorySortDescriptor<User> { lhs, rhs in
+     lhs.lastName < rhs.lastName
+ }
  
  // Multiple sort criteria
  let users = try await repository.list(sortBy: [nameSort, dateSort])
+ 
+ // Complex sorting with multiple fields
+ let complexSort = RepositorySortDescriptor<User> { lhs, rhs in
+     if lhs.priority != rhs.priority {
+         return lhs.priority > rhs.priority
+     }
+     return lhs.createdAt > rhs.createdAt
+ }
  ```
  
  ## Error Handling

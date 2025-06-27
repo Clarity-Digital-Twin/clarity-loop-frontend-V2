@@ -65,7 +65,7 @@ private struct ContentView: View {
 // MARK: - View Model Factory Pattern
 
 /// Example of creating ViewModels with dependencies from environment
-public struct ViewModelFactory {
+public struct ViewModelFactory: Sendable {
     let dependencies: Dependencies
     
     public init(dependencies: Dependencies) {
@@ -134,7 +134,19 @@ public extension Dependencies {
 // MARK: - Mock Services for Testing
 
 private struct MockAPIClient: APIClientProtocol {
-    func request<T: Decodable>(_ endpoint: any Endpoint) async throws -> T {
+    func get<T: Decodable>(_ endpoint: String, parameters: [String: String]?) async throws -> T {
+        throw NetworkError.offline
+    }
+    
+    func post<T: Decodable, U: Encodable>(_ endpoint: String, body: U) async throws -> T {
+        throw NetworkError.offline
+    }
+    
+    func put<T: Decodable, U: Encodable>(_ endpoint: String, body: U) async throws -> T {
+        throw NetworkError.offline
+    }
+    
+    func delete(_ endpoint: String) async throws {
         throw NetworkError.offline
     }
 }

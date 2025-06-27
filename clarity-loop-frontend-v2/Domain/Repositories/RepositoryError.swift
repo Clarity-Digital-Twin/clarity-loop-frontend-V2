@@ -8,12 +8,14 @@
 import Foundation
 
 /// Errors that can occur in repository operations
-public enum RepositoryError: LocalizedError, Equatable {
+public enum RepositoryError: LocalizedError, Equatable, Sendable {
     case saveFailed(String)
     case fetchFailed(String)
     case updateFailed(String)
     case deleteFailed(String)
     case notFound
+    case entityNotFound
+    case duplicateEntity
     case invalidData
     case unauthorized
     case networkError(underlying: Error)
@@ -30,6 +32,10 @@ public enum RepositoryError: LocalizedError, Equatable {
             return "Failed to delete: \(reason)"
         case .notFound:
             return "Requested data not found"
+        case .entityNotFound:
+            return "Entity not found"
+        case .duplicateEntity:
+            return "Entity with the same ID already exists"
         case .invalidData:
             return "Invalid data format"
         case .unauthorized:
@@ -51,6 +57,8 @@ public enum RepositoryError: LocalizedError, Equatable {
         case (.deleteFailed(let l), .deleteFailed(let r)):
             return l == r
         case (.notFound, .notFound),
+             (.entityNotFound, .entityNotFound),
+             (.duplicateEntity, .duplicateEntity),
              (.invalidData, .invalidData),
              (.unauthorized, .unauthorized):
             return true

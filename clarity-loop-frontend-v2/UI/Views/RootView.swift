@@ -35,7 +35,7 @@ public struct RootView: View {
 
 // MARK: - Loading View
 
-struct LoadingView: View {
+private struct RootLoadingView: View {
     var body: some View {
         VStack(spacing: 20) {
             ProgressView()

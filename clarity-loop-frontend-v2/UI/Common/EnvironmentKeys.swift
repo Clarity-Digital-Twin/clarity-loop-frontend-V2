@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 import ClarityDomain
+import ClarityData
 
 // MARK: - Auth Service Key
 

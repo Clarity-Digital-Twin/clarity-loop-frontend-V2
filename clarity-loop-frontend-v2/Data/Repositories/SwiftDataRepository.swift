@@ -50,7 +50,7 @@ where MapperType.Entity == EntityType, MapperType.Model == ModelType {
     
     /// Performs asynchronous work on the main actor with the model context
     @MainActor
-    private func performAsyncOperation<T>(_ operation: (ModelContext) async throws -> T) async throws -> T {
+    private func performAsyncOperation<T: Sendable>(_ operation: @Sendable (ModelContext) async throws -> T) async throws -> T {
         let context = modelContainer.mainContext
         return try await operation(context)
     }

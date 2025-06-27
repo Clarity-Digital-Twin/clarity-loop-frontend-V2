@@ -70,7 +70,9 @@ let package = Package(
             dependencies: [
                 "ClarityCore",
                 "ClarityDomain",
-                "ClarityData"
+                "ClarityData",
+                .product(name: "Amplify", package: "amplify-swift"),
+                .product(name: "AWSCognitoAuthPlugin", package: "amplify-swift")
             ],
             path: "clarity-loop-frontend-v2/UI",
             exclude: ["README.md"]

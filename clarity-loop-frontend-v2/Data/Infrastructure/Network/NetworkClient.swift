@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import ClarityDomain
 
 /// URLSession protocol for dependency injection
 public protocol URLSessionProtocol: Sendable {

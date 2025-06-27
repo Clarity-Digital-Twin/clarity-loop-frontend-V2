@@ -110,7 +110,7 @@ public final class Dependencies: ObservableObject {
 // MARK: - Environment Key
 
 public struct DependenciesKey: EnvironmentKey {
-    public static let defaultValue = Dependencies()
+    nonisolated(unsafe) public static let defaultValue = Dependencies()
 }
 
 // MARK: - Environment Values Extension

@@ -1,6 +1,6 @@
-# MyProject - iOS App
+# CLARITY Pulse V2 - iOS Health Monitoring App
 
-A modern iOS application using a **workspace + SPM package** architecture for clean separation between app shell and feature code.
+A modern iOS application for health metric tracking using a **workspace + SPM package** architecture for clean separation between app shell and feature code.
 
 ## AI Assistant Rules Files
 
@@ -106,6 +106,15 @@ App capabilities are managed through a **declarative entitlements file**:
 - `Config/MyProject.entitlements` - All app entitlements and capabilities
 - AI agents can safely edit this XML file to add HealthKit, CloudKit, Push Notifications, etc.
 - No need to modify complex Xcode project files
+
+### Code Quality
+
+#### SwiftLint Integration
+The project uses SwiftLint for consistent code style:
+- **Configuration**: `.swiftlint.yml` defines project rules
+- **Pre-commit Hook**: Automatically runs SwiftLint on staged files
+- **Setup**: Run `./Scripts/install-hooks.sh` to install git hooks
+- **Manual Fix**: Run `swiftlint --fix` to auto-fix violations
 
 ### Asset Management
 - **App-Level Assets**: `MyProject/Assets.xcassets/` (app icon, accent color)

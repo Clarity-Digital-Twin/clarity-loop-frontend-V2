@@ -295,4 +295,3 @@ where MapperType.Entity == EntityType, MapperType.Model == ModelType {
         }
     }
 }
-

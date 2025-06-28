@@ -196,7 +196,7 @@ final class LoginViewModelTests: XCTestCase {
 // MARK: - Mock Login Use Case
 
 @MainActor
-private final class MockLoginUseCase: LoginUseCaseProtocol, Sendable {
+private final class MockLoginUseCase: LoginUseCaseProtocol {
     var mockResult: Result<User, Error> = .failure(AppError.authentication(.invalidCredentials))
     var executeWasCalled = false
     var lastEmail: String?
@@ -220,4 +220,3 @@ private final class MockLoginUseCase: LoginUseCaseProtocol, Sendable {
         }
     }
 }
-

@@ -431,4 +431,3 @@ final class RepositoryProtocolTests: XCTestCase {
         }
     }
 }
-

@@ -18,12 +18,6 @@ final class LoginFlowIntegrationTests: BaseIntegrationTestCase {
         setUpIntegration()
     }
     
-    override func tearDown() {
-        // Clean up happens in setUpIntegration for next test
-        // This avoids concurrency issues with tearDown
-        super.tearDown()
-    }
-    
     // MARK: - Login Flow Integration Tests
     
     func test_loginFlow_withValidCredentials_completesSuccessfully() async throws {

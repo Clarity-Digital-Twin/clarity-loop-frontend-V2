@@ -25,7 +25,6 @@ struct AuthTokenDTO: Codable {
     }
 }
 
-
 // MARK: - Domain Mapping
 
 extension AuthTokenDTO {
@@ -38,4 +37,3 @@ extension AuthTokenDTO {
         )
     }
 }
-

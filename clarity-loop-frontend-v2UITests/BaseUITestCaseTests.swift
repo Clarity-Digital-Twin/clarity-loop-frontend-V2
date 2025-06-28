@@ -55,7 +55,7 @@ final class BaseUITestCaseTests: XCTestCase {
         // Given
         class TestCase: BaseUITestCase {}
         let testCase = TestCase()
-        let _ = testCase.launchApp()
+        _ = testCase.launchApp()
         
         // When
         let screenshot = testCase.takeScreenshot(name: "test_screenshot")
@@ -105,7 +105,7 @@ final class BaseUITestCaseTests: XCTestCase {
         // Given
         class TestCase: BaseUITestCase {}
         let testCase = TestCase()
-        let _ = testCase.launchApp()
+        _ = testCase.launchApp()
         
         // When/Then - should handle alerts gracefully
         testCase.dismissAnyAlerts()

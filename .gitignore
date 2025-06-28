@@ -144,6 +144,11 @@ resource_bundle_accessor.swift
 *.swiftmodule
 *.swiftsourceinfo
 
+# Generated build logs
+ClarityPulseWrapper/Makefile
+**/xcodebuild.log
+**/build.log
+
 # macOS
 .DS_Store
 .AppleDouble

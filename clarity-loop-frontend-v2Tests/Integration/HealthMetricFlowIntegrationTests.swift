@@ -27,12 +27,6 @@ final class HealthMetricFlowIntegrationTests: BaseIntegrationTestCase {
         setUpIntegration()
     }
     
-    override func tearDown() {
-        // Clean up happens in setUpIntegration for next test
-        // This avoids concurrency issues with tearDown
-        super.tearDown()
-    }
-    
     // MARK: - Health Metric Recording Flow
     
     func test_recordHealthMetric_completesFullFlow() async throws {
@@ -121,7 +115,7 @@ final class HealthMetricFlowIntegrationTests: BaseIntegrationTestCase {
             MetricData(type: .bloodPressureDiastolic, value: 80)
         ]
         
-        let responseDTOs = metrics.enumerated().map { index, metric in
+        let responseDTOs = metrics.enumerated().map { _, metric in
             HealthMetricDTO(
                 id: UUID().uuidString,
                 userId: userId.uuidString,

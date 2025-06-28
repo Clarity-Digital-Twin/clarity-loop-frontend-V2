@@ -196,7 +196,7 @@ final class ErrorHandlerTests: XCTestCase {
     func test_criticalError_shouldTriggerEmergencyHandler() {
         // Given
         var emergencyHandlerCalled = false
-        errorHandler.setEmergencyHandler { error in
+        errorHandler.setEmergencyHandler { _ in
             emergencyHandlerCalled = true
         }
         

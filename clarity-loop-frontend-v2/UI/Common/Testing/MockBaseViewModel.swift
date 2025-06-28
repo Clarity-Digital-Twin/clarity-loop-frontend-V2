@@ -7,7 +7,6 @@
 
 import Foundation
 import Observation
-@testable import ClarityUI
 
 /// Mock BaseViewModel for testing view behavior with different states
 ///

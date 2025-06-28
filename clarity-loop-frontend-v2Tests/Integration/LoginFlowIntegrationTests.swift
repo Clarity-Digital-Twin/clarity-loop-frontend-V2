@@ -102,7 +102,7 @@ final class LoginFlowIntegrationTests: BaseIntegrationTestCase {
         
         await givenNetworkError(
             for: "/api/v1/users/me",
-            error: NSError(domain: "NetworkError", code: 500, userInfo: [NSLocalizedDescriptionKey: "Internal Server Error"])
+            error: NetworkError.serverError(statusCode: 500, message: "Internal Server Error")
         )
         
         // When/Then

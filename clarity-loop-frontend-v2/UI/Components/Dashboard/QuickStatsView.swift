@@ -9,7 +9,7 @@ import SwiftUI
 import ClarityDomain
 
 public struct QuickStatsView: View {
-    @ObservedObject var viewModel: DashboardViewModel
+    let viewModel: DashboardViewModel
     
     public init(viewModel: DashboardViewModel) {
         self.viewModel = viewModel
@@ -18,7 +18,7 @@ public struct QuickStatsView: View {
     public var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 16) {
-                if let heartRateSummary = viewModel.summaryForType(.heartRate) {
+                if let heartRateSummary = viewModel.summaryForType(HealthMetricType.heartRate) {
                     QuickStatCard(
                         icon: "heart.fill",
                         title: "Heart Rate",
@@ -28,7 +28,7 @@ public struct QuickStatsView: View {
                     )
                 }
                 
-                if let stepsSummary = viewModel.summaryForType(.steps) {
+                if let stepsSummary = viewModel.summaryForType(HealthMetricType.steps) {
                     QuickStatCard(
                         icon: "figure.walk",
                         title: "Steps",
@@ -38,7 +38,7 @@ public struct QuickStatsView: View {
                     )
                 }
                 
-                if let weightSummary = viewModel.summaryForType(.weight) {
+                if let weightSummary = viewModel.summaryForType(HealthMetricType.weight) {
                     QuickStatCard(
                         icon: "scalemass.fill",
                         title: "Weight",
@@ -48,7 +48,7 @@ public struct QuickStatsView: View {
                     )
                 }
                 
-                if let glucoseSummary = viewModel.summaryForType(.bloodGlucose) {
+                if let glucoseSummary = viewModel.summaryForType(HealthMetricType.bloodGlucose) {
                     QuickStatCard(
                         icon: "drop.fill",
                         title: "Glucose",

@@ -81,7 +81,7 @@ final class LoginViewTests: XCTestCase {
 
 // MARK: - Mocks
 
-private final class MockLoginUseCase: LoginUseCaseProtocol {
+private final class MockLoginUseCase: LoginUseCaseProtocol, @unchecked Sendable {
     var mockResult: Result<User, Error> = .failure(AppError.authentication(.invalidCredentials))
     
     func execute(email: String, password: String) async throws -> User {

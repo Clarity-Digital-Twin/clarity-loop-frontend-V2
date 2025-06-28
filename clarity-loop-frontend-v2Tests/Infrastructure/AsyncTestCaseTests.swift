@@ -8,8 +8,8 @@
 import XCTest
 @testable import ClarityCore
 
+// Don't use @Observable in test classes - it causes compilation issues
 @MainActor
-@Observable
 final class TestViewModel {
     var value: Int = 0
     

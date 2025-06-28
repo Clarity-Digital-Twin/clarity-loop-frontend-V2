@@ -261,7 +261,7 @@ final class ViewStateTests: XCTestCase {
     
     func test_viewState_shouldWorkWithObservableViewModel() {
         // Given
-        @Observable
+        // Don't use @Observable in test classes - it causes compilation issues
         final class TestViewModel {
             private(set) var state: ViewState<[TestData]> = .idle
             

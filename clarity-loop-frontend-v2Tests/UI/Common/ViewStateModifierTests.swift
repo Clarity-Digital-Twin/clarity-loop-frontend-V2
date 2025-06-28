@@ -23,6 +23,7 @@ final class ViewStateModifierTests: XCTestCase {
     
     // MARK: - View State Modifier Tests
     
+    @MainActor
     func test_viewStateModifier_shouldCreateCorrectViewsForEachState() {
         // Given
         let states: [ViewState<[User]>] = [
@@ -49,6 +50,7 @@ final class ViewStateModifierTests: XCTestCase {
         }
     }
     
+    @MainActor
     func test_viewExtension_withCustomViews_shouldCompile() {
         // Given
         struct TestView: View {
@@ -87,6 +89,7 @@ final class ViewStateModifierTests: XCTestCase {
         XCTAssertNotNil(view5)
     }
     
+    @MainActor
     func test_viewExtension_withDefaultViews_shouldCompile() {
         // Given
         struct TestView: View {
@@ -109,6 +112,7 @@ final class ViewStateModifierTests: XCTestCase {
     
     // MARK: - Common View Tests
     
+    @MainActor
     func test_loadingView_shouldAcceptOptionalMessage() {
         // Given & When
         let view1 = LoadingView()
@@ -119,6 +123,7 @@ final class ViewStateModifierTests: XCTestCase {
         XCTAssertEqual(view2.message, "Please wait...")
     }
     
+    @MainActor
     func test_errorView_shouldAcceptErrorAndOptionalRetry() {
         // Given
         let error = NetworkError(message: "Connection failed")
@@ -139,6 +144,7 @@ final class ViewStateModifierTests: XCTestCase {
         XCTAssertTrue(retryCalled)
     }
     
+    @MainActor
     func test_emptyStateView_shouldAcceptCustomization() {
         // Given
         var actionCalled = false
@@ -166,9 +172,11 @@ final class ViewStateModifierTests: XCTestCase {
     
     // MARK: - Integration Tests
     
+    @MainActor
     func test_viewState_shouldWorkWithRealViewModel() {
         // Given
-        @Observable
+        // Don't use @Observable in test classes - it causes compilation issues
+        @MainActor
         final class UserListViewModel {
             private(set) var state: ViewState<[User]> = .idle
             

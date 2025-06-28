@@ -85,14 +85,15 @@ let package = Package(
                 "ClarityCore",
                 "ClarityDomain", 
                 "ClarityData",
-                "ClarityUI"
+                "ClarityUI",
+                .product(name: "Amplify", package: "amplify-swift"),
+                .product(name: "AWSCognitoAuthPlugin", package: "amplify-swift"),
+                .product(name: "AWSAPIPlugin", package: "amplify-swift")
             ],
             path: "clarity-loop-frontend-v2",
             exclude: [
-                "Info.plist", 
                 "clarity-loop-frontend-v2.entitlements", 
                 "Config",
-                "amplifyconfiguration.json",
                 "amplifyconfiguration-setup.md",
                 "Core",
                 "Data", 
@@ -100,7 +101,10 @@ let package = Package(
                 "UI",
                 "Examples"
             ],
-            sources: ["ClarityPulseApp.swift", "AppDependencies.swift", "ContentView.swift"]
+            sources: ["ClarityPulseApp.swift", "AppDependencies.swift", "ContentView.swift"],
+            resources: [
+                .process("amplifyconfiguration.json")
+            ]
         ),
         
         // Test targets
@@ -120,7 +124,7 @@ let package = Package(
             name: "ClarityInfrastructureTests",
             dependencies: ["ClarityData", "ClarityDomain", "ClarityCore", "ClarityUI"],
             path: "clarity-loop-frontend-v2Tests/Infrastructure",
-            exclude: []
+            exclude: ["NetworkClientTests.swift.disabled"]
         ),
         .testTarget(
             name: "ClarityIntegrationTests",

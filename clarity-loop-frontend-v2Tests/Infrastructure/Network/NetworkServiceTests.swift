@@ -7,6 +7,7 @@
 
 import XCTest
 @testable import ClarityData
+@testable import ClarityDomain
 @testable import ClarityCore
 
 final class NetworkServiceTests: XCTestCase {
@@ -297,34 +298,38 @@ private final class MockURLSession: URLSessionProtocol, @unchecked Sendable {
 
 private final class MockNetworkAuthService: AuthServiceProtocol, @unchecked Sendable {
     var mockToken = "mock-token"
-    var getValidTokenCalled = false
+    var loginCalled = false
     var shouldThrowError = false
     
-    func getValidToken() async throws -> String {
-        getValidTokenCalled = true
+    func login(email: String, password: String) async throws -> AuthToken {
+        loginCalled = true
         
         if shouldThrowError {
-            throw NetworkError.unauthorized
+            throw AuthError.invalidCredentials
         }
         
-        return mockToken
-    }
-    
-    // Other protocol requirements with empty implementations
-    func login(email: String, password: String) async throws -> ClarityDomain.User {
-        fatalError("Not implemented for this test")
+        return AuthToken(
+            accessToken: mockToken,
+            refreshToken: "refresh-token",
+            expiresIn: 3600
+        )
     }
     
     func logout() async throws {
-        fatalError("Not implemented for this test")
+        // No-op for tests
     }
     
-    func refreshToken() async throws {
-        fatalError("Not implemented for this test")
+    func refreshToken(_ refreshToken: String) async throws -> AuthToken {
+        return AuthToken(
+            accessToken: mockToken,
+            refreshToken: refreshToken,
+            expiresIn: 3600
+        )
     }
     
-    func getCurrentUser() async throws -> ClarityDomain.User? {
-        fatalError("Not implemented for this test")
+    @MainActor
+    func getCurrentUser() async throws -> User? {
+        return nil
     }
 }
 

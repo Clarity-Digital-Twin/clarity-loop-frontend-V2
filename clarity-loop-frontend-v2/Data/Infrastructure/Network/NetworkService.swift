@@ -7,9 +7,7 @@
 
 import Foundation
 import Observation
-
-/// URLSession conformance to URLSessionProtocol
-extension URLSession: URLSessionProtocol {}
+import ClarityDomain
 
 /// Main network service implementation
 @Observable
@@ -141,14 +139,14 @@ public final class NetworkService: NetworkServiceProtocol {
     private func addAuthentication(to request: URLRequest) async throws -> URLRequest {
         var authenticatedRequest = request
         
-        // Get valid token
-        let token = try await authService.getValidToken()
+        // For now, we'll skip auth until we properly implement token management
+        // TODO: Implement proper token management with TDD
         
-        // Add auth header
-        authenticatedRequest.setValue(
-            "Bearer \(token)",
-            forHTTPHeaderField: "Authorization"
-        )
+        // Add auth header when implemented
+        // authenticatedRequest.setValue(
+        //     "Bearer \(token)",
+        //     forHTTPHeaderField: "Authorization"
+        // )
         
         return authenticatedRequest
     }

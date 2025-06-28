@@ -143,7 +143,7 @@ final class LoginViewModelTests: XCTestCase {
     @MainActor
     func test_whenLogin_withNetworkError_shouldShowError() async {
         // Given
-        mockLoginUseCase.mockResult = .failure(NetworkError.noConnection)
+        mockLoginUseCase.mockResult = .failure(NetworkError.offline)
         sut.email = "test@example.com"
         sut.password = "password123"
         
@@ -153,7 +153,7 @@ final class LoginViewModelTests: XCTestCase {
         // Then
         if case .error(let error) = sut.viewState {
             XCTAssertTrue(error is NetworkError)
-            XCTAssertEqual(error as? NetworkError, NetworkError.noConnection)
+            XCTAssertEqual(error as? NetworkError, NetworkError.offline)
         } else {
             XCTFail("Expected error state")
         }

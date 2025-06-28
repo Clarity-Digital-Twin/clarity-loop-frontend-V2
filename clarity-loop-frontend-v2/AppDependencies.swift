@@ -38,10 +38,9 @@ public final class AppDependencies {
     private func configureInfrastructure() {
         // Network Client - register as APIClientProtocol since that's what repositories expect
         container.register(APIClientProtocol.self, scope: .singleton) { _ in
-            NetworkClient(
-                session: URLSession.shared,
-                baseURL: URL(string: "https://clarity.novamindnyc.com")!
-            )
+            // TODO: Implement proper APIClient with TDD
+            // For now, use a simple mock that throws offline errors
+            MockAPIClient()
         }
         
         // Model Container Factory
@@ -259,5 +258,29 @@ private final class AmplifyAuthService: AuthServiceProtocol {
             firstName: firstName ?? "",
             lastName: lastName ?? ""
         )
+    }
+}
+
+// MARK: - Mock Services
+
+private struct MockAPIClient: APIClientProtocol {
+    func get<T: Decodable>(_ endpoint: String, parameters: [String: String]?) async throws -> T {
+        throw NetworkError.offline
+    }
+    
+    func post<T: Decodable, U: Encodable>(_ endpoint: String, body: U) async throws -> T {
+        throw NetworkError.offline
+    }
+    
+    func put<T: Decodable, U: Encodable>(_ endpoint: String, body: U) async throws -> T {
+        throw NetworkError.offline
+    }
+    
+    func delete<T: Decodable>(_ endpoint: String) async throws -> T {
+        throw NetworkError.offline
+    }
+    
+    func delete<T: Identifiable>(type: T.Type, id: T.ID) async throws {
+        throw NetworkError.offline
     }
 }

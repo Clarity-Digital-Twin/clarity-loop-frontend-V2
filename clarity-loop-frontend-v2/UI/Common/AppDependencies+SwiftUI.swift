@@ -32,10 +32,9 @@ public extension AppDependencyConfigurator {
     private func configureInfrastructure(_ container: Dependencies) {
         // Network Client
         container.register(APIClientProtocol.self) {
-            NetworkClient(
-                session: URLSession.shared,
-                baseURL: URL(string: "https://clarity.novamindnyc.com")!
-            )
+            // TODO: Implement proper APIClient with TDD
+            // For now, use mock
+            MockAPIClient()
         }
         
         // Model Container Factory
@@ -134,7 +133,29 @@ public extension View {
     }
 }
 
-// MARK: - Mock Auth Service
+// MARK: - Mock Services
+
+private struct MockAPIClient: APIClientProtocol {
+    func get<T: Decodable>(_ endpoint: String, parameters: [String: String]?) async throws -> T {
+        throw NetworkError.offline
+    }
+    
+    func post<T: Decodable, U: Encodable>(_ endpoint: String, body: U) async throws -> T {
+        throw NetworkError.offline
+    }
+    
+    func put<T: Decodable, U: Encodable>(_ endpoint: String, body: U) async throws -> T {
+        throw NetworkError.offline
+    }
+    
+    func delete<T: Decodable>(_ endpoint: String) async throws -> T {
+        throw NetworkError.offline
+    }
+    
+    func delete<T: Identifiable>(type: T.Type, id: T.ID) async throws {
+        throw NetworkError.offline
+    }
+}
 
 private struct MockAuthService: AuthServiceProtocol {
     func login(email: String, password: String) async throws -> AuthToken {

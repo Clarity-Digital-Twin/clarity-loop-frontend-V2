@@ -136,23 +136,23 @@ public extension Dependencies {
 
 private struct MockAPIClient: APIClientProtocol {
     func get<T: Decodable>(_ endpoint: String, parameters: [String: String]?) async throws -> T {
-        throw NetworkError.noConnection
+        throw NetworkError.offline
     }
     
     func post<T: Decodable, U: Encodable>(_ endpoint: String, body: U) async throws -> T {
-        throw NetworkError.noConnection
+        throw NetworkError.offline
     }
     
     func put<T: Decodable, U: Encodable>(_ endpoint: String, body: U) async throws -> T {
-        throw NetworkError.noConnection
+        throw NetworkError.offline
     }
     
     func delete<T: Decodable>(_ endpoint: String) async throws -> T {
-        throw NetworkError.noConnection
+        throw NetworkError.offline
     }
     
     func delete<T: Identifiable>(type: T.Type, id: T.ID) async throws {
-        throw NetworkError.noConnection
+        throw NetworkError.offline
     }
 }
 

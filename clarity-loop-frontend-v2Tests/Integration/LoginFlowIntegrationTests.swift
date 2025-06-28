@@ -106,7 +106,7 @@ final class LoginFlowIntegrationTests: BaseIntegrationTestCase {
         
         await givenNetworkError(
             for: "/api/v1/users/me",
-            error: NetworkError.serverError
+            error: NetworkError.serverError(statusCode: 500, message: "Internal Server Error")
         )
         
         // When/Then

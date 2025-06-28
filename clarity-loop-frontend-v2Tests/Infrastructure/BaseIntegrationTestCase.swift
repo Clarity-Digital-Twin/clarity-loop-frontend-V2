@@ -306,7 +306,7 @@ final class MockNetworkClient: APIClientProtocol, @unchecked Sendable {
             throw NetworkError.decodingFailed("Mock response type mismatch")
         }
         
-        throw NetworkError.noConnection
+        throw NetworkError.offline
     }
     
     func get<T: Decodable>(_ path: String, parameters: [String: String]?) async throws -> T {

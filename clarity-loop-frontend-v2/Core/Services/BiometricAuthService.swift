@@ -6,14 +6,14 @@
 //
 
 import Foundation
-import LocalAuthentication
+@preconcurrency import LocalAuthentication
 
 // MARK: - Protocol
 
 public protocol BiometricAuthServiceProtocol: Sendable {
     func isBiometricAvailable() -> Bool
     var biometricType: BiometricType { get }
-    func authenticate(reason: String, fallback: (() async -> Bool)?) async throws -> Bool
+    func authenticate(reason: String, fallback: (@Sendable () async -> Bool)?) async throws -> Bool
 }
 
 // MARK: - Types
@@ -37,7 +37,7 @@ public enum BiometricAuthError: Error, Equatable {
 
 // MARK: - Implementation
 
-public final class BiometricAuthService: BiometricAuthServiceProtocol {
+public final class BiometricAuthService: @unchecked Sendable, BiometricAuthServiceProtocol {
     
     private let context: LAContext
     
@@ -76,7 +76,7 @@ public final class BiometricAuthService: BiometricAuthServiceProtocol {
     @MainActor
     public func authenticate(
         reason: String,
-        fallback: (() async -> Bool)? = nil
+        fallback: (@Sendable () async -> Bool)? = nil
     ) async throws -> Bool {
         
         // Check if biometric is available

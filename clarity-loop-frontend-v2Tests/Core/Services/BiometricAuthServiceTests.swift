@@ -139,10 +139,11 @@ final class BiometricAuthServiceTests: XCTestCase {
         var fallbackCalled = false
         
         // When
-        _ = try await sut.authenticate(reason: "Test") {
+        let fallback: @Sendable () async -> Bool = {
             fallbackCalled = true
             return true
         }
+        _ = try await sut.authenticate(reason: "Test", fallback: fallback)
         
         // Then
         XCTAssertTrue(fallbackCalled)

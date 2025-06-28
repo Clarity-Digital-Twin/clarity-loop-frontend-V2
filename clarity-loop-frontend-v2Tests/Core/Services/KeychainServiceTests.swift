@@ -77,39 +77,4 @@ final class KeychainServiceTests: XCTestCase {
         XCTAssertNoThrow(try sut.delete("non.existent.key"))
     }
     
-    // MARK: - Token Storage Tests
-    
-    func test_saveAuthToken_shouldStoreTokenSecurely() async throws {
-        // Given
-        let token = AuthToken(
-            accessToken: "access-123",
-            refreshToken: "refresh-456",
-            expiresIn: 3600
-        )
-        
-        // When
-        try sut.saveAuthToken(token)
-        
-        // Then
-        let retrieved = try sut.retrieveAuthToken()
-        XCTAssertEqual(retrieved.accessToken, token.accessToken)
-        XCTAssertEqual(retrieved.refreshToken, token.refreshToken)
-        XCTAssertEqual(retrieved.expiresIn, token.expiresIn)
-    }
-    
-    func test_deleteAuthToken_shouldRemoveAllTokenData() async throws {
-        // Given
-        let token = AuthToken(
-            accessToken: "access-123",
-            refreshToken: "refresh-456",
-            expiresIn: 3600
-        )
-        try sut.saveAuthToken(token)
-        
-        // When
-        try sut.deleteAuthToken()
-        
-        // Then
-        XCTAssertThrowsError(try sut.retrieveAuthToken())
-    }
 }

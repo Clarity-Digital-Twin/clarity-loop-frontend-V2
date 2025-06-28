@@ -14,11 +14,6 @@ public protocol KeychainServiceProtocol: Sendable {
     func save(_ value: String, forKey key: String) throws
     func retrieve(_ key: String) throws -> String
     func delete(_ key: String) throws
-    
-    // Convenience methods for auth tokens
-    func saveAuthToken(_ token: AuthToken) throws
-    func retrieveAuthToken() throws -> AuthToken
-    func deleteAuthToken() throws
 }
 
 // MARK: - Errors
@@ -36,11 +31,6 @@ public final class KeychainService: KeychainServiceProtocol, @unchecked Sendable
     
     private let service = "com.clarity.pulse"
     private let accessGroup: String? = nil
-    
-    // Token keys
-    private let accessTokenKey = "auth.access.token"
-    private let refreshTokenKey = "auth.refresh.token"
-    private let expiresInKey = "auth.expires.in"
     
     public init() {}
     
@@ -103,35 +93,6 @@ public final class KeychainService: KeychainServiceProtocol, @unchecked Sendable
         }
     }
     
-    // MARK: - Auth Token Methods
-    
-    public func saveAuthToken(_ token: AuthToken) throws {
-        try save(token.accessToken, forKey: accessTokenKey)
-        try save(token.refreshToken, forKey: refreshTokenKey)
-        try save(String(token.expiresIn), forKey: expiresInKey)
-    }
-    
-    public func retrieveAuthToken() throws -> AuthToken {
-        let accessToken = try retrieve(accessTokenKey)
-        let refreshToken = try retrieve(refreshTokenKey)
-        let expiresInString = try retrieve(expiresInKey)
-        
-        guard let expiresIn = Int(expiresInString) else {
-            throw KeychainError.invalidData
-        }
-        
-        return AuthToken(
-            accessToken: accessToken,
-            refreshToken: refreshToken,
-            expiresIn: expiresIn
-        )
-    }
-    
-    public func deleteAuthToken() throws {
-        try delete(accessTokenKey)
-        try delete(refreshTokenKey)
-        try delete(expiresInKey)
-    }
     
     // MARK: - Private Helpers
     

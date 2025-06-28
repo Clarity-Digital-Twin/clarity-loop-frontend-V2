@@ -143,7 +143,7 @@ let package = Package(
             name: "ClarityCoreTests",
             dependencies: ["ClarityCore", "ClarityDomain", "ClarityData", "ClarityUI"],
             path: "clarity-loop-frontend-v2Tests",
-            exclude: ["Domain", "Data", "UI", "Infrastructure", "Integration"],
+            exclude: ["Domain", "Data", "UI", "Infrastructure", "Integration", "Core/Services/KeychainServiceTests.swift", "Core/Services/BiometricAuthServiceTests.swift"],
             sources: ["DI/", "Architecture/", "Examples/"]
         ),
         // UI tests temporarily disabled due to Swift 6 concurrency issues

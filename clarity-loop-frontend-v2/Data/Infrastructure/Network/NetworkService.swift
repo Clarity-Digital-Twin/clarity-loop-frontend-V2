@@ -10,34 +10,40 @@ import ClarityDomain
 
 /// Main network service implementation
 public final class NetworkService: NetworkServiceProtocol {
-    private let baseURL: URL
     private let session: URLSessionProtocol
     private let authService: AuthServiceProtocol
     private let tokenStorage: TokenStorageProtocol
     private let interceptors: [RequestInterceptor]
-    
-    /// Default headers applied to all requests
-    private let defaultHeaders: [String: String]
+    private let requestBuilder: RequestBuilder
+    private let retryStrategy: RetryStrategy
+    private let errorParser: ErrorResponseParser
     
     public init(
         baseURL: URL,
         session: URLSessionProtocol = URLSession.shared,
         authService: AuthServiceProtocol,
         tokenStorage: TokenStorageProtocol,
-        interceptors: [RequestInterceptor] = []
+        interceptors: [RequestInterceptor] = [],
+        retryStrategy: RetryStrategy = ExponentialBackoffRetryStrategy()
     ) {
-        self.baseURL = baseURL
         self.session = session
         self.authService = authService
         self.tokenStorage = tokenStorage
         self.interceptors = interceptors
+        self.retryStrategy = retryStrategy
+        self.errorParser = ErrorResponseParser()
         
-        self.defaultHeaders = [
+        let defaultHeaders = [
             "Accept": "application/json",
             "Content-Type": "application/json",
             "X-Platform": "iOS",
             "X-App-Version": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
         ]
+        
+        self.requestBuilder = RequestBuilder(
+            baseURL: baseURL,
+            defaultHeaders: defaultHeaders
+        )
     }
     
     public func request<T: Decodable>(
@@ -77,78 +83,53 @@ public final class NetworkService: NetworkServiceProtocol {
     // MARK: - Private Methods
     
     private func performRequest(_ endpoint: Endpoint) async throws -> Data {
-        // Build request
-        var request = try buildRequest(for: endpoint)
+        var lastError: Error?
         
-        // Add authentication if required
-        if endpoint.requiresAuth {
-            request = try await addAuthentication(to: request)
-        }
-        
-        // Apply interceptors
-        for interceptor in interceptors {
-            try await interceptor.intercept(&request)
-        }
-        
-        // Execute request
-        let (data, response) = try await session.data(for: request)
-        
-        // Validate response
-        try validateResponse(response, data: data)
-        
-        return data
-    }
-    
-    private func buildRequest(for endpoint: Endpoint) throws -> URLRequest {
-        // Build URL with path
-        guard let url = URL(string: endpoint.path, relativeTo: baseURL) else {
-            throw NetworkError.invalidURL
-        }
-        
-        // Add query items if present
-        var components = URLComponents(url: url, resolvingAgainstBaseURL: true)
-        if let queryItems = endpoint.queryItems {
-            components?.queryItems = queryItems
-        }
-        
-        guard let finalURL = components?.url else {
-            throw NetworkError.invalidURL
-        }
-        
-        var request = URLRequest(url: finalURL)
-        request.httpMethod = endpoint.method.rawValue
-        request.timeoutInterval = endpoint.timeout
-        
-        // Add default headers
-        for (key, value) in defaultHeaders {
-            request.setValue(value, forHTTPHeaderField: key)
-        }
-        
-        // Add custom headers
-        if let headers = endpoint.headers {
-            for (key, value) in headers {
-                request.setValue(value, forHTTPHeaderField: key)
+        for attempt in 0..<Int.max {
+            do {
+                // Build request
+                var request = try requestBuilder.buildRequest(from: endpoint)
+                
+                // Add authentication if required
+                if endpoint.requiresAuth {
+                    guard let accessToken = try await tokenStorage.getAccessToken() else {
+                        throw NetworkError.unauthorized
+                    }
+                    request = requestBuilder.addAuthentication(to: request, token: accessToken)
+                }
+                
+                // Apply interceptors
+                for interceptor in interceptors {
+                    try await interceptor.intercept(&request)
+                }
+                
+                // Execute request
+                let (data, response) = try await session.data(for: request)
+                
+                // Validate response
+                try validateResponse(response, data: data)
+                
+                return data
+            } catch {
+                lastError = error
+                
+                // Check if we should retry
+                let decision = retryStrategy.shouldRetry(for: error, attempt: attempt)
+                
+                switch decision {
+                case .retry(let delay):
+                    // Wait before retrying
+                    try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+                    continue
+                    
+                case .doNotRetry:
+                    throw error
+                }
             }
         }
         
-        // Add body if present
-        request.httpBody = endpoint.body
-        
-        return request
-    }
-    
-    private func addAuthentication(to request: URLRequest) async throws -> URLRequest {
-        var authenticatedRequest = request
-        
-        // Get token from storage
-        guard let accessToken = try await tokenStorage.getAccessToken() else {
-            throw NetworkError.unauthorized
-        }
-        
-        // Add Authorization header
-        authenticatedRequest.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-        
-        return authenticatedRequest
+        // Should never reach here, but throw last error if we do
+        throw lastError ?? NetworkError.unknown
     }
     
     private func validateResponse(_ response: URLResponse, data: Data) throws {
@@ -156,59 +137,12 @@ public final class NetworkService: NetworkServiceProtocol {
             throw NetworkError.invalidResponse
         }
         
-        switch httpResponse.statusCode {
-        case 200...299:
-            // Success
+        // Success responses don't need error parsing
+        guard httpResponse.statusCode < 200 || httpResponse.statusCode >= 300 else {
             return
-            
-        case 401:
-            throw NetworkError.unauthorized
-            
-        case 403:
-            throw NetworkError.forbidden
-            
-        case 404:
-            throw NetworkError.notFound
-            
-        case 429:
-            // Rate limited - check for Retry-After header
-            let retryAfter = httpResponse.value(forHTTPHeaderField: "Retry-After")
-                .flatMap { TimeInterval($0) }
-            throw NetworkError.rateLimited(retryAfter: retryAfter)
-            
-        case 400...499:
-            // Client error - try to parse error message
-            let errorMessage = try? parseErrorMessage(from: data)
-            throw NetworkError.serverError(
-                statusCode: httpResponse.statusCode,
-                message: errorMessage
-            )
-            
-        case 500...599:
-            // Server error
-            let errorMessage = try? parseErrorMessage(from: data)
-            throw NetworkError.serverError(
-                statusCode: httpResponse.statusCode,
-                message: errorMessage
-            )
-            
-        default:
-            throw NetworkError.unknown
         }
+        
+        // Parse error using ErrorResponseParser
+        throw errorParser.parseError(from: httpResponse, data: data)
     }
-    
-    private func parseErrorMessage(from data: Data) throws -> String? {
-        let errorResponse = try? JSONDecoder().decode(
-            ErrorResponse.self,
-            from: data
-        )
-        return errorResponse?.message ?? errorResponse?.error
-    }
-}
-
-// MARK: - Error Response
-
-private struct ErrorResponse: Decodable {
-    let error: String?
-    let message: String?
 }

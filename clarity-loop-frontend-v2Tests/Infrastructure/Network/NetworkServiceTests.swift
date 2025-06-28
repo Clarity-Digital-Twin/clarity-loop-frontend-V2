@@ -17,6 +17,7 @@ final class NetworkServiceTests: XCTestCase {
     private var sut: NetworkServiceProtocol!
     private var mockSession: MockURLSession!
     private var mockAuthService: MockNetworkAuthService!
+    private var mockTokenStorage: MockTokenStorage!
     
     // MARK: - Setup
     
@@ -24,10 +25,12 @@ final class NetworkServiceTests: XCTestCase {
         super.setUp()
         mockSession = MockURLSession()
         mockAuthService = MockNetworkAuthService()
+        mockTokenStorage = MockTokenStorage()
         sut = NetworkService(
             baseURL: URL(string: "https://api.test.com")!,
             session: mockSession,
-            authService: mockAuthService
+            authService: mockAuthService,
+            tokenStorage: mockTokenStorage
         )
     }
     
@@ -35,6 +38,7 @@ final class NetworkServiceTests: XCTestCase {
         sut = nil
         mockSession = nil
         mockAuthService = nil
+        mockTokenStorage = nil
         super.tearDown()
     }
     
@@ -73,9 +77,9 @@ final class NetworkServiceTests: XCTestCase {
         XCTAssertEqual(mockSession.lastRequest?.httpMethod, "GET")
     }
     
-    func test_request_withAuthRequired_shouldAddAuthorizationHeader() async throws {
+    func test_request_withAuthRequired_shouldAddBearerToken() async throws {
         // Given
-        mockAuthService.mockToken = "test-token"
+        mockTokenStorage.mockAccessToken = "test-access-token"
         mockSession.mockData = Data("{}".utf8)
         mockSession.mockResponse = HTTPURLResponse(
             url: URL(string: "https://api.test.com/secure")!,
@@ -94,9 +98,29 @@ final class NetworkServiceTests: XCTestCase {
         _ = try await sut.request(endpoint)
         
         // Then
-        // TODO: Add proper auth token verification when implemented
-        // For now, auth is not implemented so we just verify the request was made
-        XCTAssertNotNil(mockSession.lastRequest)
+        XCTAssertEqual(
+            mockSession.lastRequest?.value(forHTTPHeaderField: "Authorization"),
+            "Bearer test-access-token"
+        )
+    }
+    
+    func test_request_withAuthRequired_whenNoToken_shouldThrowUnauthorized() async {
+        // Given
+        mockTokenStorage.mockAccessToken = nil // No token
+        
+        let endpoint = Endpoint(
+            path: "/secure",
+            method: .get,
+            requiresAuth: true
+        )
+        
+        // When/Then
+        do {
+            _ = try await sut.request(endpoint)
+            XCTFail("Should throw unauthorized error when no token")
+        } catch {
+            XCTAssertEqual(error as? NetworkError, .unauthorized)
+        }
     }
     
     // MARK: - Error Handling Tests
@@ -130,7 +154,7 @@ final class NetworkServiceTests: XCTestCase {
             headerFields: nil
         )
         
-        let endpoint = Endpoint(path: "/missing", method: .get)
+        let endpoint = Endpoint(path: "/missing", method: .get, requiresAuth: false)
         
         // When/Then
         do {
@@ -151,7 +175,7 @@ final class NetworkServiceTests: XCTestCase {
         )
         mockSession.mockData = Data("{\"message\":\"Internal server error\"}".utf8)
         
-        let endpoint = Endpoint(path: "/error", method: .get)
+        let endpoint = Endpoint(path: "/error", method: .get, requiresAuth: false)
         
         // When/Then
         do {
@@ -247,6 +271,7 @@ final class NetworkServiceTests: XCTestCase {
             baseURL: URL(string: "https://api.test.com")!,
             session: mockSession,
             authService: mockAuthService,
+            tokenStorage: mockTokenStorage,
             interceptors: [interceptor]
         )
         
@@ -341,5 +366,32 @@ private final class MockRequestInterceptor: RequestInterceptor, @unchecked Senda
         for (key, value) in mockHeadersToAdd {
             request.setValue(value, forHTTPHeaderField: key)
         }
+    }
+}
+
+private final class MockTokenStorage: TokenStorageProtocol, @unchecked Sendable {
+    var mockAccessToken: String?
+    var mockToken: AuthToken?
+    var saveTokenCalled = false
+    var clearTokenCalled = false
+    
+    func saveToken(_ token: AuthToken) async throws {
+        saveTokenCalled = true
+        mockToken = token
+        mockAccessToken = token.accessToken
+    }
+    
+    func getToken() async throws -> AuthToken? {
+        return mockToken
+    }
+    
+    func getAccessToken() async throws -> String? {
+        return mockAccessToken
+    }
+    
+    func clearToken() async throws {
+        clearTokenCalled = true
+        mockToken = nil
+        mockAccessToken = nil
     }
 }

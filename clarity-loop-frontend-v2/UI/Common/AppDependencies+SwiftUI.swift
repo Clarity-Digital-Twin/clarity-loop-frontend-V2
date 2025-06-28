@@ -30,11 +30,33 @@ public extension AppDependencyConfigurator {
     // MARK: - Infrastructure Configuration
     
     private func configureInfrastructure(_ container: Dependencies) {
-        // Network Client
+        // Network Service
+        container.register(NetworkServiceProtocol.self) {
+            NetworkService(
+                baseURL: URL(string: "https://clarity.novamindnyc.com")!,
+                authService: container.require(AuthServiceProtocol.self),
+                tokenStorage: container.require(TokenStorageProtocol.self)
+            )
+        }
+        
+        // API Client - REAL implementation connected to backend!
         container.register(APIClientProtocol.self) {
-            // TODO: Implement proper APIClient with TDD
-            // For now, use mock
-            MockAPIClient()
+            APIClient(networkService: container.require(NetworkServiceProtocol.self))
+        }
+        
+        // Keychain Service
+        container.register(KeychainServiceProtocol.self) {
+            KeychainService()
+        }
+        
+        // Biometric Auth Service
+        container.register(BiometricAuthServiceProtocol.self) {
+            BiometricAuthService()
+        }
+        
+        // Token Storage
+        container.register(TokenStorageProtocol.self) {
+            TokenStorage(keychain: container.require(KeychainServiceProtocol.self))
         }
         
         // Model Container Factory
@@ -63,9 +85,11 @@ public extension AppDependencyConfigurator {
     // MARK: - Data Layer Configuration
     
     private func configureDataLayer(_ container: Dependencies) {
-        // Auth Service - Use mock for now until Amplify is properly configured
+        // Auth Service - Amplify Auth Service with Token Storage
         container.register(AuthServiceProtocol.self) {
-            MockAuthService()
+            AmplifyAuthService(
+                tokenStorage: container.require(TokenStorageProtocol.self)
+            )
         }
         
         // User Repository
@@ -217,6 +241,12 @@ private final class AmplifyConfiguration: AmplifyConfigurable {
 
 final class AmplifyAuthService: AuthServiceProtocol {
     
+    private let tokenStorage: TokenStorageProtocol
+    
+    init(tokenStorage: TokenStorageProtocol) {
+        self.tokenStorage = tokenStorage
+    }
+    
     func login(email: String, password: String) async throws -> AuthToken {
         let result = try await Amplify.Auth.signIn(username: email, password: password)
         
@@ -235,15 +265,21 @@ final class AmplifyAuthService: AuthServiceProtocol {
         // Get the user pool tokens
         let tokens = try cognitoTokenProvider.getCognitoTokens().get()
         
-        return AuthToken(
+        let authToken = AuthToken(
             accessToken: tokens.accessToken,
             refreshToken: tokens.refreshToken,
             expiresIn: 3600 // AWS Cognito default
         )
+        
+        // Store the token
+        try await tokenStorage.saveToken(authToken)
+        
+        return authToken
     }
     
     func logout() async throws {
         _ = await Amplify.Auth.signOut()
+        try await tokenStorage.clearToken()
     }
     
     func refreshToken(_ refreshToken: String) async throws -> AuthToken {

@@ -6,15 +6,14 @@
 //
 
 import Foundation
-import Observation
 import ClarityDomain
 
 /// Main network service implementation
-@Observable
 public final class NetworkService: NetworkServiceProtocol {
     private let baseURL: URL
     private let session: URLSessionProtocol
     private let authService: AuthServiceProtocol
+    private let tokenStorage: TokenStorageProtocol
     private let interceptors: [RequestInterceptor]
     
     /// Default headers applied to all requests
@@ -24,11 +23,13 @@ public final class NetworkService: NetworkServiceProtocol {
         baseURL: URL,
         session: URLSessionProtocol = URLSession.shared,
         authService: AuthServiceProtocol,
+        tokenStorage: TokenStorageProtocol,
         interceptors: [RequestInterceptor] = []
     ) {
         self.baseURL = baseURL
         self.session = session
         self.authService = authService
+        self.tokenStorage = tokenStorage
         self.interceptors = interceptors
         
         self.defaultHeaders = [
@@ -139,20 +140,13 @@ public final class NetworkService: NetworkServiceProtocol {
     private func addAuthentication(to request: URLRequest) async throws -> URLRequest {
         var authenticatedRequest = request
         
-        // Get token from auth service
-        do {
-            let user = try await authService.getCurrentUser()
-            guard let token = user?.token else {
-                throw NetworkError.unauthorized
-            }
-            
-            authenticatedRequest.setValue(
-                "Bearer \(token)",
-                forHTTPHeaderField: "Authorization"
-            )
-        } catch {
+        // Get token from storage
+        guard let accessToken = try await tokenStorage.getAccessToken() else {
             throw NetworkError.unauthorized
         }
+        
+        // Add Authorization header
+        authenticatedRequest.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         
         return authenticatedRequest
     }

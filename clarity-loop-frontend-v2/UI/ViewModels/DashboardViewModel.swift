@@ -89,6 +89,16 @@ public final class DashboardViewModel {
             count: typeMetrics.count
         )
     }
+    
+    public func previousValueFor(_ metric: HealthMetric) -> Double? {
+        // Find metrics of the same type that are older than the current metric
+        let sameTypeMetrics = recentMetrics
+            .filter { $0.type == metric.type && $0.recordedAt < metric.recordedAt }
+            .sorted { $0.recordedAt > $1.recordedAt }
+        
+        // Return the most recent one before this metric
+        return sameTypeMetrics.first?.value
+    }
 }
 
 // MARK: - Metric Summary

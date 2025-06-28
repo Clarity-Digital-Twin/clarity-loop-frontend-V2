@@ -12,6 +12,7 @@ import ClarityCore
 public struct DashboardView: View {
     @State private var viewModel: DashboardViewModel
     @Environment(AppState.self) private var appState
+    @State private var showingAddMetric = false
     
     public init() {
         let container = DIContainer.shared
@@ -87,6 +88,23 @@ public struct DashboardView: View {
         }
         .task {
             await viewModel.loadRecentMetrics()
+        }
+        .sheet(isPresented: $showingAddMetric) {
+            HealthMetricsView()
+        }
+        .overlay(alignment: .bottomTrailing) {
+            // Floating Action Button
+            Button(action: { showingAddMetric = true }) {
+                Image(systemName: "plus")
+                    .font(.title2)
+                    .foregroundColor(.white)
+                    .frame(width: 56, height: 56)
+                    .background(Color.accentColor)
+                    .clipShape(Circle())
+                    .shadow(radius: 4, x: 2, y: 2)
+            }
+            .padding()
+            .accessibilityLabel("Add new health metric")
         }
     }
     
@@ -250,7 +268,10 @@ struct MetricsListView: View {
                     .frame(height: 200)
                 } else {
                     ForEach(viewModel.filteredMetrics) { metric in
-                        MetricRow(metric: metric)
+                        MetricRow(
+                            metric: metric,
+                            previousValue: viewModel.previousValueFor(metric)
+                        )
                     }
                 }
                 
@@ -276,37 +297,83 @@ struct MetricsListView: View {
 
 struct MetricRow: View {
     let metric: HealthMetric
+    let previousValue: Double?
+    
+    @State private var isExpanded = false
     
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(metric.type.displayName)
-                    .font(.headline)
-                
-                Text(formatDate(metric.recordedAt))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            
-            Spacer()
-            
-            HStack(alignment: .lastTextBaseline, spacing: 4) {
-                Text(formatValue(metric.value, type: metric.type))
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                // Metric Icon
+                Image(systemName: iconForMetricType(metric.type))
                     .font(.title2)
-                    .fontWeight(.semibold)
+                    .foregroundColor(colorForMetricType(metric.type))
+                    .frame(width: 40, height: 40)
+                    .background(colorForMetricType(metric.type).opacity(0.1))
+                    .cornerRadius(10)
                 
-                Text(metric.unit)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(metric.type.displayName)
+                        .font(.headline)
+                    
+                    Text(formatDate(metric.recordedAt))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                
+                Spacer()
+                
+                VStack(alignment: .trailing, spacing: 4) {
+                    HStack(alignment: .lastTextBaseline, spacing: 4) {
+                        Text(formatValue(metric.value, type: metric.type))
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                        
+                        Text(metric.unit)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    // Trend indicator
+                    if let previous = previousValue {
+                        TrendIndicator(current: metric.value, previous: previous)
+                    }
+                }
+            }
+            .padding()
+            
+            // Expandable notes section
+            if let notes = metric.notes, !notes.isEmpty {
+                if isExpanded {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Divider()
+                        
+                        Text("Notes")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        
+                        Text(notes)
+                            .font(.footnote)
+                    }
+                    .padding(.horizontal)
+                    .padding(.bottom)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                }
             }
         }
-        .padding()
         #if os(iOS)
         .background(Color(.systemGray6))
         #else
         .background(Color.gray.opacity(0.1))
         #endif
         .cornerRadius(12)
+        .onTapGesture {
+            if metric.notes != nil {
+                withAnimation(.spring(duration: 0.3)) {
+                    isExpanded.toggle()
+                }
+            }
+        }
     }
     
     private func formatDate(_ date: Date) -> String {
@@ -323,6 +390,98 @@ struct MetricRow: View {
             return String(format: "%.1f", value)
         default:
             return String(format: "%.2f", value)
+        }
+    }
+    
+    private func iconForMetricType(_ type: HealthMetricType) -> String {
+        switch type {
+        case .heartRate: return "heart.fill"
+        case .steps: return "figure.walk"
+        case .bloodPressureSystolic, .bloodPressureDiastolic: return "waveform.path.ecg"
+        case .bloodGlucose: return "drop.fill"
+        case .weight: return "scalemass.fill"
+        case .height: return "ruler.fill"
+        case .bodyTemperature: return "thermometer"
+        case .oxygenSaturation: return "lungs.fill"
+        case .respiratoryRate: return "wind"
+        case .sleepDuration: return "bed.double.fill"
+        case .caloriesBurned: return "flame.fill"
+        case .waterIntake: return "drop.triangle.fill"
+        case .exerciseDuration: return "figure.run"
+        default: return "chart.line.uptrend.xyaxis"
+        }
+    }
+    
+    private func colorForMetricType(_ type: HealthMetricType) -> Color {
+        switch type {
+        case .heartRate: return .red
+        case .steps: return .green
+        case .bloodPressureSystolic, .bloodPressureDiastolic: return .purple
+        case .bloodGlucose: return .orange
+        case .weight: return .blue
+        case .height: return .indigo
+        case .bodyTemperature: return .pink
+        case .oxygenSaturation: return .cyan
+        case .respiratoryRate: return .teal
+        case .sleepDuration: return .indigo
+        case .caloriesBurned: return .orange
+        case .waterIntake: return .blue
+        case .exerciseDuration: return .green
+        default: return .gray
+        }
+    }
+}
+
+// MARK: - Trend Indicator
+
+struct TrendIndicator: View {
+    let current: Double
+    let previous: Double
+    
+    private var trend: Trend {
+        if current > previous {
+            return .up
+        } else if current < previous {
+            return .down
+        } else {
+            return .stable
+        }
+    }
+    
+    private var percentageChange: Double {
+        guard previous != 0 else { return 0 }
+        return ((current - previous) / previous) * 100
+    }
+    
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: trend.icon)
+                .font(.caption)
+                .foregroundColor(trend.color)
+            
+            Text(String(format: "%.1f%%", abs(percentageChange)))
+                .font(.caption)
+                .foregroundColor(trend.color)
+        }
+    }
+    
+    enum Trend {
+        case up, down, stable
+        
+        var icon: String {
+            switch self {
+            case .up: return "arrow.up.right"
+            case .down: return "arrow.down.right"
+            case .stable: return "arrow.right"
+            }
+        }
+        
+        var color: Color {
+            switch self {
+            case .up: return .green
+            case .down: return .red
+            case .stable: return .gray
+            }
         }
     }
 }

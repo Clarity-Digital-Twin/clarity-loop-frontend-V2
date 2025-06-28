@@ -232,6 +232,7 @@ final class SampleViewModelTests: XCTestCase {
 
 // MARK: - Mock Repository
 
+@MainActor
 private final class MockArticleRepository: ArticleRepositoryProtocol {
     // Control properties
     var mockArticles: [Article] = []

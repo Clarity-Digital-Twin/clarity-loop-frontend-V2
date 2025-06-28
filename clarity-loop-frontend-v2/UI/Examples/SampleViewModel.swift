@@ -10,7 +10,7 @@ import Observation
 
 // MARK: - Sample Data Models
 
-struct Article: Equatable, Identifiable {
+struct Article: Equatable, Identifiable, Sendable {
     let id: UUID
     let title: String
     let author: String
@@ -21,7 +21,7 @@ struct Article: Equatable, Identifiable {
 
 // MARK: - Sample Repository Protocol
 
-protocol ArticleRepositoryProtocol {
+protocol ArticleRepositoryProtocol: Sendable {
     func fetchArticles(page: Int, pageSize: Int) async throws -> [Article]
     func searchArticles(query: String) async throws -> [Article]
     func fetchArticle(id: UUID) async throws -> Article?
@@ -191,7 +191,7 @@ struct ArticleListView: View {
                     }
                     
                 case .error(let error):
-                    ErrorView(error: error) {
+                    ArticleErrorView(error: error) {
                         Task { await viewModel.reload() }
                     }
                     
@@ -257,7 +257,7 @@ private struct ArticleRow: View {
     }
 }
 
-private struct ErrorView: View {
+private struct ArticleErrorView: View {
     let error: Error
     let retry: () -> Void
     

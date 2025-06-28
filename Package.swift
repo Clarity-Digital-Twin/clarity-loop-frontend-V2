@@ -88,7 +88,18 @@ let package = Package(
                 "ClarityUI"
             ],
             path: "clarity-loop-frontend-v2",
-            exclude: ["Info.plist", "clarity-loop-frontend-v2.entitlements", "Config"],
+            exclude: [
+                "Info.plist", 
+                "clarity-loop-frontend-v2.entitlements", 
+                "Config",
+                "amplifyconfiguration.json",
+                "amplifyconfiguration-setup.md",
+                "Core",
+                "Data", 
+                "Domain",
+                "UI",
+                "Examples"
+            ],
             sources: ["ClarityPulseApp.swift", "AppDependencies.swift", "ContentView.swift"]
         ),
         
@@ -96,12 +107,14 @@ let package = Package(
         .testTarget(
             name: "ClarityDomainTests",
             dependencies: ["ClarityDomain"],
-            path: "clarity-loop-frontend-v2Tests/Domain"
+            path: "clarity-loop-frontend-v2Tests/Domain",
+            exclude: []
         ),
         .testTarget(
             name: "ClarityDataTests",
             dependencies: ["ClarityData", "ClarityDomain", "ClarityCore"],
-            path: "clarity-loop-frontend-v2Tests/Data"
+            path: "clarity-loop-frontend-v2Tests/Data",
+            exclude: []
         ),
         .testTarget(
             name: "ClarityInfrastructureTests",
@@ -112,18 +125,21 @@ let package = Package(
         .testTarget(
             name: "ClarityIntegrationTests",
             dependencies: ["ClarityCore", "ClarityDomain", "ClarityData", "ClarityUI"],
-            path: "clarity-loop-frontend-v2Tests/Integration"
+            path: "clarity-loop-frontend-v2Tests/Integration",
+            exclude: []
         ),
         .testTarget(
             name: "ClarityUITests",
             dependencies: ["ClarityUI", "ClarityDomain", "ClarityData"],
-            path: "clarity-loop-frontend-v2Tests/UI"
+            path: "clarity-loop-frontend-v2Tests/UI",
+            exclude: []
         ),
         .testTarget(
             name: "ClarityCoreTests",
             dependencies: ["ClarityCore", "ClarityDomain", "ClarityData", "ClarityUI"],
             path: "clarity-loop-frontend-v2Tests",
-            sources: ["DI/", "Architecture/", "ClarityPulseAppTests.swift"]
+            exclude: ["Domain", "Data", "UI", "Infrastructure", "Integration"],
+            sources: ["DI/", "Architecture/", "ClarityPulseAppTests.swift", "Examples/"]
         ),
         // UI tests temporarily disabled due to Swift 6 concurrency issues
         // .testTarget(

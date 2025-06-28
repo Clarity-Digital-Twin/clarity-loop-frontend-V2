@@ -8,6 +8,7 @@
 import SwiftUI
 import ClarityDomain
 import ClarityCore
+import ClarityData
 
 public struct DashboardView: View {
     @State private var viewModel: DashboardViewModel
@@ -76,9 +77,9 @@ public struct DashboardView: View {
             #endif
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
-                    Button(action: { Task { await viewModel.refresh() } }) {
+                    Button(action: { Task { await viewModel.refresh() } }, label: {
                         Image(systemName: "arrow.clockwise")
-                    }
+                    })
                     .disabled(viewModel.isRefreshing)
                 }
             }
@@ -90,11 +91,25 @@ public struct DashboardView: View {
             await viewModel.loadRecentMetrics()
         }
         .sheet(isPresented: $showingAddMetric) {
-            HealthMetricsView()
+            let container = DIContainer.shared
+            let repository = container.require(HealthMetricRepositoryProtocol.self)
+            let apiClient = container.require(APIClient.self)
+            let addMetricViewModel = AddMetricViewModel(
+                repository: repository,
+                apiClient: apiClient,
+                userId: viewModel.user.id
+            )
+            AddMetricView(viewModel: addMetricViewModel)
+                .onDisappear {
+                    // Refresh metrics after adding
+                    Task {
+                        await viewModel.refresh()
+                    }
+                }
         }
         .overlay(alignment: .bottomTrailing) {
             // Floating Action Button
-            Button(action: { showingAddMetric = true }) {
+            Button(action: { showingAddMetric = true }, label: {
                 Image(systemName: "plus")
                     .font(.title2)
                     .foregroundColor(.white)
@@ -102,7 +117,7 @@ public struct DashboardView: View {
                     .background(Color.accentColor)
                     .clipShape(Circle())
                     .shadow(radius: 4, x: 2, y: 2)
-            }
+            })
             .padding()
             .accessibilityLabel("Add new health metric")
         }

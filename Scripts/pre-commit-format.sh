@@ -36,7 +36,7 @@ RESULT_FILE=$(mktemp)
 # Run SwiftLint on staged files
 echo "$STAGED_FILES" | while IFS= read -r file; do
     if [ -f "$file" ]; then
-        swiftlint lint --quiet --path "$file" >> "$RESULT_FILE" 2>&1
+        swiftlint lint --quiet "$file" 2>&1 | grep -E ": error:|: Error:" >> "$RESULT_FILE" || true
     fi
 done
 

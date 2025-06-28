@@ -137,7 +137,7 @@ public final class NetworkService: NetworkServiceProtocol {
     }
     
     private func addAuthentication(to request: URLRequest) async throws -> URLRequest {
-        var authenticatedRequest = request
+        let authenticatedRequest = request
         
         // For now, we'll skip auth until we properly implement token management
         // TODO: Implement proper token management with TDD

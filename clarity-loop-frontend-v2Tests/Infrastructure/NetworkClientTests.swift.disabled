@@ -140,7 +140,7 @@ final class NetworkClientTests: XCTestCase {
         } catch {
             XCTAssertTrue(error is NetworkError)
             if let networkError = error as? NetworkError {
-                XCTAssertEqual(networkError, .noConnection)
+                XCTAssertEqual(networkError, .offline)
             }
         }
     }

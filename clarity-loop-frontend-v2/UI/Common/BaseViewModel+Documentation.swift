@@ -151,7 +151,7 @@ import SwiftUI
          } catch AuthError.invalidCredentials {
              viewState = .error(LoginError.invalidCredentials)
          } catch AuthError.networkError {
-             viewState = .error(LoginError.noConnection)
+             viewState = .error(LoginError.offline)
          } catch {
              viewState = .error(error)
          }
@@ -389,7 +389,7 @@ enum BaseViewModelExamples {
     
     enum LoginError: Error {
         case invalidCredentials
-        case noConnection
+        case offline
     }
     
     enum AuthError: Error {

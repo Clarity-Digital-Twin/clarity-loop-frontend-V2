@@ -201,3 +201,18 @@ Temporary Items
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Python
+**/__pycache__/
+**/*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Swift / Xcode additional
+*.xcuserstate
+*.xcscheme
+.swiftpm/xcode-package-support/*
+**/*.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
+
+# Misc
+docs/generated/

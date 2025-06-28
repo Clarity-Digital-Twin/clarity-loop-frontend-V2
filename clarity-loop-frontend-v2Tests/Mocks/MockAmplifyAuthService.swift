@@ -67,12 +67,12 @@ final class MockAmplifyAuthService: AuthServiceProtocol {
         
         // Check success flag
         guard shouldSucceed else {
-            throw AuthError.invalidCredentials
+            throw NSError(domain: "MockAuthError", code: 401, userInfo: [NSLocalizedDescriptionKey: "Invalid credentials"])
         }
         
         // Validate input
         guard !email.isEmpty, !password.isEmpty else {
-            throw AuthError.invalidCredentials
+            throw NSError(domain: "MockAuthError", code: 401, userInfo: [NSLocalizedDescriptionKey: "Invalid credentials"])
         }
         
         return mockToken ?? AuthToken(
@@ -90,7 +90,7 @@ final class MockAmplifyAuthService: AuthServiceProtocol {
         }
         
         guard shouldSucceed else {
-            throw AuthError.unknown("Logout failed")
+            throw NSError(domain: "MockAuthError", code: 500, userInfo: [NSLocalizedDescriptionKey: "Logout failed"])
         }
     }
     
@@ -112,7 +112,7 @@ final class MockAmplifyAuthService: AuthServiceProtocol {
         }
         
         guard shouldSucceed else {
-            throw AuthError.tokenExpired
+            throw NSError(domain: "MockAuthError", code: 401, userInfo: [NSLocalizedDescriptionKey: "Token expired"])
         }
         
         return AuthToken(

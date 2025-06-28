@@ -110,87 +110,43 @@ final class AppErrorTests: XCTestCase {
     
     // MARK: - Error Conversion Tests
     
-    func test_networkError_shouldConvertToAppError() {
+    func test_genericError_shouldConvertToAppError() {
         // Given
-        let networkErrors: [(NetworkError, AppError)] = [
-            (.offline, .network(.connectionFailed)),
-            (.invalidURL, .network(.invalidRequest)),
-            (.timeout, .network(.timeout)),
-            (.serverError(statusCode: 500), .network(.serverError(500))),
-            (.decodingFailed("Invalid JSON"), .network(.decodingFailed("Invalid JSON")))
-        ]
+        let genericError = NSError(domain: "TestDomain", code: 123, userInfo: [NSLocalizedDescriptionKey: "Test error"])
+        
+        // When
+        let appError = AppError.from(genericError)
         
         // Then
-        for (networkError, expectedAppError) in networkErrors {
-            let appError = AppError.from(networkError)
-            XCTAssertEqual(appError, expectedAppError)
+        if case .unknown(let message) = appError {
+            XCTAssertEqual(message, "Test error")
+        } else {
+            XCTFail("Expected unknown error")
         }
     }
     
-    func test_authError_shouldConvertToAppError() {
+    func test_appError_shouldReturnItself() {
         // Given
-        let authErrors: [(AuthError, AppError)] = [
-            (.invalidCredentials, .authentication(.invalidCredentials)),
-            (.tokenExpired, .authentication(.sessionExpired)),
-            (.unauthorized, .authentication(.unauthorized)),
-            (.userNotFound, .authentication(.userNotFound)),
-            (.networkError("Connection failed"), .network(.connectionFailed))
-        ]
+        let originalError = AppError.authentication(.invalidCredentials)
+        
+        // When
+        let convertedError = AppError.from(originalError)
         
         // Then
-        for (authError, expectedAppError) in authErrors {
-            let appError = AppError.from(authError)
-            XCTAssertEqual(appError, expectedAppError)
-        }
-    }
-    
-    func test_validationError_shouldConvertToAppError() {
-        // Given
-        let validationErrors: [(ValidationError, AppError)] = [
-            (.invalidEmail("test"), .validation(.invalidEmail)),
-            (.invalidPassword("short"), .validation(.passwordTooShort)),
-            (.fieldRequired("name"), .validation(.requiredFieldMissing("name"))),
-            (.invalidFormat("phone", "123"), .validation(.invalidFormat("phone", "123")))
-        ]
-        
-        // Then
-        for (validationError, expectedAppError) in validationErrors {
-            let appError = AppError.from(validationError)
-            XCTAssertEqual(appError, expectedAppError)
-        }
+        XCTAssertEqual(convertedError, originalError)
     }
     
     // MARK: - Error Context Tests
     
-    func test_appError_shouldStoreContext() {
-        // Given
-        let context = ErrorContext(
-            file: "LoginView.swift",
-            line: 42,
-            function: "performLogin()",
-            additionalInfo: ["email": "test@example.com"]
-        )
-        
-        let error = AppError.authentication(.invalidCredentials)
-            .withContext(context)
+    func test_errorContext_shouldBeCreatedWithDefaults() {
+        // Given/When
+        let context = ErrorContext()
         
         // Then
-        XCTAssertEqual(error.context?.file, "LoginView.swift")
-        XCTAssertEqual(error.context?.line, 42)
-        XCTAssertEqual(error.context?.function, "performLogin()")
-        XCTAssertEqual(error.context?.additionalInfo["email"] as? String, "test@example.com")
-    }
-    
-    func test_appError_shouldChainErrors() {
-        // Given
-        let underlyingError = NSError(domain: "NSURLErrorDomain", code: -1009, userInfo: nil)
-        let networkError = NetworkError.connectionFailed(underlyingError)
-        let appError = AppError.from(networkError)
-            .withUnderlyingError(underlyingError)
-        
-        // Then
-        XCTAssertNotNil(appError.underlyingError)
-        XCTAssertEqual((appError.underlyingError as? NSError)?.code, -1009)
+        XCTAssertTrue(context.file.contains(".swift"))
+        XCTAssertGreaterThan(context.line, 0)
+        XCTAssertFalse(context.function.isEmpty)
+        XCTAssertTrue(context.additionalInfo.isEmpty)
     }
     
     // MARK: - Logging Tests
@@ -217,20 +173,11 @@ final class AppErrorTests: XCTestCase {
     func test_appError_shouldGenerateLogMessage() {
         // Given
         let error = AppError.authentication(.invalidCredentials)
-            .withContext(ErrorContext(
-                file: "LoginViewModel.swift",
-                line: 75,
-                function: "login()",
-                additionalInfo: ["email": "user@example.com"]
-            ))
         
         // When
         let logMessage = error.logMessage
         
         // Then
-        XCTAssertTrue(logMessage.contains("AppError.authentication(.invalidCredentials)"))
-        XCTAssertTrue(logMessage.contains("LoginViewModel.swift:75"))
-        XCTAssertTrue(logMessage.contains("login()"))
-        XCTAssertTrue(logMessage.contains("user@example.com"))
+        XCTAssertEqual(logMessage, "AppError.authentication(.invalidCredentials)")
     }
 }

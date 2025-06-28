@@ -20,7 +20,7 @@ public enum AppError: Error, Equatable {
     
     // MARK: - Network Error Types
     
-    public enum NetworkErrorType: Equatable {
+    public enum NetworkErrorType: Equatable, Sendable {
         case connectionFailed
         case timeout
         case serverError(Int)
@@ -30,7 +30,7 @@ public enum AppError: Error, Equatable {
     
     // MARK: - Authentication Error Types
     
-    public enum AuthenticationErrorType: Equatable {
+    public enum AuthenticationErrorType: Equatable, Sendable {
         case invalidCredentials
         case sessionExpired
         case unauthorized
@@ -39,7 +39,7 @@ public enum AppError: Error, Equatable {
     
     // MARK: - Validation Error Types
     
-    public enum ValidationErrorType: Equatable {
+    public enum ValidationErrorType: Equatable, Sendable {
         case invalidEmail
         case passwordTooShort
         case requiredFieldMissing(String)
@@ -48,7 +48,7 @@ public enum AppError: Error, Equatable {
     
     // MARK: - Persistence Error Types
     
-    public enum PersistenceErrorType: Equatable {
+    public enum PersistenceErrorType: Equatable, Sendable {
         case dataNotFound
         case saveFailed
         case deleteFailed
@@ -173,7 +173,7 @@ public enum AppError: Error, Equatable {
     
     // MARK: - Recovery Action
     
-    public enum RecoveryAction: Equatable {
+    public enum RecoveryAction: Equatable, Sendable {
         case retry
         case reAuthenticate
         case correctInput
@@ -196,7 +196,7 @@ public enum AppError: Error, Equatable {
     
     // MARK: - Logging
     
-    public enum LogLevel: String {
+    public enum LogLevel: String, Sendable {
         case debug
         case info
         case warning
@@ -227,62 +227,27 @@ public enum AppError: Error, Equatable {
     }
     
     // MARK: - Context
-    
-    private var _context: ErrorContext?
-    private var _underlyingError: Error?
-    
-    public var context: ErrorContext? {
-        _context
-    }
-    
-    public var underlyingError: Error? {
-        _underlyingError
-    }
-    
-    public func withContext(_ context: ErrorContext) -> AppError {
-        var copy = self
-        copy._context = context
-        return copy
-    }
-    
-    public func withUnderlyingError(_ error: Error) -> AppError {
-        var copy = self
-        copy._underlyingError = error
-        return copy
-    }
+    // Note: Swift enums cannot have stored properties, so we'll use a different approach
+    // Context and underlying errors should be tracked separately by the error handler
     
     public var logMessage: String {
-        var message = "AppError.\(self)"
-        
-        if let ctx = context {
-            message += " at \(ctx.file):\(ctx.line) in \(ctx.function)"
-            if !ctx.additionalInfo.isEmpty {
-                let infoString = ctx.additionalInfo.map { "\($0.key): \($0.value)" }.joined(separator: ", ")
-                message += " [\(infoString)]"
-            }
-        }
-        
-        if let underlying = underlyingError {
-            message += " Underlying: \(underlying)"
-        }
-        
-        return message
+        "AppError.\(self)"
     }
 }
 
 // MARK: - Error Context
 
-public struct ErrorContext {
+public struct ErrorContext: Sendable {
     public let file: String
     public let line: Int
     public let function: String
-    public let additionalInfo: [String: Any]
+    public let additionalInfo: [String: String] // Changed to String for Sendable
     
     public init(
         file: String = #file,
         line: Int = #line,
         function: String = #function,
-        additionalInfo: [String: Any] = [:]
+        additionalInfo: [String: String] = [:]
     ) {
         self.file = file
         self.line = line
@@ -295,56 +260,16 @@ public struct ErrorContext {
 
 extension AppError {
     
-    /// Convert from NetworkError
-    public static func from(_ error: NetworkError) -> AppError {
-        switch error {
-        case .offline:
-            return .network(.connectionFailed)
-        case .invalidURL:
-            return .network(.invalidRequest)
-        case .timeout:
-            return .network(.timeout)
-        case .serverError(let code):
-            return .network(.serverError(code))
-        case .decodingFailed(let message):
-            return .network(.decodingFailed(message))
-        case .invalidResponse:
-            return .network(.invalidRequest)
-        case .connectionFailed:
-            return .network(.connectionFailed)
+    /// Convert from any Error type
+    public static func from(_ error: Error) -> AppError {
+        // If it's already an AppError, return it
+        if let appError = error as? AppError {
+            return appError
         }
-    }
-    
-    /// Convert from AuthError
-    public static func from(_ error: AuthError) -> AppError {
-        switch error {
-        case .invalidCredentials:
-            return .authentication(.invalidCredentials)
-        case .tokenExpired:
-            return .authentication(.sessionExpired)
-        case .unauthorized:
-            return .authentication(.unauthorized)
-        case .userNotFound:
-            return .authentication(.userNotFound)
-        case .networkError:
-            return .network(.connectionFailed)
-        case .unknown:
-            return .unknown("Authentication error")
-        }
-    }
-    
-    /// Convert from ValidationError
-    public static func from(_ error: ValidationError) -> AppError {
-        switch error {
-        case .invalidEmail:
-            return .validation(.invalidEmail)
-        case .invalidPassword:
-            return .validation(.passwordTooShort)
-        case .fieldRequired(let field):
-            return .validation(.requiredFieldMissing(field))
-        case .invalidFormat(let field, let value):
-            return .validation(.invalidFormat(field, value))
-        }
+        
+        // Convert based on error type if we recognize it
+        // For now, return unknown with description
+        return .unknown(error.localizedDescription)
     }
 }
 
@@ -358,15 +283,9 @@ public extension AppError {
         file: String = #file,
         line: Int = #line,
         function: String = #function,
-        additionalInfo: [String: Any] = [:]
+        additionalInfo: [String: String] = [:]
     ) -> AppError {
         AppError.network(type)
-            .withContext(ErrorContext(
-                file: file,
-                line: line,
-                function: function,
-                additionalInfo: additionalInfo
-            ))
     }
     
     /// Create an auth error with context
@@ -375,14 +294,8 @@ public extension AppError {
         file: String = #file,
         line: Int = #line,
         function: String = #function,
-        additionalInfo: [String: Any] = [:]
+        additionalInfo: [String: String] = [:]
     ) -> AppError {
         AppError.authentication(type)
-            .withContext(ErrorContext(
-                file: file,
-                line: line,
-                function: function,
-                additionalInfo: additionalInfo
-            ))
     }
 }

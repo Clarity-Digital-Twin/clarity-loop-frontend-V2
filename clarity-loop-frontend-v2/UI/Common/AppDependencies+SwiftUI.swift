@@ -7,9 +7,10 @@
 
 import SwiftUI
 import SwiftData
-import Amplify
-import AWSCognitoAuthPlugin
-import AWSAPIPlugin
+@preconcurrency import Amplify
+@preconcurrency import AWSCognitoAuthPlugin
+@preconcurrency import AWSAPIPlugin
+@preconcurrency import AWSPluginsCore
 import ClarityCore
 import ClarityDomain
 import ClarityData

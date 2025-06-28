@@ -30,7 +30,7 @@ final class MockTokenStorage: TokenStorageProtocol {
         }
         
         if shouldThrowError {
-            throw KeychainError.unableToStore
+            throw NSError(domain: "MockTokenStorage", code: 1, userInfo: [NSLocalizedDescriptionKey: "Unable to store token"])
         }
         
         storedToken = token
@@ -44,7 +44,7 @@ final class MockTokenStorage: TokenStorageProtocol {
         }
         
         if shouldThrowError {
-            throw KeychainError.itemNotFound
+            throw NSError(domain: "MockTokenStorage", code: 2, userInfo: [NSLocalizedDescriptionKey: "Token not found"])
         }
         
         return storedToken
@@ -58,7 +58,7 @@ final class MockTokenStorage: TokenStorageProtocol {
         }
         
         if shouldThrowError {
-            throw KeychainError.unableToDelete
+            throw NSError(domain: "MockTokenStorage", code: 3, userInfo: [NSLocalizedDescriptionKey: "Unable to delete token"])
         }
         
         storedToken = nil

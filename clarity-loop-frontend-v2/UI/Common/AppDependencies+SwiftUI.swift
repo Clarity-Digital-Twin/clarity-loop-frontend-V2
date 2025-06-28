@@ -2,25 +2,27 @@
 //  AppDependencies+SwiftUI.swift
 //  clarity-loop-frontend-v2
 //
-//  SwiftUI Environment-based dependency configuration
+//  Created by Clarity on 2025-06-27.
 //
 
-import Foundation
 import SwiftUI
 import SwiftData
+import Amplify
+import AWSCognitoAuthPlugin
+import AWSAPIPlugin
 import ClarityCore
 import ClarityDomain
 import ClarityData
-@preconcurrency import Amplify
-import AWSCognitoAuthPlugin
-import AWSAPIPlugin
-import AWSPluginsCore
+import ClarityInfrastructure
 
-/// Configures app dependencies for SwiftUI Environment injection
-public extension AppDependencyConfigurator {
+// MARK: - SwiftUI App Dependencies
+
+/// Configures all app dependencies for SwiftUI environment
+public final class AppDependencyConfigurator {
     
-    /// Configure all app dependencies in the Dependencies container
-    func configure(_ container: Dependencies) {
+    public init() {}
+    
+    public func configure(_ container: Dependencies) {
         configureInfrastructure(container)
         configureDataLayer(container)
         configureDomainLayer(container)
@@ -131,12 +133,12 @@ public extension AppDependencyConfigurator {
     // MARK: - UI Layer Configuration
     
     private func configureUILayer(_ container: Dependencies) {
-        // View Model Factories can be registered here if needed
-        // For now, ViewModels will be created with dependencies from environment
+        // ViewModels are created per-view, not registered in DI
+        // They use @Environment to access dependencies
     }
 }
 
-// MARK: - Environment Injection Extension
+// MARK: - SwiftUI Integration
 
 public extension View {
     /// Inject all configured dependencies into the environment
@@ -157,68 +159,7 @@ public extension View {
     }
 }
 
-// MARK: - Mock Services
-
-private struct MockAPIClient: APIClientProtocol {
-    func get<T: Decodable>(_ endpoint: String, parameters: [String: String]?) async throws -> T {
-        throw NetworkError.offline
-    }
-    
-    func post<T: Decodable, U: Encodable>(_ endpoint: String, body: U) async throws -> T {
-        throw NetworkError.offline
-    }
-    
-    func put<T: Decodable, U: Encodable>(_ endpoint: String, body: U) async throws -> T {
-        throw NetworkError.offline
-    }
-    
-    func delete<T: Decodable>(_ endpoint: String) async throws -> T {
-        throw NetworkError.offline
-    }
-    
-    func delete<T: Identifiable>(type: T.Type, id: T.ID) async throws {
-        throw NetworkError.offline
-    }
-}
-
-private struct MockAuthService: AuthServiceProtocol {
-    func login(email: String, password: String) async throws -> AuthToken {
-        // Simulate network delay
-        try await Task.sleep(nanoseconds: 1_000_000_000)
-        
-        // Return mock token
-        return AuthToken(
-            accessToken: "mock-access-token",
-            refreshToken: "mock-refresh-token",
-            expiresIn: 3600
-        )
-    }
-    
-    func logout() async throws {
-        // Mock logout
-    }
-    
-    @MainActor
-    func getCurrentUser() async throws -> User? {
-        // Return mock user
-        return User(
-            id: UUID(),
-            email: "test@example.com",
-            firstName: "Test",
-            lastName: "User"
-        )
-    }
-    
-    func refreshToken(_ refreshToken: String) async throws -> AuthToken {
-        return AuthToken(
-            accessToken: "mock-refreshed-access-token",
-            refreshToken: "mock-refreshed-refresh-token",
-            expiresIn: 3600
-        )
-    }
-}
-
-// MARK: - Amplify Configuration (moved from AppDependencies)
+// MARK: - Amplify Configuration
 
 private protocol AmplifyConfigurable {
     func configure() async throws
@@ -237,7 +178,7 @@ private final class AmplifyConfiguration: AmplifyConfigurable {
     }
 }
 
-// MARK: - Amplify Auth Service (moved from AppDependencies)
+// MARK: - Amplify Auth Service
 
 final class AmplifyAuthService: AuthServiceProtocol {
     

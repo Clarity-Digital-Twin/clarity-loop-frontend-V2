@@ -39,7 +39,7 @@ public final class AppDependencies {
         // Network Service
         container.register(NetworkServiceProtocol.self, scope: .singleton) { container in
             NetworkService(
-                baseURL: URL(string: "https://api.clarity-pulse.com")!, // TODO: Get from config
+                baseURL: URL(string: "https://clarity.novamindnyc.com")!, // Real backend URL
                 authService: container.require(AuthServiceProtocol.self),
                 tokenStorage: container.require(TokenStorageProtocol.self)
             )
@@ -294,29 +294,5 @@ private final class AmplifyAuthService: AuthServiceProtocol {
             firstName: firstName ?? "",
             lastName: lastName ?? ""
         )
-    }
-}
-
-// MARK: - Mock Services
-
-private struct MockAPIClient: APIClientProtocol {
-    func get<T: Decodable>(_ endpoint: String, parameters: [String: String]?) async throws -> T {
-        throw NetworkError.offline
-    }
-    
-    func post<T: Decodable, U: Encodable>(_ endpoint: String, body: U) async throws -> T {
-        throw NetworkError.offline
-    }
-    
-    func put<T: Decodable, U: Encodable>(_ endpoint: String, body: U) async throws -> T {
-        throw NetworkError.offline
-    }
-    
-    func delete<T: Decodable>(_ endpoint: String) async throws -> T {
-        throw NetworkError.offline
-    }
-    
-    func delete<T: Identifiable>(type: T.Type, id: T.ID) async throws {
-        throw NetworkError.offline
     }
 }

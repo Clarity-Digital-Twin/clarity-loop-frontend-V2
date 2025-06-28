@@ -16,10 +16,8 @@ import ClarityData
 struct ClarityPulseWrapperApp: App {
     var body: some Scene {
         WindowGroup {
-            // TODO: Configure dependencies and use RootView
-            Text("CLARITY Pulse")
-                .font(.largeTitle)
-                .padding()
+            RootView()
+                .configuredDependencies()
         }
     }
 }

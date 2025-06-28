@@ -1,0 +1,40 @@
+{
+  "configurations" : [
+    {
+      "id" : "8A4CE8B0-6F3A-4C5E-9D8B-E2A1F3C4D5E6",
+      "name" : "Default Configuration",
+      "options" : {
+        "testTimeoutsEnabled" : true,
+        "maximumTestExecutionTimeAllowance" : 60,
+        "codeCoverage" : true,
+        "targetForVariableExpansion" : {
+          "containerPath" : "container:ClarityPulseWrapper.xcodeproj",
+          "identifier" : "ClarityPulseWrapper",
+          "name" : "ClarityPulseWrapper"
+        }
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : {
+      "targets" : [
+        {
+          "containerPath" : "container:ClarityPulseWrapper.xcodeproj",
+          "identifier" : "ClarityPulseWrapper",
+          "name" : "ClarityPulseWrapper"
+        }
+      ]
+    },
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:ClarityPulseWrapper.xcodeproj",
+        "identifier" : "ClarityPulseWrapperUITests",
+        "name" : "ClarityPulseWrapperUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

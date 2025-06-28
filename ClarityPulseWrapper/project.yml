@@ -37,6 +37,17 @@ targets:
       INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
       INFOPLIST_KEY_LSRequiresIPhoneOS: true
       INFOPLIST_KEY_CFBundleDisplayName: "CLARITY Pulse"
+  
+  ClarityPulseWrapperUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: 
+      - ../clarity-loop-frontend-v2UITests
+    dependencies:
+      - target: ClarityPulseWrapper
+    settings:
+      GENERATE_INFOPLIST_FILE: true
+      TEST_TARGET_NAME: ClarityPulseWrapper
       
 packages:
   ClarityPulse:

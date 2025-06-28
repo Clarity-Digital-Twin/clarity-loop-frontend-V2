@@ -13,7 +13,6 @@ import AWSAPIPlugin
 import ClarityCore
 import ClarityDomain
 import ClarityData
-import ClarityInfrastructure
 
 // MARK: - SwiftUI App Dependencies
 

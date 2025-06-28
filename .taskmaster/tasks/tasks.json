@@ -799,7 +799,7 @@
           16,
           17
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": []
       },
       {
@@ -1225,7 +1225,7 @@
           16,
           17
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": []
       },
       {
@@ -1695,7 +1695,7 @@
           16,
           17
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": []
       },
       {
@@ -3095,7 +3095,7 @@
     ],
     "metadata": {
       "created": "2025-06-25T16:21:52.741Z",
-      "updated": "2025-06-28T11:42:17.294Z",
+      "updated": "2025-06-28T11:44:40.531Z",
       "description": "CLARITY Pulse V2 - Vertical Slice Development Tasks"
     }
   }

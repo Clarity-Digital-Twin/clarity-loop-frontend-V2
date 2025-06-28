@@ -9,6 +9,7 @@ import XCTest
 @testable import ClarityUI
 @testable import ClarityDomain
 @testable import ClarityData
+@testable import ClarityCore
 
 final class LoginViewModelTests: XCTestCase {
     
@@ -124,7 +125,7 @@ final class LoginViewModelTests: XCTestCase {
     @MainActor
     func test_whenLogin_withInvalidCredentials_shouldShowError() async {
         // Given
-        mockLoginUseCase.mockResult = .failure(AuthError.invalidCredentials)
+        mockLoginUseCase.mockResult = .failure(AppError.authentication(.invalidCredentials))
         sut.email = "test@example.com"
         sut.password = "wrong"
         
@@ -133,8 +134,13 @@ final class LoginViewModelTests: XCTestCase {
         
         // Then
         if case .error(let error) = sut.viewState {
-            XCTAssertTrue(error is AuthError)
-            XCTAssertEqual(error as? AuthError, AuthError.invalidCredentials)
+            XCTAssertTrue(error is AppError)
+            if let appError = error as? AppError,
+               case .authentication(.invalidCredentials) = appError {
+                // Success
+            } else {
+                XCTFail("Expected authentication error")
+            }
         } else {
             XCTFail("Expected error state")
         }
@@ -143,7 +149,7 @@ final class LoginViewModelTests: XCTestCase {
     @MainActor
     func test_whenLogin_withNetworkError_shouldShowError() async {
         // Given
-        mockLoginUseCase.mockResult = .failure(NetworkError.offline)
+        mockLoginUseCase.mockResult = .failure(AppError.network(.connectionFailed))
         sut.email = "test@example.com"
         sut.password = "password123"
         
@@ -152,8 +158,13 @@ final class LoginViewModelTests: XCTestCase {
         
         // Then
         if case .error(let error) = sut.viewState {
-            XCTAssertTrue(error is NetworkError)
-            XCTAssertEqual(error as? NetworkError, NetworkError.offline)
+            XCTAssertTrue(error is AppError)
+            if let appError = error as? AppError,
+               case .network(.connectionFailed) = appError {
+                // Success
+            } else {
+                XCTFail("Expected network error")
+            }
         } else {
             XCTFail("Expected error state")
         }
@@ -164,7 +175,7 @@ final class LoginViewModelTests: XCTestCase {
     @MainActor
     func test_whenClearError_shouldResetToIdle() async {
         // Given - Create an error state through failed login
-        mockLoginUseCase.mockResult = .failure(AuthError.invalidCredentials)
+        mockLoginUseCase.mockResult = .failure(AppError.authentication(.invalidCredentials))
         sut.email = "test@example.com"
         sut.password = "wrong"
         await sut.login()
@@ -186,7 +197,7 @@ final class LoginViewModelTests: XCTestCase {
 
 @MainActor
 private final class MockLoginUseCase: LoginUseCaseProtocol, Sendable {
-    var mockResult: Result<User, Error> = .failure(AuthError.invalidCredentials)
+    var mockResult: Result<User, Error> = .failure(AppError.authentication(.invalidCredentials))
     var executeWasCalled = false
     var lastEmail: String?
     var lastPassword: String?

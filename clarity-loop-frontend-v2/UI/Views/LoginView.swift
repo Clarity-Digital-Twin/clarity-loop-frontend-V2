@@ -13,6 +13,8 @@ public struct LoginView: View {
     @State private var viewModel: LoginViewModel
     @Environment(AppState.self) private var appState
     @FocusState private var focusedField: Field?
+    @State private var showingError = false
+    @State private var errorPresentation: ErrorPresentation?
     
     public init() {
         let container = DIContainer.shared
@@ -136,13 +138,46 @@ public struct LoginView: View {
             #endif
         }
         .onChange(of: viewModel.viewState) { _, newState in
-            if case .success(let user) = newState {
+            switch newState {
+            case .success(let user):
                 appState.login(
                     userId: user.id,
                     email: user.email,
                     name: "\(user.firstName) \(user.lastName)"
                 )
+            case .error(let error):
+                if let appError = error as? AppError {
+                    Task { @MainActor in
+                        let errorHandler = ErrorHandler(
+                            logger: ConsoleLogger(),
+                            analytics: NoOpAnalytics()
+                        )
+                        errorPresentation = await errorHandler.presentToUser(appError)
+                        showingError = true
+                    }
+                }
+            default:
+                break
             }
+        }
+        .alert(
+            errorPresentation?.title ?? "Error",
+            isPresented: $showingError,
+            presenting: errorPresentation
+        ) { presentation in
+            ForEach(presentation.actions.indices, id: \.self) { index in
+                let action = presentation.actions[index]
+                Button(action.title) {
+                    if let handler = action.handler {
+                        Task {
+                            await handler()
+                        }
+                    }
+                    viewModel.clearError()
+                }
+            }
+        } message: { presentation in
+            Text(presentation.message)
         }
     }
     

@@ -200,7 +200,7 @@ final class AmplifyAuthService: AuthServiceProtocol {
         
         // Cast to AuthCognitoTokensProvider to get tokens
         guard let cognitoTokenProvider = session as? AuthCognitoTokensProvider else {
-            throw AuthError.unknown("Failed to retrieve Cognito session")
+            throw NSError(domain: "AmplifyAuth", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to retrieve Cognito session"])
         }
         
         // Get the user pool tokens
@@ -229,7 +229,7 @@ final class AmplifyAuthService: AuthServiceProtocol {
         
         // Cast to AuthCognitoTokensProvider to get tokens
         guard let cognitoTokenProvider = session as? AuthCognitoTokensProvider else {
-            throw AuthError.unknown("Failed to retrieve Cognito session")
+            throw NSError(domain: "AmplifyAuth", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to retrieve Cognito session"])
         }
         
         // Get the refreshed tokens

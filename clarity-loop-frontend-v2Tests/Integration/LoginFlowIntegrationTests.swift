@@ -9,7 +9,7 @@ import XCTest
 @testable import ClarityCore
 @testable import ClarityDomain
 @testable import ClarityData
-@testable import ClarityInfrastructure
+// @testable import ClarityInfrastructure - removed, module doesn't exist
 
 final class LoginFlowIntegrationTests: BaseIntegrationTestCase {
     

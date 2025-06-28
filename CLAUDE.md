@@ -1,348 +1,733 @@
-# CLARITY Pulse V2 - TDD/BDD Development Guidelines
+# Project Overview
 
-## 🚨 CRITICAL: READ THIS FIRST!
+This is a native **iOS application** built with **Swift 6.1+** and **SwiftUI**. The codebase targets **iOS 18.0 and later**, allowing full use of modern Swift and iOS APIs. All concurrency is handled with **Swift Concurrency** (async/await, actors, @MainActor isolation) ensuring thread-safe code.
 
-**BEFORE IMPLEMENTING ANY TASK:**
-1. Check the markdown documentation files in the root directory
-2. Reference the specific guides relevant to your task
-3. Follow TDD/BDD principles - NO production code without failing tests
+- **Frameworks & Tech:** SwiftUI for UI, Swift Concurrency with strict mode, Swift Package Manager for modular architecture
+- **Architecture:** Model-View (MV) pattern using pure SwiftUI state management. We avoid MVVM and instead leverage SwiftUI's built-in state mechanisms (@State, @Observable, @Environment, @Binding)
+- **Testing:** Swift Testing framework with modern @Test macros and #expect/#require assertions
+- **Platform:** iOS (Simulator and Device)
+- **Accessibility:** Full accessibility support using SwiftUI's accessibility modifiers
 
-**KEY DOCUMENTATION:**
-- `CLARITY_IMPLEMENTATION_GUIDE.md` - Start here for TDD approach
-- `CLARITY_VERTICAL_SLICE_TASK_SUMMARY.md` - 200 tasks ready to implement
-- `CLARITY_ENDPOINT_MAPPING.md` - Backend API specifications
-- See "Markdown Documentation References" section below for complete list
+## Project Structure
 
-## Project Context
-CLARITY Pulse V2 is a complete rebuild of a HIPAA-compliant iOS health tracking app. This is a **PURE SwiftUI + SwiftData** application that serves as a frontend wrapper for the backend API.
+The project follows a **workspace + SPM package** architecture:
 
-### 🚀 PURE SWIFTUI COMMITMENT
-**NO UIKit imports allowed!** This is a 100% SwiftUI application. All UI components, keyboard handling, colors, and interactions must use SwiftUI APIs only.
+```
+YourApp/
+├── Config/                         # XCConfig build settings
+│   ├── Debug.xcconfig
+│   ├── Release.xcconfig
+│   ├── Shared.xcconfig
+│   └── Tests.xcconfig
+├── YourApp.xcworkspace/            # Workspace container
+├── YourApp.xcodeproj/              # App shell (minimal wrapper)
+├── YourApp/                        # App target - just the entry point
+│   ├── Assets.xcassets/
+│   ├── YourAppApp.swift           # @main entry point only
+│   └── YourApp.xctestplan
+├── YourAppPackage/                 # All features and business logic
+│   ├── Package.swift
+│   ├── Sources/
+│   │   └── YourAppFeature/        # Feature modules
+│   └── Tests/
+│       └── YourAppFeatureTests/   # Swift Testing tests
+└── YourAppUITests/                 # UI automation tests
+```
 
-## 🚨 FUNDAMENTAL DEVELOPMENT PHILOSOPHY: TDD + BDD
+**Important:** All development work should be done in the **YourAppPackage** Swift Package, not in the app project. The app project is merely a thin wrapper that imports and launches the package features.
 
-### Test-Driven Development (TDD)
-**NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST. NO EXCEPTIONS.**
+# Code Quality & Style Guidelines
 
-Red → Green → Refactor:
-1. **Red**: Write a failing test that describes the desired behavior
-2. **Green**: Write MINIMUM code to make the test pass
-3. **Refactor**: Improve code quality while keeping tests green
+## Swift Style & Conventions
 
-### Behavior-Driven Development (BDD)
-**DESCRIBE BEHAVIOR, NOT IMPLEMENTATION**
+- **Naming:** Use `UpperCamelCase` for types, `lowerCamelCase` for properties/functions. Choose descriptive names (e.g., `calculateMonthlyRevenue()` not `calcRev`)
+- **Value Types:** Prefer `struct` for models and data, use `class` only when reference semantics are required
+- **Enums:** Leverage Swift's powerful enums with associated values for state representation
+- **Early Returns:** Prefer early return pattern over nested conditionals to avoid pyramid of doom
 
-Write tests that describe what the system does, not how:
+## Optionals & Error Handling
+
+- Use optionals with `if let`/`guard let` for nil handling
+- Never force-unwrap (`!`) without absolute certainty - prefer `guard` with failure path
+- Use `do/try/catch` for error handling with meaningful error types
+- Handle or propagate all errors - no empty catch blocks
+
+# Modern SwiftUI Architecture Guidelines (2025)
+
+### No ViewModels - Use Native SwiftUI Data Flow
+**New features MUST follow these patterns:**
+
+1. **Views as Pure State Expressions**
+   ```swift
+   struct MyView: View {
+       @Environment(MyService.self) private var service
+       @State private var viewState: ViewState = .loading
+       
+       enum ViewState {
+           case loading
+           case loaded(data: [Item])
+           case error(String)
+       }
+       
+       var body: some View {
+           // View is just a representation of its state
+       }
+   }
+   ```
+
+2. **Use Environment Appropriately**
+   - **App-wide services**: Router, Theme, CurrentAccount, Client, etc. - use `@Environment`
+   - **Feature-specific services**: Timeline services, single-view logic - use `let` properties with `@Observable`
+   - Rule: Environment for cross-app/cross-feature dependencies, let properties for single-feature services
+   - Access app-wide via `@Environment(ServiceType.self)`
+   - Feature services: `private let myService = MyObservableService()`
+
+3. **Local State Management**
+   - Use `@State` for view-specific state
+   - Use `enum` for view states (loading, loaded, error)
+   - Use `.task(id:)` and `.onChange(of:)` for side effects
+   - Pass state between views using `@Binding`
+
+4. **No ViewModels Required**
+   - Views should be lightweight and disposable
+   - Business logic belongs in services/clients
+   - Test services independently, not views
+   - Use SwiftUI previews for visual testing
+
+5. **When Views Get Complex**
+   - Split into smaller subviews
+   - Use compound views that compose smaller views
+   - Pass state via bindings between views
+   - Never reach for a ViewModel as the solution
+
+# iOS 26 Features (Optional)
+
+**Note**: If your app targets iOS 26+, you can take advantage of these cutting-edge SwiftUI APIs introduced in June 2025. These features are optional and should only be used when your deployment target supports iOS 26.
+
+## Available iOS 26 SwiftUI APIs
+
+When targeting iOS 26+, consider using these new APIs:
+
+#### Liquid Glass Effects
+- `glassEffect(_:in:isEnabled:)` - Apply Liquid Glass effects to views
+- `buttonStyle(.glass)` - Apply Liquid Glass styling to buttons
+- `ToolbarSpacer` - Create visual breaks in toolbars with Liquid Glass
+
+#### Enhanced Scrolling
+- `scrollEdgeEffectStyle(_:for:)` - Configure scroll edge effects
+- `backgroundExtensionEffect()` - Duplicate, mirror, and blur views around edges
+
+#### Tab Bar Enhancements
+- `tabBarMinimizeBehavior(_:)` - Control tab bar minimization behavior
+- Search role for tabs with search field replacing tab bar
+- `TabViewBottomAccessoryPlacement` - Adjust accessory view content based on placement
+
+#### Web Integration
+- `WebView` and `WebPage` - Full control over browsing experience
+
+#### Drag and Drop
+- `draggable(_:_:)` - Drag multiple items
+- `dragContainer(for:id:in:selection:_:)` - Container for draggable views
+
+#### Animation
+- `@Animatable` macro - SwiftUI synthesizes custom animatable data properties
+
+#### UI Components
+- `Slider` with automatic tick marks when using step parameter
+- `windowResizeAnchor(_:)` - Set window anchor point for resizing
+
+#### Text Enhancements
+- `TextEditor` now supports `AttributedString`
+- `AttributedTextSelection` - Handle text selection with attributed text
+- `AttributedTextFormattingDefinition` - Define text styling in specific contexts
+- `FindContext` - Create find navigator in text editing views
+
+#### Accessibility
+- `AssistiveAccess` - Support Assistive Access in iOS scenes
+
+#### HDR Support
+- `Color.ResolvedHDR` - RGBA values with HDR headroom information
+
+#### UIKit Integration
+- `UIHostingSceneDelegate` - Host and present SwiftUI scenes in UIKit
+- `NSGestureRecognizerRepresentable` - Incorporate gesture recognizers from AppKit
+
+#### Immersive Spaces (if applicable)
+- `manipulable(coordinateSpace:operations:inertia:isEnabled:onChanged:)` - Hand gesture manipulation
+- `SurfaceSnappingInfo` - Snap volumes and windows to surfaces
+- `RemoteImmersiveSpace` - Render stereo content from Mac to Apple Vision Pro
+- `SpatialContainer` - 3D layout container
+- Depth-based modifiers: `aspectRatio3D(_:contentMode:)`, `rotation3DLayout(_:)`, `depthAlignment(_:)`
+
+## iOS 26 Usage Guidelines
+- **Only use when targeting iOS 26+**: Ensure your deployment target supports these APIs
+- **Progressive enhancement**: Use availability checks if supporting multiple iOS versions
+- **Feature detection**: Test on older simulators to ensure graceful fallbacks
+- **Modern aesthetics**: Leverage Liquid Glass effects for cutting-edge UI design
+
 ```swift
-// ✅ BDD - Describes behavior
-func test_whenUserLogsIn_withValidCredentials_shouldShowDashboard()
-func test_whenHealthDataSyncs_withNoNetwork_shouldQueueForLaterSync()
-
-// ❌ Not BDD - Tests implementation
-func test_loginMethodCallsAuthService()
-func test_repositorySavesDataToDatabase()
+// Example: Using iOS 26 features with availability checks
+struct ModernButton: View {
+    var body: some View {
+        Button("Tap me") {
+            // Action
+        }
+        .buttonStyle({
+            if #available(iOS 26.0, *) {
+                .glass
+            } else {
+                .bordered
+            }
+        }())
+    }
+}
 ```
 
-## Architecture Overview
+## SwiftUI State Management (MV Pattern)
 
-### Clean Architecture Layers
-```
-UI Layer       → SwiftUI Views + @Observable ViewModels (MVVM)
-Domain Layer   → Use Cases + Domain Models + Repository Protocols  
-Data Layer     → Repositories + Services + DTOs
-Infrastructure → Network + SwiftData + AWS Amplify
-```
+- **@State:** For all state management, including observable model objects
+- **@Observable:** Modern macro for making model classes observable (replaces ObservableObject)
+- **@Environment:** For dependency injection and shared app state
+- **@Binding:** For two-way data flow between parent and child views
+- **@Bindable:** For creating bindings to @Observable objects
+- Avoid ViewModels - put view logic directly in SwiftUI views using these state mechanisms
+- Keep views focused and extract reusable components
 
-### Key Design Patterns & Principles
-- **MVVM Architecture** - Clear separation of View and Business Logic
-- **@Observable ViewModels** (iOS 17+) - No more ObservableObject
-- **SOLID Principles** - Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion
-- **DRY (Don't Repeat Yourself)** - Reusable components and shared logic
-- **Repository Pattern** - Abstract data sources (Gang of Four)
-- **Factory Pattern** - For object creation in DI container
-- **Observer Pattern** - Built into SwiftUI's reactive system
-- **Strategy Pattern** - For interchangeable algorithms (e.g., auth providers)
-- **Decorator Pattern** - For extending functionality (e.g., middleware)
-- **Protocol-First Design** - Everything testable via protocols
-- **Dependency Injection** - No singletons, testable architecture
-- **ViewState<T>** - Consistent async state handling
-
-## Critical Swift Rules
-
-### Access Control - THIS IS AN APP, NOT A FRAMEWORK!
+Example with @Observable:
 ```swift
-// ✅ CORRECT - Private by default
-private let apiClient: APIClient
-private func syncData() { }
-internal protocol RepositoryProtocol { }  // Only when needed cross-module
+@Observable
+class UserSettings {
+    var theme: Theme = .light
+    var fontSize: Double = 16.0
+}
 
-// ❌ WRONG - Don't make things public
-public class DataManager { }  // NO! This isn't a library!
-public func configure() { }   // NO! Keep it internal!
-```
-
-### Module Visibility Rules - CRITICAL FOR COMPILATION!
-
-**This is a modular Swift Package with separate targets!**
-
-Since we split the code into ClarityDomain, ClarityData, ClarityUI modules:
-- Each module is compiled separately (like mini frameworks)
-- Cross-module access requires `public` visibility
-- `@testable import ModuleName` only exposes internals of that specific module
-
-**What needs to be public:**
-```swift
-// ✅ MUST BE PUBLIC - Used across modules
-public struct HealthMetric { }           // Used by Data layer
-public protocol UserRepository { }       // Implemented in Data layer
-public enum ValidationError { }          // Thrown across modules
-public final class LoginUseCase { }      // Used by UI layer
-
-// ❌ KEEP INTERNAL - Only used within module
-internal class MockAPIClient { }         // Test helper
-private func parseResponse() { }         // Implementation detail
-```
-
-**Module Import Rules:**
-```swift
-// Domain tests
-@testable import ClarityDomain
-
-// Data layer tests (needs both)
-@testable import ClarityData
-@testable import ClarityDomain  // For domain types
-
-// UI tests
-@testable import ClarityUI
-import ClarityDomain  // For public types
-
-// ❌ NEVER DO THIS - Module doesn't exist!
-@testable import clarity_loop_frontend_v2  // NO SUCH MODULE!
-```
-
-### HIPAA Compliance Requirements
-- **NO logging of health data** - Ever.
-- **Biometric auth** for sensitive operations
-- **Encrypted storage** for all PHI
-- **Audit trail** for data access
-- **Secure transmission** - HTTPS only
-
-## Essential Tool Integration
-
-### Taskmaster CLI (Primary Task Management)
-```bash
-# View current tasks (200 vertical slice tasks ready!)
-task-master list --status pending
-task-master next
-
-# Work on tasks
-task-master set-status --id=1 --status=in-progress
-task-master set-status --id=1 --status=done
-
-# Expand complex tasks with TDD focus
-task-master expand --id=<id> --num=10 --prompt="Create TDD subtasks"
-
-# Track progress
-task-master list --status done
-```
-
-**IMPORTANT**: 200 comprehensive tasks have been created following vertical slices.
-See `CLARITY_VERTICAL_SLICE_TASK_SUMMARY.md` for complete details.
-
-### MCP Tools Available
-- **mcp__taskmaster-ai__*** - Task management operations
-- **mcp__XcodeBuildMCP__*** - Xcode build and test automation
-- **mcp__Filesystem__*** - File operations
-- **mcp__sequential-thinking__*** - Complex problem solving
-- **TodoWrite/TodoRead** - In-session task tracking
-
-### Xcode Build Commands
-```bash
-# Use MCP tools for building/testing
-mcp__XcodeBuildMCP__build_sim_name_ws
-mcp__XcodeBuildMCP__test_sim_name_ws
-mcp__XcodeBuildMCP__describe_ui  # For UI testing
-```
-
-## TDD/BDD Workflow Example
-
-```swift
-// 1. BDD Scenario: User views health metrics
-describe("Health Dashboard") {
-    context("when user has synced data") {
-        it("displays current step count") {
-            // Given
-            let mockHealthKit = MockHealthKitService()
-            mockHealthKit.mockSteps = 10_000
+@MainActor
+struct SettingsView: View {
+    @State private var settings = UserSettings()
+    
+    var body: some View {
+        VStack {
+            // Direct property access, no $ prefix needed
+            Text("Font Size: \(settings.fontSize)")
             
-            // When
-            let viewModel = DashboardViewModel(healthKit: mockHealthKit)
-            
-            // Then
-            expect(viewModel.stepCount).toEventually(equal("10,000"))
+            // For bindings, use @Bindable
+            @Bindable var settings = settings
+            Slider(value: $settings.fontSize, in: 10...30)
         }
     }
 }
 
-// 2. TDD Implementation
-func test_loadHealthMetrics_updatesViewState() async {
-    // Red: Test fails - no implementation
-    let sut = DashboardViewModel(healthKit: mockService)
+// Sharing state across views
+@MainActor
+struct ContentView: View {
+    @State private var userSettings = UserSettings()
     
-    await sut.loadHealthMetrics()
-    
-    XCTAssertEqual(sut.viewState, .success)
+    var body: some View {
+        NavigationStack {
+            MainView()
+                .environment(userSettings)
+        }
+    }
 }
 
-// 3. Green: Minimal implementation
-func loadHealthMetrics() async {
-    viewState = .success([])  // Just enough to pass
+@MainActor
+struct MainView: View {
+    @Environment(UserSettings.self) private var settings
+    
+    var body: some View {
+        Text("Current theme: \(settings.theme)")
+    }
 }
-
-// 4. Refactor: Add real logic with all tests still passing
 ```
 
-## SwiftUI + SwiftData Patterns
-
-### ViewModels with @Observable
+Example with .task modifier for async operations:
 ```swift
 @Observable
-final class DashboardViewModel {
-    // State is automatically observable
-    private(set) var metrics: [HealthMetric] = []
-    private(set) var viewState: ViewState<[HealthMetric]> = .idle
+class DataModel {
+    var items: [Item] = []
+    var isLoading = false
     
-    // Dependencies injected
-    private let healthService: HealthServiceProtocol
+    func loadData() async throws {
+        isLoading = true
+        defer { isLoading = false }
+        
+        // Simulated network call
+        try await Task.sleep(for: .seconds(1))
+        items = try await fetchItems()
+    }
+}
+
+@MainActor
+struct ItemListView: View {
+    @State private var model = DataModel()
     
-    init(healthService: HealthServiceProtocol) {
-        self.healthService = healthService
+    var body: some View {
+        List(model.items) { item in
+            Text(item.name)
+        }
+        .overlay {
+            if model.isLoading {
+                ProgressView()
+            }
+        }
+        .task {
+            // This task automatically cancels when view disappears
+            do {
+                try await model.loadData()
+            } catch {
+                // Handle error
+            }
+        }
+        .refreshable {
+            // Pull to refresh also uses async/await
+            try? await model.loadData()
+        }
     }
 }
 ```
 
-### SwiftData Models
+## Concurrency
+
+- **@MainActor:** All UI updates must use @MainActor isolation
+- **Actors:** Use actors for expensive operations like disk I/O, network calls, or heavy computation
+- **async/await:** Always prefer async functions over completion handlers
+- **Task:** Use structured concurrency with proper task cancellation
+- **.task modifier:** Always use .task { } on views for async operations tied to view lifecycle - it automatically handles cancellation
+- **Avoid Task { } in onAppear:** This doesn't cancel automatically and can cause memory leaks or crashes
+- No GCD usage - Swift Concurrency only
+
+### Sendable Conformance
+
+Swift 6 enforces strict concurrency checking. All types that cross concurrency boundaries must be Sendable:
+
+- **Value types (struct, enum):** Usually Sendable if all properties are Sendable
+- **Classes:** Must be marked `final` and have immutable or Sendable properties, or use `@unchecked Sendable` with thread-safe implementation
+- **@Observable classes:** Automatically Sendable when all properties are Sendable
+- **Closures:** Mark as `@Sendable` when captured by concurrent contexts
+
 ```swift
-@Model
-final class HealthMetric {
-    private(set) var id: UUID
-    private(set) var type: MetricType
-    private(set) var value: Double
-    private(set) var recordedAt: Date
+// Sendable struct - automatic conformance
+struct UserData: Sendable {
+    let id: UUID
+    let name: String
+}
+
+// Sendable class - must be final with immutable properties
+final class Configuration: Sendable {
+    let apiKey: String
+    let endpoint: URL
     
-    // Relationships
-    private(set) var user: User?
+    init(apiKey: String, endpoint: URL) {
+        self.apiKey = apiKey
+        self.endpoint = endpoint
+    }
+}
+
+// @Observable with Sendable
+@Observable
+final class UserModel: Sendable {
+    var name: String = ""
+    var age: Int = 0
+    // Automatically Sendable if all stored properties are Sendable
+}
+
+// Using @unchecked Sendable for thread-safe types
+final class Cache: @unchecked Sendable {
+    private let lock = NSLock()
+    private var storage: [String: Any] = [:]
     
-    init(type: MetricType, value: Double) {
-        self.id = UUID()
-        self.type = type
-        self.value = value
-        self.recordedAt = Date()
+    func get(_ key: String) -> Any? {
+        lock.withLock { storage[key] }
+    }
+}
+
+// @Sendable closures
+func processInBackground(completion: @Sendable @escaping (Result<Data, Error>) -> Void) {
+    Task {
+        // Processing...
+        completion(.success(data))
     }
 }
 ```
 
-## 📚 CRITICAL: Markdown Documentation References
+## Code Organization
 
-**MANDATORY READING BEFORE ANY IMPLEMENTATION:**
+- Keep functions focused on a single responsibility
+- Break large functions (>50 lines) into smaller, testable units
+- Use extensions to organize code by feature or protocol conformance
+- Prefer `let` over `var` - use immutability by default
+- Use `[weak self]` in closures to prevent retain cycles
+- Always include `self.` when referring to instance properties in closures
 
-When working on ANY task, you MUST reference these markdown files in the root directory:
+# Testing Guidelines
 
-### Core Implementation Guides
-- **CLARITY_IMPLEMENTATION_GUIDE.md** - TDD/BDD step-by-step approach (READ FIRST!)
-- **CLARITY_VERTICAL_SLICE_TASK_SUMMARY.md** - 200 tasks organized by features
-- **CLARITY_TESTING_STRATEGY.md** - Complete testing patterns and examples
-- **CLARITY_SWIFT_BEST_PRACTICES.md** - Avoid common AI agent mistakes
+We use **Swift Testing** framework (not XCTest) for all tests. Tests live in the package test target.
 
-### Architecture & Design
-- **CLARITY_UI_COMPONENT_ARCHITECTURE.md** - Pure SwiftUI patterns
-- **CLARITY_SWIFTDATA_ARCHITECTURE.md** - SwiftData implementation details
-- **CLARITY_STATE_MANAGEMENT_GUIDE.md** - @Observable and state handling
-- **CLARITY_MODULE_IMPORT_GUIDE.md** - Cross-module visibility rules
+## Swift Testing Basics
 
-### Backend Integration
-- **CLARITY_ENDPOINT_MAPPING.md** - ALL 44 endpoints with exact DTOs
-- **CLARITY_NETWORK_LAYER_IMPLEMENTATION.md** - Network client patterns
-- **CLARITY_WEBSOCKET_REALTIME_GUIDE.md** - Real-time features
-- **CLARITY_OFFLINE_SYNC_ARCHITECTURE.md** - Offline-first implementation
+```swift
+import Testing
 
-### Security & Compliance
-- **CLARITY_SECURITY_HIPAA_GUIDE.md** - HIPAA compliance requirements
-- **CLARITY_BIOMETRIC_AUTH.md** - Biometric authentication implementation
+@Test func userCanLogin() async throws {
+    let service = AuthService()
+    let result = try await service.login(username: "test", password: "pass")
+    #expect(result.isSuccess)
+    #expect(result.user.name == "Test User")
+}
 
-### Integration & Tools
-- **CLARITY_HEALTHKIT_INTEGRATION.md** - HealthKit implementation
-- **CLARITY_AWS_AMPLIFY_SETUP.md** - AWS integration
-- **CLARITY_MCP_TOOLS_GUIDE.md** - Using MCP tools effectively
-
-### Progress & Tracking
-- **CLARITY_PROGRESS_TRACKER.md** - Implementation phase tracking
-- **CLARITY_TASKMASTER_IMPLEMENTATION_GUIDE.md** - Task management
-
-**⚠️ IMPORTANT: When implementing ANY task, ALWAYS check the relevant markdown files above!**
-
-## Backend Integration Requirements
-
-The frontend is a wrapper for 44 backend endpoints. Key considerations:
-- **DTOs must match exactly** - See CLARITY_ENDPOINT_MAPPING.md
-- **Error responses are standardized** - Handle consistently
-- **WebSocket for real-time** - See CLARITY_WEBSOCKET_REALTIME_GUIDE.md
-- **Offline-first architecture** - See CLARITY_OFFLINE_SYNC_ARCHITECTURE.md
-
-## Human Intervention Points
-
-**🛑 STOP and request human help for:**
-1. Xcode project configuration changes
-2. Certificate/provisioning profile setup  
-3. Build settings modifications
-4. Dependency management (SPM)
-5. Archive and distribution
-
-## V2 Specific Guidelines
-
-### What's Different from V1
-- **Fresh start with TDD/BDD** - No legacy code
-- **SwiftData instead of Core Data**
-- **@Observable instead of ObservableObject**
-- **Proper dependency injection from day 1**
-- **Protocol-first architecture**
-
-### Document References
-Essential guides for implementation:
-- `CLARITY_VERTICAL_SLICE_TASK_SUMMARY.md` - 200 tasks in vertical slices
-- `CLARITY_IMPLEMENTATION_GUIDE.md` - Step-by-step TDD approach
-- `CLARITY_ENDPOINT_MAPPING.md` - All 44 endpoints with DTOs
-- `CLARITY_SWIFT_BEST_PRACTICES.md` - Avoid AI agent pitfalls
-- `CLARITY_PROGRESS_TRACKER.md` - Track implementation progress
-
-## Quick Command Reference
-
-```bash
-# Taskmaster
-task-master next
-task-master set-status --id=<id> --status=done
-task-master expand --id=<id>
-
-# Testing
-swift test --filter DashboardTests
-swift test --parallel
-
-# Building  
-swift build -c debug
-swift build -c release
+@Test("User sees error with invalid credentials")
+func invalidLogin() async throws {
+    let service = AuthService()
+    await #expect(throws: AuthError.self) {
+        try await service.login(username: "", password: "")
+    }
+}
 ```
 
-## Remember
+## Key Swift Testing Features
 
-1. **TDD is mandatory** - No exceptions
-2. **BDD describes user behavior** - Not technical implementation  
-3. **Private by default** - This is an app, not a framework
-4. **HIPAA compliance** - Security first, always
-5. **Use Taskmaster** - For task management and progress tracking
-6. **Request human help** - For Xcode-specific operations
+- **@Test:** Marks a test function (replaces XCTest's test prefix)
+- **@Suite:** Groups related tests together
+- **#expect:** Validates conditions (replaces XCTAssert)
+- **#require:** Like #expect but stops test execution on failure
+- **Parameterized Tests:** Use @Test with arguments for data-driven tests
+- **async/await:** Full support for testing async code
+- **Traits:** Add metadata like `.bug()`, `.feature()`, or custom tags
+
+## Test Organization
+
+- Write tests in the package's Tests/ directory
+- One test file per source file when possible
+- Name tests descriptively explaining what they verify
+- Test both happy paths and edge cases
+- Add tests for bug fixes to prevent regression
+
+# Entitlements Management
+
+This template includes a **declarative entitlements system** that AI agents can safely modify without touching Xcode project files.
+
+## How It Works
+
+- **Entitlements File**: `Config/MyProject.entitlements` contains all app capabilities
+- **XCConfig Integration**: `CODE_SIGN_ENTITLEMENTS` setting in `Config/Shared.xcconfig` points to the entitlements file
+- **AI-Friendly**: Agents can edit the XML file directly to add/remove capabilities
+
+## Adding Entitlements
+
+To add capabilities to your app, edit `Config/MyProject.entitlements`:
+
+## Common Entitlements
+
+| Capability | Entitlement Key | Value |
+|------------|-----------------|-------|
+| HealthKit | `com.apple.developer.healthkit` | `<true/>` |
+| CloudKit | `com.apple.developer.icloud-services` | `<array><string>CloudKit</string></array>` |
+| Push Notifications | `aps-environment` | `development` or `production` |
+| App Groups | `com.apple.security.application-groups` | `<array><string>group.id</string></array>` |
+| Keychain Sharing | `keychain-access-groups` | `<array><string>$(AppIdentifierPrefix)bundle.id</string></array>` |
+| Background Modes | `com.apple.developer.background-modes` | `<array><string>mode-name</string></array>` |
+| Contacts | `com.apple.developer.contacts.notes` | `<true/>` |
+| Camera | `com.apple.developer.avfoundation.audio` | `<true/>` |
+
+# XcodeBuildMCP Tool Usage
+
+To work with this project, build, test, and development commands should use XcodeBuildMCP tools instead of raw command-line calls.
+
+## Project Discovery & Setup
+
+```javascript
+// Discover Xcode projects in the workspace
+discover_projs({
+    workspaceRoot: "/path/to/YourApp"
+})
+
+// List available schemes
+list_schems_ws({
+    workspacePath: "/path/to/YourApp.xcworkspace"
+})
+```
+
+## Building for Simulator
+
+```javascript
+// Build for iPhone simulator by name
+build_sim_name_ws({
+    workspacePath: "/path/to/YourApp.xcworkspace",
+    scheme: "YourApp",
+    simulatorName: "iPhone 16",
+    configuration: "Debug"
+})
+
+// Build and run in one step
+build_run_sim_name_ws({
+    workspacePath: "/path/to/YourApp.xcworkspace",
+    scheme: "YourApp", 
+    simulatorName: "iPhone 16"
+})
+```
+
+## Building for Device
+
+```javascript
+// List connected devices first
+list_devices()
+
+// Build for physical device
+build_dev_ws({
+    workspacePath: "/path/to/YourApp.xcworkspace",
+    scheme: "YourApp",
+    configuration: "Debug"
+})
+```
+
+## Testing
+
+```javascript
+// Run tests on simulator
+test_sim_name_ws({
+    workspacePath: "/path/to/YourApp.xcworkspace",
+    scheme: "YourApp",
+    simulatorName: "iPhone 16"
+})
+
+// Run tests on device
+test_device_ws({
+    workspacePath: "/path/to/YourApp.xcworkspace",
+    scheme: "YourApp",
+    deviceId: "DEVICE_UUID_HERE"
+})
+
+// Test Swift Package
+swift_package_test({
+    packagePath: "/path/to/YourAppPackage"
+})
+```
+
+## Simulator Management
+
+```javascript
+// List available simulators
+list_sims({
+    enabled: true
+})
+
+// Boot simulator
+boot_sim({
+    simulatorUuid: "SIMULATOR_UUID"
+})
+
+// Install app
+install_app_sim({
+    simulatorUuid: "SIMULATOR_UUID",
+    appPath: "/path/to/YourApp.app"
+})
+
+// Launch app
+launch_app_sim({
+    simulatorUuid: "SIMULATOR_UUID",
+    bundleId: "com.example.YourApp"
+})
+```
+
+## Device Management
+
+```javascript
+// Install on device
+install_app_device({
+    deviceId: "DEVICE_UUID",
+    appPath: "/path/to/YourApp.app"
+})
+
+// Launch on device
+launch_app_device({
+    deviceId: "DEVICE_UUID",
+    bundleId: "com.example.YourApp"
+})
+```
+
+## UI Automation
+
+```javascript
+// Get UI hierarchy
+describe_ui({
+    simulatorUuid: "SIMULATOR_UUID"
+})
+
+// Tap element
+tap({
+    simulatorUuid: "SIMULATOR_UUID",
+    x: 100,
+    y: 200
+})
+
+// Type text
+type_text({
+    simulatorUuid: "SIMULATOR_UUID",
+    text: "Hello World"
+})
+
+// Take screenshot
+screenshot({
+    simulatorUuid: "SIMULATOR_UUID"
+})
+```
+
+## Log Capture
+
+```javascript
+// Start capturing simulator logs
+start_sim_log_cap({
+    simulatorUuid: "SIMULATOR_UUID",
+    bundleId: "com.example.YourApp"
+})
+
+// Stop and retrieve logs
+stop_sim_log_cap({
+    logSessionId: "SESSION_ID"
+})
+
+// Device logs
+start_device_log_cap({
+    deviceId: "DEVICE_UUID",
+    bundleId: "com.example.YourApp"
+})
+```
+
+## Utility Functions
+
+```javascript
+// Get bundle ID from app
+get_app_bundle_id({
+    appPath: "/path/to/YourApp.app"
+})
+
+// Clean build artifacts
+clean_ws({
+    workspacePath: "/path/to/YourApp.xcworkspace"
+})
+
+// Get app path for simulator
+get_sim_app_path_name_ws({
+    workspacePath: "/path/to/YourApp.xcworkspace",
+    scheme: "YourApp",
+    platform: "iOS Simulator",
+    simulatorName: "iPhone 16"
+})
+```
+
+# Development Workflow
+
+1. **Make changes in the Package**: All feature development happens in YourAppPackage/Sources/
+2. **Write tests**: Add Swift Testing tests in YourAppPackage/Tests/
+3. **Build and test**: Use XcodeBuildMCP tools to build and run tests
+4. **Run on simulator**: Deploy to simulator for manual testing
+5. **UI automation**: Use describe_ui and automation tools for UI testing
+6. **Device testing**: Deploy to physical device when needed
+
+# Best Practices
+
+## SwiftUI & State Management
+
+- Keep views small and focused
+- Extract reusable components into their own files
+- Use @ViewBuilder for conditional view composition
+- Leverage SwiftUI's built-in animations and transitions
+- Avoid massive body computations - break them down
+- **Always use .task modifier** for async work tied to view lifecycle - it automatically cancels when the view disappears
+- Never use Task { } in onAppear - use .task instead for proper lifecycle management
+
+## Performance
+
+- Use .id() modifier sparingly as it forces view recreation
+- Implement Equatable on models to optimize SwiftUI diffing
+- Use LazyVStack/LazyHStack for large lists
+- Profile with Instruments when needed
+- @Observable tracks only accessed properties, improving performance over @Published
+
+## Accessibility
+
+- Always provide accessibilityLabel for interactive elements
+- Use accessibilityIdentifier for UI testing
+- Implement accessibilityHint where actions aren't obvious
+- Test with VoiceOver enabled
+- Support Dynamic Type
+
+## Security & Privacy
+
+- Never log sensitive information
+- Use Keychain for credential storage
+- All network calls must use HTTPS
+- Request minimal permissions
+- Follow App Store privacy guidelines
+
+## Data Persistence
+
+When data persistence is required, always prefer **SwiftData** over CoreData. However, carefully consider whether persistence is truly necessary - many apps can function well with in-memory state that loads on launch.
+
+### When to Use SwiftData
+
+- You have complex relational data that needs to persist across app launches
+- You need advanced querying capabilities with predicates and sorting
+- You're building a data-heavy app (note-taking, inventory, task management)
+- You need CloudKit sync with minimal configuration
+
+### When NOT to Use Data Persistence
+
+- Simple user preferences (use UserDefaults)
+- Temporary state that can be reloaded from network
+- Small configuration data (consider JSON files or plist)
+- Apps that primarily display remote data
+
+### SwiftData Best Practices
+
+```swift
+import SwiftData
+
+@Model
+final class Task {
+    var title: String
+    var isCompleted: Bool
+    var createdAt: Date
+    
+    init(title: String) {
+        self.title = title
+        self.isCompleted = false
+        self.createdAt = Date()
+    }
+}
+
+// In your app
+@main
+struct MyProjectApp: App {
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+                .modelContainer(for: Task.self)
+        }
+    }
+}
+
+// In your views
+struct TaskListView: View {
+    @Query private var tasks: [Task]
+    @Environment(\.modelContext) private var context
+    
+    var body: some View {
+        List(tasks) { task in
+            Text(task.title)
+        }
+        .toolbar {
+            Button("Add") {
+                let newTask = Task(title: "New Task")
+                context.insert(newTask)
+            }
+        }
+    }
+}
+```
+
+**Important:** Never use CoreData for new projects. SwiftData provides a modern, type-safe API that's easier to work with and integrates seamlessly with SwiftUI.
 
 ---
 
-This is CLARITY Pulse V2. We're building it right from the start with TDD/BDD.
-
-Every line of production code must be justified by a failing test that describes desired behavior.
+Remember: This project prioritizes clean, simple SwiftUI code using the platform's native state management. Keep the app shell minimal and implement all features in the Swift Package.

@@ -1,0 +1,76 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "swift: Build All",
+            "type": "shell",
+            "command": "swift",
+            "args": [
+                "build",
+                "--build-tests"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$swiftc"
+            ]
+        },
+        {
+            "label": "swift: Run Tests",
+            "type": "shell",
+            "command": "swift",
+            "args": [
+                "test"
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$swiftc"
+            ]
+        },
+        {
+            "label": "xcodebuild: Build Debug",
+            "type": "shell",
+            "command": "make",
+            "args": [
+                "build"
+            ],
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "swiftlint: Lint",
+            "type": "shell",
+            "command": "swiftlint",
+            "args": [],
+            "problemMatcher": [
+                {
+                    "owner": "swiftlint",
+                    "fileLocation": ["relative", "${workspaceFolder}"],
+                    "pattern": {
+                        "regexp": "^(.*):(\\d+):(\\d+): (warning|error): (.*)$",
+                        "file": 1,
+                        "line": 2,
+                        "column": 3,
+                        "severity": 4,
+                        "message": 5
+                    }
+                }
+            ]
+        },
+        {
+            "label": "swiftformat: Format",
+            "type": "shell",
+            "command": "swiftformat",
+            "args": [
+                ".",
+                "--swiftversion", "5.10"
+            ],
+            "group": "none"
+        }
+    ]
+}

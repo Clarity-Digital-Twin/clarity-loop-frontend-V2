@@ -1,0 +1,46 @@
+{
+    "swift.path": "/usr/bin/swift",
+    "swift.buildPath": ".build",
+    "swift.buildArguments": [
+        "-Xswiftc", "-target", "-Xswiftc", "arm64-apple-ios18.0-simulator",
+        "-Xswiftc", "-sdk", "-Xswiftc", "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk",
+        "-Xswiftc", "-I", "-Xswiftc", "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib",
+        "-Xswiftc", "-L", "-Xswiftc", "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib"
+    ],
+    "swift.testArguments": [
+        "-Xswiftc", "-target", "-Xswiftc", "arm64-apple-ios18.0-simulator",
+        "-Xswiftc", "-sdk", "-Xswiftc", "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk"
+    ],
+    "editor.formatOnSave": true,
+    "[swift]": {
+        "editor.defaultFormatter": "vknabel.vscode-swiftformat"
+    },
+    "swiftlint.enable": true,
+    "swiftlint.configSearchPaths": [
+        "${workspaceFolder}"
+    ],
+    "files.exclude": {
+        "**/.git": true,
+        "**/.DS_Store": true,
+        "**/DerivedData": true,
+        "**/.build": true,
+        "**/xcuserdata": true
+    },
+    "search.exclude": {
+        "**/DerivedData": true,
+        "**/.build": true,
+        "**/xcuserdata": true,
+        "**/build": true
+    },
+    "editor.rulers": [120],
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    "editor.quickSuggestions": {
+        "strings": true
+    },
+    "editor.suggestSelection": "first",
+    "editor.snippetSuggestions": "top"
+}

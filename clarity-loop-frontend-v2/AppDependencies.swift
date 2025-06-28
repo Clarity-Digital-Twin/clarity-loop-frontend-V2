@@ -43,6 +43,16 @@ public final class AppDependencies {
             MockAPIClient()
         }
         
+        // Keychain Service
+        container.register(KeychainServiceProtocol.self, scope: .singleton) { _ in
+            KeychainService()
+        }
+        
+        // Biometric Auth Service
+        container.register(BiometricAuthServiceProtocol.self, scope: .singleton) { _ in
+            BiometricAuthService()
+        }
+        
         // Model Container Factory
         container.register(ModelContainerFactory.self, scope: .singleton) { _ in
             ModelContainerFactory()

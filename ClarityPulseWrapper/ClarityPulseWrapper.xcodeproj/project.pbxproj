@@ -1,0 +1,382 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 54;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1B917CB96B224F85F98792AE /* AWSAPIPlugin in Frameworks */ = {isa = PBXBuildFile; productRef = 9E52E5C0955DC3AB67498A5E /* AWSAPIPlugin */; };
+		1DD5F84947F97F8FE78C6E0E /* AWSCognitoAuthPlugin in Frameworks */ = {isa = PBXBuildFile; productRef = 91EEB045982A92E9D7047A20 /* AWSCognitoAuthPlugin */; };
+		320DB66F8AD3CC8E85BAEDF6 /* ClarityDomain in Frameworks */ = {isa = PBXBuildFile; productRef = C4381B7982B10E8698245855 /* ClarityDomain */; };
+		6884F59BEFB71A2ACF4088E5 /* ClarityCore in Frameworks */ = {isa = PBXBuildFile; productRef = BF8256B2BDE57299E192DF95 /* ClarityCore */; };
+		BC23B782AD21AF06752C9C0F /* Amplify in Frameworks */ = {isa = PBXBuildFile; productRef = 0A7EE1CAE98E6FD93D442659 /* Amplify */; };
+		CACD0BC2C5D035886C26CE66 /* ClarityPulseWrapperApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECE83F902B22292A204C69D8 /* ClarityPulseWrapperApp.swift */; };
+		D5FB3B9CCD52C8D387E4A98C /* ClarityData in Frameworks */ = {isa = PBXBuildFile; productRef = 2630632567852F5D55F56C10 /* ClarityData */; };
+		DCAF2D4DC605E53257E0597F /* ClarityUI in Frameworks */ = {isa = PBXBuildFile; productRef = FEDABD0F0E331008D67455ED /* ClarityUI */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		032DEBAB051FCD0F6974FCFB /* clarity-loop-frontend-V2 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "clarity-loop-frontend-V2"; path = ..; sourceTree = SOURCE_ROOT; };
+		D55271CE8750AA0169449347 /* ClarityPulseWrapper.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ClarityPulseWrapper.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		ECE83F902B22292A204C69D8 /* ClarityPulseWrapperApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClarityPulseWrapperApp.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		E0366211178D7688FC00A88E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DCAF2D4DC605E53257E0597F /* ClarityUI in Frameworks */,
+				6884F59BEFB71A2ACF4088E5 /* ClarityCore in Frameworks */,
+				320DB66F8AD3CC8E85BAEDF6 /* ClarityDomain in Frameworks */,
+				D5FB3B9CCD52C8D387E4A98C /* ClarityData in Frameworks */,
+				BC23B782AD21AF06752C9C0F /* Amplify in Frameworks */,
+				1DD5F84947F97F8FE78C6E0E /* AWSCognitoAuthPlugin in Frameworks */,
+				1B917CB96B224F85F98792AE /* AWSAPIPlugin in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		4C4F006CAD4CD5E4943261B5 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D55271CE8750AA0169449347 /* ClarityPulseWrapper.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		7FFD0F0C37F87A21E8C2F033 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				032DEBAB051FCD0F6974FCFB /* clarity-loop-frontend-V2 */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		94AEEEBE08C419579704B672 = {
+			isa = PBXGroup;
+			children = (
+				ECE83F902B22292A204C69D8 /* ClarityPulseWrapperApp.swift */,
+				7FFD0F0C37F87A21E8C2F033 /* Packages */,
+				4C4F006CAD4CD5E4943261B5 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		C09433A0BEC021A896AE7558 /* ClarityPulseWrapper */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 872B426A7BC9AC1646D0371D /* Build configuration list for PBXNativeTarget "ClarityPulseWrapper" */;
+			buildPhases = (
+				97924C16D239AE9774034F89 /* Sources */,
+				E0366211178D7688FC00A88E /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ClarityPulseWrapper;
+			packageProductDependencies = (
+				FEDABD0F0E331008D67455ED /* ClarityUI */,
+				BF8256B2BDE57299E192DF95 /* ClarityCore */,
+				C4381B7982B10E8698245855 /* ClarityDomain */,
+				2630632567852F5D55F56C10 /* ClarityData */,
+				0A7EE1CAE98E6FD93D442659 /* Amplify */,
+				91EEB045982A92E9D7047A20 /* AWSCognitoAuthPlugin */,
+				9E52E5C0955DC3AB67498A5E /* AWSAPIPlugin */,
+			);
+			productName = ClarityPulseWrapper;
+			productReference = D55271CE8750AA0169449347 /* ClarityPulseWrapper.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0AA276D9D677D75E3918B494 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = 4B9921E3BA56F989B3DEBC88 /* Build configuration list for PBXProject "ClarityPulseWrapper" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 94AEEEBE08C419579704B672;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				58CBC0B5AFC87EFEE6707F88 /* XCRemoteSwiftPackageReference "amplify-swift" */,
+				E057F6C592C2723D8DA68B12 /* XCLocalSwiftPackageReference ".." */,
+			);
+			preferredProjectObjectVersion = 54;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				C09433A0BEC021A896AE7558 /* ClarityPulseWrapper */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		97924C16D239AE9774034F89 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CACD0BC2C5D035886C26CE66 /* ClarityPulseWrapperApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		0D61C56E3C608EFDC92B7EDE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_KEY_CFBundleDisplayName = "CLARITY Pulse";
+				INFOPLIST_KEY_LSRequiresIPhoneOS = YES;
+				INFOPLIST_KEY_UIApplicationSupportsMultipleScenes = NO;
+				INFOPLIST_KEY_UILaunchStoryboardName = "";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.clarity.ClarityPulseWrapper;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		4C95D709C0E952F20F048DCF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		5A0E6CBD19B97DCD1D563E48 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_KEY_CFBundleDisplayName = "CLARITY Pulse";
+				INFOPLIST_KEY_LSRequiresIPhoneOS = YES;
+				INFOPLIST_KEY_UIApplicationSupportsMultipleScenes = NO;
+				INFOPLIST_KEY_UILaunchStoryboardName = "";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.clarity.ClarityPulseWrapper;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		E0558150529C1443A78DA275 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		4B9921E3BA56F989B3DEBC88 /* Build configuration list for PBXProject "ClarityPulseWrapper" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E0558150529C1443A78DA275 /* Debug */,
+				4C95D709C0E952F20F048DCF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		872B426A7BC9AC1646D0371D /* Build configuration list for PBXNativeTarget "ClarityPulseWrapper" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5A0E6CBD19B97DCD1D563E48 /* Debug */,
+				0D61C56E3C608EFDC92B7EDE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		E057F6C592C2723D8DA68B12 /* XCLocalSwiftPackageReference ".." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ..;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		58CBC0B5AFC87EFEE6707F88 /* XCRemoteSwiftPackageReference "amplify-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/aws-amplify/amplify-swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.48.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		0A7EE1CAE98E6FD93D442659 /* Amplify */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 58CBC0B5AFC87EFEE6707F88 /* XCRemoteSwiftPackageReference "amplify-swift" */;
+			productName = Amplify;
+		};
+		2630632567852F5D55F56C10 /* ClarityData */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ClarityData;
+		};
+		91EEB045982A92E9D7047A20 /* AWSCognitoAuthPlugin */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 58CBC0B5AFC87EFEE6707F88 /* XCRemoteSwiftPackageReference "amplify-swift" */;
+			productName = AWSCognitoAuthPlugin;
+		};
+		9E52E5C0955DC3AB67498A5E /* AWSAPIPlugin */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 58CBC0B5AFC87EFEE6707F88 /* XCRemoteSwiftPackageReference "amplify-swift" */;
+			productName = AWSAPIPlugin;
+		};
+		BF8256B2BDE57299E192DF95 /* ClarityCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ClarityCore;
+		};
+		C4381B7982B10E8698245855 /* ClarityDomain */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ClarityDomain;
+		};
+		FEDABD0F0E331008D67455ED /* ClarityUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ClarityUI;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 0AA276D9D677D75E3918B494 /* Project object */;
+}

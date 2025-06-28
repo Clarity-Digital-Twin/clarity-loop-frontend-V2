@@ -137,16 +137,22 @@ public final class NetworkService: NetworkServiceProtocol {
     }
     
     private func addAuthentication(to request: URLRequest) async throws -> URLRequest {
-        let authenticatedRequest = request
+        var authenticatedRequest = request
         
-        // For now, we'll skip auth until we properly implement token management
-        // TODO: Implement proper token management with TDD
-        
-        // Add auth header when implemented
-        // authenticatedRequest.setValue(
-        //     "Bearer \(token)",
-        //     forHTTPHeaderField: "Authorization"
-        // )
+        // Get token from auth service
+        do {
+            let user = try await authService.getCurrentUser()
+            guard let token = user?.token else {
+                throw NetworkError.unauthorized
+            }
+            
+            authenticatedRequest.setValue(
+                "Bearer \(token)",
+                forHTTPHeaderField: "Authorization"
+            )
+        } catch {
+            throw NetworkError.unauthorized
+        }
         
         return authenticatedRequest
     }

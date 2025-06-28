@@ -99,7 +99,8 @@ let package = Package(
                 "Data", 
                 "Domain",
                 "UI",
-                "Examples"
+                "Examples",
+                "Info.plist"
             ],
             sources: ["ClarityPulseApp.swift", "AppDependencies.swift", "ContentView.swift"],
             resources: [

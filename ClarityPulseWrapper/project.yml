@@ -1,0 +1,45 @@
+name: ClarityPulseWrapper
+options:
+  bundleIdPrefix: com.clarity
+  deploymentTarget:
+    iOS: 18.0
+  createIntermediateGroups: true
+  
+settings:
+  MARKETING_VERSION: 1.0.0
+  CURRENT_PROJECT_VERSION: 1
+  
+targets:
+  ClarityPulseWrapper:
+    type: application
+    platform: iOS
+    sources:
+      - ClarityPulseWrapperApp.swift
+    dependencies:
+      - package: ClarityPulse
+        product: ClarityUI
+      - package: ClarityPulse
+        product: ClarityCore
+      - package: ClarityPulse  
+        product: ClarityDomain
+      - package: ClarityPulse
+        product: ClarityData
+      - package: Amplify
+        product: Amplify
+      - package: Amplify
+        product: AWSCognitoAuthPlugin
+      - package: Amplify
+        product: AWSAPIPlugin
+    settings:
+      INFOPLIST_KEY_UIApplicationSupportsMultipleScenes: false
+      INFOPLIST_KEY_UILaunchStoryboardName: ""
+      INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+      INFOPLIST_KEY_LSRequiresIPhoneOS: true
+      INFOPLIST_KEY_CFBundleDisplayName: "CLARITY Pulse"
+      
+packages:
+  ClarityPulse:
+    path: ..
+  Amplify:
+    url: https://github.com/aws-amplify/amplify-swift.git
+    from: 2.48.1

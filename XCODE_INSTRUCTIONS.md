@@ -1,39 +1,48 @@
 # Running ClarityPulse in Xcode
 
-Since we're using a pure SPM setup without `.iOSApplication` support (requires Xcode 16), you need to manually configure Xcode to run the app:
+We use a minimal Xcode wrapper project to create an iOS app bundle from our Swift Package.
 
-## Steps to Run in Simulator
+## Quick Start
 
-1. Open `Package.swift` in Xcode:
+1. Install xcodegen (if needed):
    ```bash
-   open Package.swift
+   brew install xcodegen
    ```
 
-2. In Xcode:
-   - Wait for package resolution to complete
-   - Select the `ClarityPulseApp` scheme from the scheme selector (top of window)
-   - Select an iOS Simulator (e.g., iPhone 16)
+2. Generate and open the project:
+   ```bash
+   cd ClarityPulseWrapper
+   xcodegen generate
+   open ClarityPulseWrapper.xcodeproj
+   ```
+
+3. In Xcode:
+   - Select the `ClarityPulseWrapper` scheme
+   - Choose an iOS Simulator (e.g., iPhone 16)
    - Press ⌘R to run
 
-3. Xcode will prompt for:
-   - **Product Type**: Select "iOS App" 
-   - **Bundle Identifier**: Use `com.clarity.pulse`
-   - **Team**: Select your development team or "None"
+## Architecture
 
-4. The app should now launch in the simulator
+```
+clarity-loop-frontend-V2/
+├── Package.swift           # Main SPM package (all app code)
+├── ClarityPulseWrapper/    # Minimal iOS app wrapper
+│   ├── project.yml         # Xcodegen config
+│   ├── ClarityPulseWrapperApp.swift
+│   └── README.md
+└── ...
+```
 
-## Alternative: Create iOS App Target
+## Why Not Pure SPM?
 
-If the above doesn't work, you can create a minimal iOS app target:
+- `.iOSApplication` product type is still experimental/beta
+- This wrapper approach is stable and production-ready
+- Only adds 4 files to the repository
+- Standard approach used by most SPM-based iOS apps
 
-1. In Xcode: File → New → Target → iOS App
-2. Product Name: `ClarityPulseApp`
-3. Bundle Identifier: `com.clarity.pulse`
-4. Interface: SwiftUI
-5. Language: Swift
-6. Delete the generated files (ContentView, Assets, etc.)
-7. Link to your SPM modules in Build Phases → Link Binary
+## Development Workflow
 
-## Future: Swift 6.1 / Xcode 16
-
-Once Xcode 16 is available, we can use the `.iOSApplication` product type directly in Package.swift for a pure SPM setup.
+1. All app code goes in the main Package.swift targets
+2. The wrapper just provides the iOS app bundle
+3. Tests run via `swift test` in the root directory
+4. CI/CD builds using the wrapper project

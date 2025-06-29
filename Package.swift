@@ -158,7 +158,7 @@ let package = Package(
                 "Mocks/MockTokenStorage.swift",
                 "Mocks/AmplifyMockTests.swift"
             ],
-            sources: ["DI/", "Architecture/", "Examples/"]
+            sources: ["DI/", "Architecture/", "Examples/", "Core/Security/"]
         ),
         // UI tests temporarily disabled due to Swift 6 concurrency issues
         // .testTarget(

@@ -50,6 +50,11 @@ public final class AppDependencies {
             APIClient(networkService: container.require(NetworkServiceProtocol.self))
         }
         
+        // API Client concrete type (for AddMetricViewModel)
+        container.register(APIClient.self, scope: .singleton) { container in
+            APIClient(networkService: container.require(NetworkServiceProtocol.self))
+        }
+        
         // Keychain Service
         container.register(KeychainServiceProtocol.self, scope: .singleton) { _ in
             KeychainService()
@@ -58,6 +63,11 @@ public final class AppDependencies {
         // Biometric Auth Service
         container.register(BiometricAuthServiceProtocol.self, scope: .singleton) { _ in
             BiometricAuthService()
+        }
+        
+        // Secure Storage for encrypted health data
+        container.register(SecureStorageProtocol.self, scope: .singleton) { _ in
+            SecureStorage()
         }
         
         // Token Storage

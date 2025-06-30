@@ -37,6 +37,9 @@ targets:
       INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
       INFOPLIST_KEY_LSRequiresIPhoneOS: true
       INFOPLIST_KEY_CFBundleDisplayName: "CLARITY Pulse"
+      CODE_SIGN_STYLE: Automatic
+      DEVELOPMENT_TEAM: 658T8WSC3R
+      PRODUCT_BUNDLE_IDENTIFIER: com.clarity.ClarityPulseWrapper
   
   ClarityPulseWrapperUITests:
     type: bundle.ui-testing

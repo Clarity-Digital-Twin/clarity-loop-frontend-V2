@@ -196,6 +196,10 @@
 					8B3914CEE1152D4D4DCFE042 = {
 						TestTargetID = C09433A0BEC021A896AE7558;
 					};
+					C09433A0BEC021A896AE7558 = {
+						DevelopmentTeam = 658T8WSC3R;
+						ProvisioningStyle = Automatic;
+					};
 				};
 			};
 			buildConfigurationList = 4B9921E3BA56F989B3DEBC88 /* Build configuration list for PBXProject "ClarityPulseWrapper" */;
@@ -263,6 +267,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 658T8WSC3R;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "CLARITY Pulse";
 				INFOPLIST_KEY_LSRequiresIPhoneOS = YES;
@@ -376,6 +382,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 658T8WSC3R;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "CLARITY Pulse";
 				INFOPLIST_KEY_LSRequiresIPhoneOS = YES;

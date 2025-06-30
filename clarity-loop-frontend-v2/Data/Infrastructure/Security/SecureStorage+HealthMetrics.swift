@@ -7,6 +7,7 @@
 
 import Foundation
 import CryptoKit
+import ClarityCore
 import ClarityDomain
 
 // MARK: - Encrypted Payload Structure

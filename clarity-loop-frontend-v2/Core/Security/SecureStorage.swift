@@ -11,11 +11,11 @@ import Security
 @preconcurrency import LocalAuthentication
 
 /// Implementation of SecureStorageProtocol using CryptoKit for encryption and Keychain for storage
-public final class SecureStorage: SecureStorageProtocol {
+public final class SecureStorage: SecureStorageProtocol, SecureStorageKeychainAccess {
     
     // MARK: - Properties
     
-    public let keychainService: SecureKeychainProtocol
+    public internal(set) var keychainService: SecureKeychainProtocol
     internal let biometricService: BiometricServiceProtocol
     private let encryptionSalt = "clarity.health.encryption.salt"
     

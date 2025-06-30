@@ -8,7 +8,7 @@
 import SwiftUI
 import ClarityDomain
 import ClarityCore
-import ClarityData
+import ClarityData // For ErrorHandler access
 
 public struct LoginView: View {
     @State private var viewModel: LoginViewModel

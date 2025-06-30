@@ -125,21 +125,118 @@ import SwiftUI
 public extension View {
     /// Adds the model container to the SwiftUI environment
     func withModelContainer(_ factory: ModelContainerFactory = ModelContainerFactory()) -> some View {
-        do {
-            let container = try factory.createContainer()
-            return self.modelContainer(container)
-        } catch {
-            fatalError("Failed to create model container: \(error)")
-        }
+        modifier(ModelContainerModifier(factory: factory))
     }
     
     /// Adds a test model container to the SwiftUI environment
     func withTestModelContainer(_ factory: ModelContainerFactory = ModelContainerFactory()) -> some View {
-        do {
-            let container = try factory.createInMemoryContainer()
-            return self.modelContainer(container)
-        } catch {
-            fatalError("Failed to create test model container: \(error)")
+        modifier(TestModelContainerModifier(factory: factory))
+    }
+}
+
+// MARK: - ViewModifiers
+
+private struct ModelContainerModifier: ViewModifier {
+    let factory: ModelContainerFactory
+    @State private var containerState: ContainerState = .loading
+    
+    enum ContainerState {
+        case loading
+        case loaded(ModelContainer)
+        case failed(Error)
+    }
+    
+    func body(content: Content) -> some View {
+        Group {
+            switch containerState {
+            case .loading:
+                ProgressView("Loading data...")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            case .loaded(let container):
+                content
+                    .modelContainer(container)
+            case .failed(let error):
+                VStack(spacing: 16) {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.largeTitle)
+                        .foregroundColor(.red)
+                    Text("Failed to load data")
+                        .font(.headline)
+                    Text(error.localizedDescription)
+                        .font(.caption)
+                        .multilineTextAlignment(.center)
+                    Button("Retry") {
+                        loadContainer()
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+                .padding()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+        .task {
+            loadContainer()
+        }
+    }
+    
+    private func loadContainer() {
+        containerState = .loading
+        Task {
+            do {
+                let container = try factory.createContainer()
+                await MainActor.run {
+                    containerState = .loaded(container)
+                }
+            } catch {
+                await MainActor.run {
+                    containerState = .failed(error)
+                }
+            }
+        }
+    }
+}
+
+private struct TestModelContainerModifier: ViewModifier {
+    let factory: ModelContainerFactory
+    @State private var containerState: ContainerState = .loading
+    
+    enum ContainerState {
+        case loading
+        case loaded(ModelContainer)
+        case failed(Error)
+    }
+    
+    func body(content: Content) -> some View {
+        Group {
+            switch containerState {
+            case .loading:
+                Color.clear
+                    .onAppear {
+                        loadContainer()
+                    }
+            case .loaded(let container):
+                content
+                    .modelContainer(container)
+            case .failed:
+                // For tests, just show empty content on failure
+                content
+            }
+        }
+    }
+    
+    private func loadContainer() {
+        containerState = .loading
+        Task {
+            do {
+                let container = try factory.createInMemoryContainer()
+                await MainActor.run {
+                    containerState = .loaded(container)
+                }
+            } catch {
+                await MainActor.run {
+                    containerState = .failed(error)
+                }
+            }
         }
     }
 }

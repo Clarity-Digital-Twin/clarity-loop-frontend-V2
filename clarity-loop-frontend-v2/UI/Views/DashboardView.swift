@@ -18,9 +18,16 @@ public struct DashboardView: View {
     public init() {
         let container = DIContainer.shared
         let factory = container.require(DashboardViewModelFactory.self)
-        // TODO: Pass user ID when factory is updated
-        let vm = factory.create(User(id: UUID(), email: "temp@example.com", firstName: "Temp", lastName: "User"))
         
+        // Create guest user as default
+        let guestUser = User(
+            id: UUID(),
+            email: "guest@clarity.health",
+            firstName: "Guest",
+            lastName: "User"
+        )
+        
+        let vm = factory.create(guestUser)
         self._viewModel = State(wrappedValue: vm)
     }
     

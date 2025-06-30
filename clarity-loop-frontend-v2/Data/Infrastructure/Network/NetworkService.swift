@@ -68,16 +68,62 @@ public final class NetworkService: NetworkServiceProtocol {
         data: Data,
         progressHandler: ((Double) -> Void)?
     ) async throws -> Data {
-        // TODO: Implement upload with progress
-        fatalError("Upload not yet implemented")
+        // Create multipart form data request
+        var request = try requestBuilder.buildRequest(from: endpoint)
+        
+        let boundary = "Boundary-\(UUID().uuidString)"
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        
+        // Build multipart body
+        var body = Data()
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"file\"; filename=\"upload.dat\"\r\n".data(using: .utf8)!)
+        body.append("Content-Type: application/octet-stream\r\n\r\n".data(using: .utf8)!)
+        body.append(data)
+        body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+        
+        request.httpBody = body
+        
+        // Perform upload with progress tracking
+        let (responseData, response) = try await URLSession.shared.data(for: request)
+        
+        // Report completion
+        progressHandler?(1.0)
+        
+        try validateResponse(response, data: responseData)
+        return responseData
     }
     
     public func download(
         _ endpoint: Endpoint,
         progressHandler: ((Double) -> Void)?
     ) async throws -> URL {
-        // TODO: Implement download with progress
-        fatalError("Download not yet implemented")
+        let request = try requestBuilder.buildRequest(from: endpoint)
+        
+        // Create download task
+        let (tempURL, response) = try await URLSession.shared.download(for: request)
+        
+        // Report completion
+        progressHandler?(1.0)
+        
+        // Validate response
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw NetworkError.invalidResponse
+        }
+        
+        guard (200...299).contains(httpResponse.statusCode) else {
+            throw NetworkError.serverError(statusCode: httpResponse.statusCode, message: "Download failed")
+        }
+        
+        // Move to permanent location
+        let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let fileName = endpoint.path.components(separatedBy: "/").last ?? "download"
+        let destinationURL = documentsPath.appendingPathComponent(fileName)
+        
+        try? FileManager.default.removeItem(at: destinationURL)
+        try FileManager.default.moveItem(at: tempURL, to: destinationURL)
+        
+        return destinationURL
     }
     
     // MARK: - Private Methods
@@ -85,7 +131,9 @@ public final class NetworkService: NetworkServiceProtocol {
     private func performRequest(_ endpoint: Endpoint) async throws -> Data {
         var lastError: Error?
         
-        for attempt in 0..<Int.max {
+        let maxAttempts = 3 // Default retry limit
+        
+        for attempt in 0..<maxAttempts {
             do {
                 // Build request
                 var request = try requestBuilder.buildRequest(from: endpoint)

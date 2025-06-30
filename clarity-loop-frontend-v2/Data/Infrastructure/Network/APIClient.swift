@@ -2,8 +2,7 @@
 //  APIClient.swift
 //  clarity-loop-frontend-v2
 //
-//  REAL API Client - Connected to ACTUAL backend at clarity.novamindnyc.com
-//  NO MORE FUCKING MOCKS!
+//  Production API client implementation with retry and error handling
 //
 
 import Foundation

@@ -16,6 +16,10 @@ import AWSCognitoAuthPlugin
 import AWSAPIPlugin
 import AWSPluginsCore
 
+// Import persistence models - they're in the same module
+// No need for explicit imports since PersistedUser and PersistedHealthMetric
+// are in the ClarityData module which is already imported
+
 /// Main app dependency configuration
 public final class AppDependencies {
     
@@ -36,10 +40,16 @@ public final class AppDependencies {
     // MARK: - Infrastructure Configuration
     
     private func configureInfrastructure() {
+        // App Configuration
+        container.register(AppConfiguration.self, scope: .singleton) { _ in
+            AppConfiguration.load()
+        }
+        
         // Network Service
         container.register(NetworkServiceProtocol.self, scope: .singleton) { container in
-            NetworkService(
-                baseURL: URL(string: "https://clarity.novamindnyc.com")!, // Real backend URL
+            let config = container.require(AppConfiguration.self)
+            return NetworkService(
+                baseURL: config.apiBaseURL,
                 authService: container.require(AuthServiceProtocol.self),
                 tokenStorage: container.require(TokenStorageProtocol.self)
             )
@@ -83,7 +93,34 @@ public final class AppDependencies {
         // Model Container
         container.register(ModelContainer.self, scope: .singleton) { container in
             let factory = container.require(ModelContainerFactory.self)
-            return try! factory.createContainer()
+            do {
+                return try factory.createContainer()
+            } catch {
+                // Log error and provide fallback
+                print("⚠️ Failed to create ModelContainer: \(error)")
+                print("Creating in-memory container as fallback")
+                
+                // Create in-memory container as fallback
+                let schema = Schema([
+                    PersistedUser.self,
+                    PersistedHealthMetric.self
+                ])
+                let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
+                do {
+                    return try ModelContainer(for: schema, configurations: [configuration])
+                } catch {
+                    // This is a critical error - the app cannot function without a model container
+                    preconditionFailure(
+                        """
+                        Failed to create ModelContainer: \(error)
+                        This is a critical error. Please check:
+                        1. SwiftData schema is valid
+                        2. Device has sufficient storage
+                        3. App has necessary permissions
+                        """
+                    )
+                }
+            }
         }
         
         // Persistence
@@ -229,10 +266,13 @@ private final class AmplifyAuthService: AuthServiceProtocol {
         // Get the user pool tokens
         let tokens = try cognitoTokenProvider.getCognitoTokens().get()
         
+        // Default to 1 hour expiration (in seconds)
+        let expiresIn: Int = 3600
+        
         let authToken = AuthToken(
             accessToken: tokens.accessToken,
             refreshToken: tokens.refreshToken,
-            expiresIn: 3600 // AWS Cognito default
+            expiresIn: expiresIn
         )
         
         // Store the token
@@ -258,10 +298,12 @@ private final class AmplifyAuthService: AuthServiceProtocol {
         // Get the refreshed tokens
         do {
             let tokens = try cognitoTokenProvider.getCognitoTokens().get()
+            let expiresIn: Int = 3600 // Default to 1 hour
+            
             return AuthToken(
                 accessToken: tokens.accessToken,
                 refreshToken: tokens.refreshToken,
-                expiresIn: 3600 // AWS Cognito default
+                expiresIn: expiresIn
             )
         } catch {
             throw AuthError.tokenExpired

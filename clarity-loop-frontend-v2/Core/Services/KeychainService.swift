@@ -99,7 +99,8 @@ public final class KeychainService: KeychainServiceProtocol, @unchecked Sendable
         var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
-            kSecAttrAccount as String: key
+            kSecAttrAccount as String: key,
+            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
         ]
         
         if let accessGroup = accessGroup {

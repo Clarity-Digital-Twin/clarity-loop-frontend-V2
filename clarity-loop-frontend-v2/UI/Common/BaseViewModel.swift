@@ -106,7 +106,9 @@ open class BaseViewModel<DataType: Equatable & Sendable>: BaseViewModelProtocol 
     /// - Throws: Any error that occurs during data loading
     @MainActor
     open func loadData() async throws -> DataType? {
-        fatalError("Subclasses must override loadData()")
+        // Default implementation returns nil
+        // Subclasses should override this method to provide actual data loading
+        return nil
     }
     
     // MARK: - Convenience Properties

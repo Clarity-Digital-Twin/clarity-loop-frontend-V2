@@ -92,7 +92,20 @@ public final class Dependencies: ObservableObject {
     /// Resolve a required service (crashes if not found)
     public func require<T>(_ type: T.Type) -> T {
         guard let service = resolve(type) else {
-            fatalError("❌ Service of type \(type) is not registered in Dependencies container")
+            let typeName = String(describing: type)
+            let registeredTypes = services.keys.map { $0.type }.sorted().joined(separator: ", ")
+            preconditionFailure(
+                """
+                🚨 Dependency Resolution Error
+                
+                Service of type '\(typeName)' is not registered in Dependencies container.
+                
+                This is a configuration error. Please ensure the service is registered
+                before attempting to resolve it.
+                
+                Currently registered types: [\(registeredTypes)]
+                """
+            )
         }
         return service
     }

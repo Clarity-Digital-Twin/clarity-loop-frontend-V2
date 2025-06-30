@@ -90,7 +90,19 @@ public final class DIContainer: @unchecked Sendable {
     /// Resolve a required service (crashes if not found)
     public func require<T>(_ type: T.Type) -> T {
         guard let service = resolve(type) else {
-            fatalError("Service of type \(type) is not registered")
+            let typeName = String(describing: type)
+            preconditionFailure(
+                """
+                🚨 Dependency Injection Error
+                
+                Service of type '\(typeName)' is not registered in the DI container.
+                
+                This is a configuration error that should be caught during development.
+                Please ensure AppDependencies.configure() is called and includes this service.
+                
+                Registered services: \(services.keys.map { $0.type }.sorted())
+                """
+            )
         }
         return service
     }

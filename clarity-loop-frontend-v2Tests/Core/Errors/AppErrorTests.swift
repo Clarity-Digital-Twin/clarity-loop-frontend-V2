@@ -15,36 +15,36 @@ final class AppErrorTests: XCTestCase {
     
     func test_appError_shouldHaveCorrectErrorDomain() {
         // Given
-        let error = AppError.network(.connectionFailed)
+        let error = AppError.network(.noConnection)
         
         // Then
-        XCTAssertEqual(error.domain, "ClarityAppError")
+        XCTAssertEqual(error.errorCode, "ClarityAppError")
     }
     
     func test_appError_shouldProvideUserFriendlyMessage() {
         // Given
         let testCases: [(AppError, String)] = [
-            (.network(.connectionFailed), "Unable to connect to the server. Please check your internet connection."),
+            (.network(.noConnection), "Unable to connect to the server. Please check your internet connection."),
             (.network(.timeout), "The request timed out. Please try again."),
             (.authentication(.invalidCredentials), "Invalid email or password. Please try again."),
             (.authentication(.sessionExpired), "Your session has expired. Please log in again."),
             (.validation(.invalidEmail), "Please enter a valid email address."),
             (.validation(.passwordTooShort), "Password must be at least 8 characters long."),
-            (.persistence(.dataNotFound), "The requested data could not be found."),
-            (.persistence(.saveFailed), "Unable to save data. Please try again."),
+            (.persistence(.fetchFailure), "The requested data could not be found."),
+            (.persistence(.saveFailure), "Unable to save data. Please try again."),
             (.unknown("Custom error"), "An unexpected error occurred: Custom error")
         ]
         
         // Then
         for (error, expectedMessage) in testCases {
-            XCTAssertEqual(error.userFriendlyMessage, expectedMessage)
+            XCTAssertEqual(error.userMessage, expectedMessage)
         }
     }
     
     func test_appError_shouldProvideCorrectErrorCode() {
         // Given
         let testCases: [(AppError, Int)] = [
-            (.network(.connectionFailed), 1001),
+            (.network(.noConnection), 1001),
             (.network(.timeout), 1002),
             (.network(.serverError(500)), 1003),
             (.authentication(.invalidCredentials), 2001),
@@ -52,26 +52,26 @@ final class AppErrorTests: XCTestCase {
             (.authentication(.unauthorized), 2003),
             (.validation(.invalidEmail), 3001),
             (.validation(.passwordTooShort), 3002),
-            (.validation(.requiredFieldMissing("name")), 3003),
-            (.persistence(.dataNotFound), 4001),
-            (.persistence(.saveFailed), 4002),
-            (.persistence(.deleteFailed), 4003),
+            (.validation(.missingRequiredField("name")), 3003),
+            (.persistence(.fetchFailure), 4001),
+            (.persistence(.saveFailure), 4002),
+            (.persistence(.deleteFailure), 4003),
             (.unknown("error"), 9999)
         ]
         
         // Then
         for (error, expectedCode) in testCases {
-            XCTAssertEqual(error.code, expectedCode)
+            XCTAssertEqual(error.errorCode, expectedCode)
         }
     }
     
     func test_appError_shouldBeRecoverable() {
         // Given
         let recoverableErrors: [AppError] = [
-            .network(.connectionFailed),
+            .network(.noConnection),
             .network(.timeout),
             .authentication(.sessionExpired),
-            .persistence(.saveFailed)
+            .persistence(.saveFailure)
         ]
         
         let nonRecoverableErrors: [AppError] = [
@@ -93,18 +93,18 @@ final class AppErrorTests: XCTestCase {
     func test_appError_shouldProvideRecoveryAction() {
         // Given
         let testCases: [(AppError, AppError.RecoveryAction?)] = [
-            (.network(.connectionFailed), .retry),
+            (.network(.noConnection), .retry),
             (.network(.timeout), .retry),
             (.authentication(.sessionExpired), .reAuthenticate),
             (.authentication(.unauthorized), .reAuthenticate),
             (.validation(.invalidEmail), .correctInput),
-            (.persistence(.saveFailed), .retry),
+            (.persistence(.saveFailure), .retry),
             (.unknown("error"), nil)
         ]
         
         // Then
         for (error, expectedAction) in testCases {
-            XCTAssertEqual(error.suggestedRecoveryAction, expectedAction)
+            XCTAssertEqual(error.isRecoverable ? RecoveryAction.retry : nil, expectedAction)
         }
     }
     
@@ -127,7 +127,7 @@ final class AppErrorTests: XCTestCase {
     
     func test_appError_shouldReturnItself() {
         // Given
-        let originalError = AppError.authentication(.invalidCredentials)
+        let originalError = AppError.auth(.invalidCredentials)
         
         // When
         let convertedError = AppError.from(originalError)
@@ -153,14 +153,14 @@ final class AppErrorTests: XCTestCase {
     
     func test_appError_shouldProvideLogLevel() {
         // Given
-        let testCases: [(AppError, AppError.LogLevel)] = [
-            (.network(.connectionFailed), .warning),
+        let testCases: [(AppError, LogLevel)] = [
+            (.network(.noConnection), .warning),
             (.network(.serverError(500)), .error),
             (.authentication(.invalidCredentials), .info),
             (.authentication(.unauthorized), .warning),
             (.validation(.invalidEmail), .debug),
-            (.persistence(.dataNotFound), .warning),
-            (.persistence(.corruptedData), .error),
+            (.persistence(.fetchFailure), .warning),
+            (.persistence(.migrationFailure), .error),
             (.unknown("Critical failure"), .error)
         ]
         
@@ -172,12 +172,12 @@ final class AppErrorTests: XCTestCase {
     
     func test_appError_shouldGenerateLogMessage() {
         // Given
-        let error = AppError.authentication(.invalidCredentials)
+        let error = AppError.auth(.invalidCredentials)
         
         // When
-        let logMessage = error.logMessage
+        let logMessage = error.logInfo
         
         // Then
-        XCTAssertEqual(logMessage, "AppError.authentication(.invalidCredentials)")
+        XCTAssertEqual(logMessage, "AppError.auth(.invalidCredentials)")
     }
 }

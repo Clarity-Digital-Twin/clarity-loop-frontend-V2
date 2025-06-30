@@ -88,7 +88,7 @@ final class DashboardViewTests: XCTestCase {
     func test_dashboardView_shouldShowError_whenLoadingFails() {
         // Given
         let mockViewModel = createMockViewModel()
-        mockViewModel.metricsState = .error(AppError.network(.connectionFailed))
+        mockViewModel.metricsState = .error(AppError.network(.noConnection))
         
         // When metric loading fails
         // Then an error message should be displayed

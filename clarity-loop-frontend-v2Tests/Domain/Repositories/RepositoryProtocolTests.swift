@@ -72,7 +72,7 @@ final class RepositoryProtocolTests: XCTestCase {
         func delete(id: UUID) async throws {
             if shouldFailNext {
                 shouldFailNext = false
-                throw RepositoryError.deleteFailed("Mock failure")
+                throw RepositoryError.deleteFailure("Mock failure")
             }
             guard storage[id] != nil else {
                 throw RepositoryError.notFound
@@ -116,7 +116,7 @@ final class RepositoryProtocolTests: XCTestCase {
         func deleteAll(predicate: RepositoryPredicate<T>? = nil) async throws {
             if shouldFailNext {
                 shouldFailNext = false
-                throw RepositoryError.deleteFailed("Mock failure")
+                throw RepositoryError.deleteFailure("Mock failure")
             }
             
             if let predicate = predicate {
@@ -426,7 +426,7 @@ final class RepositoryProtocolTests: XCTestCase {
         } catch {
             XCTAssertTrue(error is RepositoryError)
             if let repoError = error as? RepositoryError {
-                XCTAssertEqual(repoError, .saveFailed("Mock failure"))
+                XCTAssertEqual(repoError, .saveFailure("Mock failure"))
             }
         }
     }

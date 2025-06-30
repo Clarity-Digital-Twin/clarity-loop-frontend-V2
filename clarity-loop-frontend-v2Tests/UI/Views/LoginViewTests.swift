@@ -19,7 +19,7 @@ final class LoginViewTests: XCTestCase {
     func test_loginView_shouldShowErrorAlert_whenLoginFails() {
         // Given
         let mockLoginUseCase = MockLoginUseCase()
-        mockLoginUseCase.mockResult = .failure(AppError.authentication(.invalidCredentials))
+        mockLoginUseCase.mockResult = .failure(AppError.auth(.invalidCredentials))
         let viewModel = LoginViewModel(loginUseCase: mockLoginUseCase)
         
         // Create a test container
@@ -82,7 +82,7 @@ final class LoginViewTests: XCTestCase {
 // MARK: - Mocks
 
 private final class MockLoginUseCase: LoginUseCaseProtocol, @unchecked Sendable {
-    var mockResult: Result<User, Error> = .failure(AppError.authentication(.invalidCredentials))
+    var mockResult: Result<User, Error> = .failure(AppError.auth(.invalidCredentials))
     
     func execute(email: String, password: String) async throws -> User {
         switch mockResult {

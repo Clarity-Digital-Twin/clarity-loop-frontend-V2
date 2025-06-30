@@ -39,7 +39,7 @@ struct EncryptedHealthMetricTests {
         let jsonEncoder = JSONEncoder()
         let originalData = try jsonEncoder.encode(metric)
         #expect(encryptedData != originalData)
-        #expect(encryptedData.count > 0)
+        #expect(!encryptedData.isEmpty)
     }
     
     @Test("Encrypted health metrics should decrypt correctly")
@@ -82,7 +82,7 @@ struct EncryptedHealthMetricTests {
         // Then: All metrics should be encrypted
         #expect(encryptedBatch.count == metrics.count)
         for encrypted in encryptedBatch {
-            #expect(encrypted.data.count > 0)
+            #expect(!encrypted.data.isEmpty)
         }
     }
     

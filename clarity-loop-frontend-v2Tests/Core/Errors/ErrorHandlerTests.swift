@@ -36,20 +36,20 @@ final class ErrorHandlerTests: XCTestCase {
     
     func test_handleError_shouldLogError() {
         // Given
-        let error = AppError.network(.connectionFailed)
+        let error = AppError.network(.noConnection)
         
         // When
         errorHandler.handle(error)
         
         // Then
         XCTAssertEqual(mockLogger.loggedMessages.count, 1)
-        XCTAssertTrue(mockLogger.loggedMessages.first?.message.contains("connectionFailed") ?? false)
+        XCTAssertTrue(mockLogger.loggedMessages.first?.message.contains("noConnection") ?? false)
         XCTAssertEqual(mockLogger.loggedMessages.first?.level, .warning)
     }
     
     func test_handleError_shouldTrackAnalytics() {
         // Given
-        let error = AppError.authentication(.invalidCredentials)
+        let error = AppError.auth(.invalidCredentials)
         
         // When
         errorHandler.handle(error)
@@ -57,20 +57,20 @@ final class ErrorHandlerTests: XCTestCase {
         // Then
         XCTAssertEqual(mockAnalytics.trackedEvents.count, 1)
         XCTAssertEqual(mockAnalytics.trackedEvents.first?.name, "error_occurred")
-        XCTAssertEqual(mockAnalytics.trackedEvents.first?.properties["error_type"] as? String, "authentication")
-        XCTAssertEqual(mockAnalytics.trackedEvents.first?.properties["error_code"] as? Int, 2001)
+        XCTAssertEqual(mockAnalytics.trackedEvents.first?.properties["error_type"] as? String, "auth")
+        XCTAssertEqual(mockAnalytics.trackedEvents.first?.properties["error_code"] as? String, "AUTH001")
     }
     
     func test_handleError_withContext_shouldIncludeErrorTypeInLog() {
         // Given
-        let error = AppError.authentication(.invalidCredentials)
+        let error = AppError.auth(.invalidCredentials)
         
         // When
         errorHandler.handle(error)
         
         // Then
         let logMessage = mockLogger.loggedMessages.first?.message ?? ""
-        XCTAssertTrue(logMessage.contains("authentication(.invalidCredentials)"))
+        XCTAssertTrue(logMessage.contains("auth(.invalidCredentials)"))
     }
     
     // MARK: - User Notification Tests
@@ -93,7 +93,7 @@ final class ErrorHandlerTests: XCTestCase {
     @MainActor
     func test_presentToUser_withRecoverableError_shouldProvideRecoveryActions() async {
         // Given
-        let error = AppError.authentication(.sessionExpired)
+        let error = AppError.auth(.sessionExpired)
         
         // When
         let presentation = await errorHandler.presentToUser(error)
@@ -111,7 +111,7 @@ final class ErrorHandlerTests: XCTestCase {
     @MainActor
     func test_presentToUser_withNonRecoverableError_shouldOnlyHaveDismissAction() async {
         // Given
-        let error = AppError.persistence(.corruptedData)
+        let error = AppError.persistence(.migrationFailure)
         
         // When
         let presentation = await errorHandler.presentToUser(error)
@@ -127,7 +127,7 @@ final class ErrorHandlerTests: XCTestCase {
     
     func test_attemptRecovery_withRetryAction_shouldCallRetryHandler() async {
         // Given
-        let error = AppError.network(.connectionFailed)
+        let error = AppError.network(.noConnection)
         var retryCalled = false
         errorHandler.setRetryHandler { _ in
             retryCalled = true
@@ -142,7 +142,7 @@ final class ErrorHandlerTests: XCTestCase {
     
     func test_attemptRecovery_withReAuthAction_shouldCallAuthHandler() async {
         // Given
-        let error = AppError.authentication(.sessionExpired)
+        let error = AppError.auth(.sessionExpired)
         var reauthCalled = false
         errorHandler.setReAuthHandler {
             reauthCalled = true
@@ -160,8 +160,8 @@ final class ErrorHandlerTests: XCTestCase {
     func test_errorHandler_shouldAggregateErrors() {
         // Given
         let errors = [
-            AppError.network(.connectionFailed),
-            AppError.network(.connectionFailed),
+            AppError.network(.noConnection),
+            AppError.network(.noConnection),
             AppError.network(.timeout)
         ]
         
@@ -171,7 +171,7 @@ final class ErrorHandlerTests: XCTestCase {
         
         // Then
         XCTAssertEqual(summary.totalErrors, 3)
-        XCTAssertEqual(summary.errorsByType["network.connectionFailed"], 2)
+        XCTAssertEqual(summary.errorsByType["network.noConnection"], 2)
         XCTAssertEqual(summary.errorsByType["network.timeout"], 1)
     }
     
@@ -180,7 +180,7 @@ final class ErrorHandlerTests: XCTestCase {
         let startTime = Date()
         
         // When
-        errorHandler.handle(AppError.network(.connectionFailed))
+        errorHandler.handle(AppError.network(.noConnection))
         Thread.sleep(forTimeInterval: 0.1)
         errorHandler.handle(AppError.network(.timeout))
         
@@ -200,7 +200,7 @@ final class ErrorHandlerTests: XCTestCase {
             emergencyHandlerCalled = true
         }
         
-        let criticalError = AppError.persistence(.corruptedData)
+        let criticalError = AppError.persistence(.migrationFailure)
         
         // When
         errorHandler.handleCritical(criticalError)
@@ -216,13 +216,13 @@ final class ErrorHandlerTests: XCTestCase {
     private class MockLogger: LoggerProtocol {
         struct LoggedMessage {
             let message: String
-            let level: AppError.LogLevel
+            let level: LogLevel
             let metadata: [String: Any]
         }
         
         var loggedMessages: [LoggedMessage] = []
         
-        func log(_ message: String, level: AppError.LogLevel, metadata: [String: Any]) {
+        func log(_ message: String, level: LogLevel, metadata: [String: Any]) {
             loggedMessages.append(LoggedMessage(
                 message: message,
                 level: level,

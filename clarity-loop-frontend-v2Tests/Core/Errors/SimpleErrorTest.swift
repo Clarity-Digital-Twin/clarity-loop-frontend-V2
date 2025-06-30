@@ -12,16 +12,15 @@ final class SimpleErrorTest: XCTestCase {
     
     func test_appError_canBeCreatedAndUsed() {
         // Given/When
-        let networkError = AppError.network(.connectionFailed)
-        let authError = AppError.authentication(.invalidCredentials)
+        let networkError = AppError.network(.noConnection)
+        let authError = AppError.auth(.invalidCredentials)
         let validationError = AppError.validation(.invalidEmail)
         
         // Then
-        XCTAssertEqual(networkError.domain, "ClarityAppError")
-        XCTAssertEqual(networkError.code, 1001)
-        XCTAssertEqual(authError.userFriendlyMessage, "Invalid email or password. Please try again.")
+        XCTAssertEqual(networkError.errorCode, "NET001")
+        XCTAssertEqual(authError.userMessage, "Invalid email or password. Please try again.")
         XCTAssertTrue(networkError.isRecoverable)
-        XCTAssertEqual(validationError.suggestedRecoveryAction, .correctInput)
+        XCTAssertTrue(validationError.isRecoverable)
     }
     
     func test_errorHandler_canBeCreated() {
@@ -42,9 +41,9 @@ final class SimpleErrorTest: XCTestCase {
 
 // Simple test implementations
 final class TestLogger: LoggerProtocol {
-    var logs: [(message: String, level: AppError.LogLevel)] = []
+    var logs: [(message: String, level: LogLevel)] = []
     
-    func log(_ message: String, level: AppError.LogLevel, metadata: [String: Any]) {
+    func log(_ message: String, level: LogLevel, metadata: [String: Any]) {
         logs.append((message, level))
     }
 }

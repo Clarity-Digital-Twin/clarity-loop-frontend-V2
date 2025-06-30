@@ -125,7 +125,7 @@ final class LoginViewModelTests: XCTestCase {
     @MainActor
     func test_whenLogin_withInvalidCredentials_shouldShowError() async {
         // Given
-        mockLoginUseCase.mockResult = .failure(AppError.authentication(.invalidCredentials))
+        mockLoginUseCase.mockResult = .failure(AppError.auth(.invalidCredentials))
         sut.email = "test@example.com"
         sut.password = "wrong"
         
@@ -136,7 +136,7 @@ final class LoginViewModelTests: XCTestCase {
         if case .error(let error) = sut.viewState {
             XCTAssertTrue(error is AppError)
             if let appError = error as? AppError,
-               case .authentication(.invalidCredentials) = appError {
+               case .auth(.invalidCredentials) = appError {
                 // Success
             } else {
                 XCTFail("Expected authentication error")
@@ -149,7 +149,7 @@ final class LoginViewModelTests: XCTestCase {
     @MainActor
     func test_whenLogin_withNetworkError_shouldShowError() async {
         // Given
-        mockLoginUseCase.mockResult = .failure(AppError.network(.connectionFailed))
+        mockLoginUseCase.mockResult = .failure(AppError.network(.noConnection))
         sut.email = "test@example.com"
         sut.password = "password123"
         
@@ -160,7 +160,7 @@ final class LoginViewModelTests: XCTestCase {
         if case .error(let error) = sut.viewState {
             XCTAssertTrue(error is AppError)
             if let appError = error as? AppError,
-               case .network(.connectionFailed) = appError {
+               case .network(.noConnection) = appError {
                 // Success
             } else {
                 XCTFail("Expected network error")
@@ -175,7 +175,7 @@ final class LoginViewModelTests: XCTestCase {
     @MainActor
     func test_whenClearError_shouldResetToIdle() async {
         // Given - Create an error state through failed login
-        mockLoginUseCase.mockResult = .failure(AppError.authentication(.invalidCredentials))
+        mockLoginUseCase.mockResult = .failure(AppError.auth(.invalidCredentials))
         sut.email = "test@example.com"
         sut.password = "wrong"
         await sut.login()
@@ -197,7 +197,7 @@ final class LoginViewModelTests: XCTestCase {
 
 @MainActor
 private final class MockLoginUseCase: LoginUseCaseProtocol {
-    var mockResult: Result<User, Error> = .failure(AppError.authentication(.invalidCredentials))
+    var mockResult: Result<User, Error> = .failure(AppError.auth(.invalidCredentials))
     var executeWasCalled = false
     var lastEmail: String?
     var lastPassword: String?

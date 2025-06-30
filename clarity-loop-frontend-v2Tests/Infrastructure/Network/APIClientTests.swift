@@ -246,7 +246,7 @@ private final class MockNetworkService: NetworkServiceProtocol, @unchecked Senda
             
             return try decoder.decode(T.self, from: data)
         } catch {
-            throw NetworkError.decodingFailed(error.localizedDescription)
+            throw NetworkError.invalidResponse(error.localizedDescription)
         }
     }
     

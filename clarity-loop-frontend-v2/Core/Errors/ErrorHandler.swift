@@ -1,8 +1,8 @@
 //
-//  ErrorHandler.swift
+//  UpdatedErrorHandler.swift
 //  clarity-loop-frontend-v2
 //
-//  Centralized error handling system
+//  Updated centralized error handling system for new AppError structure
 //
 
 import Foundation
@@ -12,37 +12,65 @@ import ClarityDomain
 // MARK: - Protocols
 
 public protocol LoggerProtocol: Sendable {
-    func log(_ message: String, level: AppError.LogLevel, metadata: [String: Any])
+    func log(_ message: String, level: LogLevel, metadata: [String: Any])
 }
 
 public protocol AnalyticsProtocol: Sendable {
     func track(event: String, properties: [String: Any])
 }
 
+// MARK: - Log Level
+
+public enum LogLevel: String, Sendable {
+    case info
+    case warning
+    case error
+}
+
+// MARK: - Recovery Action
+
+public enum RecoveryAction: Sendable {
+    case retry
+    case reAuthenticate
+    case correctInput
+}
+
 // MARK: - Error Presentation
 
 @MainActor
-public struct ErrorPresentation {
+public struct ErrorPresentation: Sendable {
     public let title: String
     public let message: String
     public let actions: [ErrorAction]
     
-    public struct ErrorAction {
+    public struct ErrorAction: Sendable {
         public let title: String
         public let style: ActionStyle
-        public let handler: (() async -> Void)?
+        public let handler: (@Sendable () async -> Void)?
         
-        public enum ActionStyle {
+        public enum ActionStyle: Sendable {
             case primary
             case cancel
             case destructive
         }
+        
+        public init(title: String, style: ActionStyle, handler: (@Sendable () async -> Void)? = nil) {
+            self.title = title
+            self.style = style
+            self.handler = handler
+        }
+    }
+    
+    public init(title: String, message: String, actions: [ErrorAction]) {
+        self.title = title
+        self.message = message
+        self.actions = actions
     }
 }
 
 // MARK: - Error Summary
 
-public struct ErrorSummary {
+public struct ErrorSummary: Sendable {
     public let totalErrors: Int
     public let errorsByType: [String: Int]
     public let timeRange: TimeInterval
@@ -51,7 +79,7 @@ public struct ErrorSummary {
 
 // MARK: - Error Handler
 
-public final class ErrorHandler {
+public final class ErrorHandler: @unchecked Sendable {
     
     // MARK: - Properties
     
@@ -63,9 +91,9 @@ public final class ErrorHandler {
     private let historyLock = NSLock()
     
     // Recovery handlers
-    private var retryHandler: ((AppError) async -> Void)?
-    private var reAuthHandler: (() async -> Void)?
-    private var emergencyHandler: ((AppError) -> Void)?
+    private var retryHandler: (@Sendable (AppError) async -> Void)?
+    private var reAuthHandler: (@Sendable () async -> Void)?
+    private var emergencyHandler: (@Sendable (AppError) -> Void)?
     
     // MARK: - Initialization
     
@@ -78,9 +106,10 @@ public final class ErrorHandler {
     
     public func handle(_ error: AppError) {
         // Log the error
+        let logLevel = LogLevel(from: error.severity)
         logger.log(
-            error.logMessage,
-            level: error.logLevel,
+            error.logInfo,
+            level: logLevel,
             metadata: buildMetadata(for: error)
         )
         
@@ -89,8 +118,10 @@ public final class ErrorHandler {
             event: "error_occurred",
             properties: [
                 "error_type": getErrorType(error),
-                "error_code": error.code,
-                "is_recoverable": error.isRecoverable
+                "error_subtype": getErrorSubtype(error),
+                "error_code": error.errorCode,
+                "is_recoverable": error.isRecoverable,
+                "severity": error.severity.rawValue
             ]
         )
         
@@ -98,10 +129,39 @@ public final class ErrorHandler {
         addToHistory(error)
     }
     
+    public func handle(_ error: AppErrorWithContext) {
+        // Extract context and handle base error
+        var metadata = buildMetadata(for: error.error)
+        for (key, value) in error.context {
+            metadata[key] = value
+        }
+        
+        let logLevel = LogLevel(from: error.severity)
+        logger.log(
+            error.logInfo,
+            level: logLevel,
+            metadata: metadata
+        )
+        
+        analytics.track(
+            event: "error_occurred",
+            properties: [
+                "error_type": getErrorType(error.error),
+                "error_subtype": getErrorSubtype(error.error),
+                "error_code": error.errorCode,
+                "is_recoverable": error.isRecoverable,
+                "severity": error.severity.rawValue,
+                "has_context": true
+            ]
+        )
+        
+        addToHistory(error.error)
+    }
+    
     public func handleCritical(_ error: AppError) {
         // Log as critical
         logger.log(
-            "CRITICAL: \(error.logMessage)",
+            "CRITICAL: \(error.logInfo)",
             level: .error,
             metadata: buildMetadata(for: error)
         )
@@ -111,8 +171,9 @@ public final class ErrorHandler {
             event: "critical_error",
             properties: [
                 "error_type": getErrorType(error),
-                "error_code": error.code,
-                "error_message": error.userFriendlyMessage
+                "error_subtype": getErrorSubtype(error),
+                "error_code": error.errorCode,
+                "error_message": error.userMessage
             ]
         )
         
@@ -128,7 +189,7 @@ public final class ErrorHandler {
     @MainActor
     public func presentToUser(_ error: AppError) async -> ErrorPresentation {
         let title = getErrorTitle(for: error)
-        let message = error.userFriendlyMessage
+        let message = error.userMessage
         let actions = buildActions(for: error)
         
         return ErrorPresentation(
@@ -138,10 +199,15 @@ public final class ErrorHandler {
         )
     }
     
+    @MainActor
+    public func presentToUser(_ error: AppErrorWithContext) async -> ErrorPresentation {
+        return await presentToUser(error.error)
+    }
+    
     // MARK: - Recovery
     
     @MainActor
-    public func attemptRecovery(from error: AppError, action: AppError.RecoveryAction) async {
+    public func attemptRecovery(from error: AppError, action: RecoveryAction) async {
         switch action {
         case .retry:
             await retryHandler?(error)
@@ -155,15 +221,15 @@ public final class ErrorHandler {
     
     // MARK: - Handler Configuration
     
-    public func setRetryHandler(_ handler: @escaping (AppError) async -> Void) {
+    public func setRetryHandler(_ handler: @escaping @Sendable (AppError) async -> Void) {
         self.retryHandler = handler
     }
     
-    public func setReAuthHandler(_ handler: @escaping () async -> Void) {
+    public func setReAuthHandler(_ handler: @escaping @Sendable () async -> Void) {
         self.reAuthHandler = handler
     }
     
-    public func setEmergencyHandler(_ handler: @escaping (AppError) -> Void) {
+    public func setEmergencyHandler(_ handler: @escaping @Sendable (AppError) -> Void) {
         self.emergencyHandler = handler
     }
     
@@ -181,7 +247,7 @@ public final class ErrorHandler {
             let type = "\(getErrorType(error)).\(getErrorSubtype(error))"
             errorsByType[type, default: 0] += 1
             
-            if error.logLevel == .error {
+            if error.severity == .critical {
                 criticalCount += 1
             }
         }
@@ -220,57 +286,122 @@ public final class ErrorHandler {
     }
     
     private func buildMetadata(for error: AppError) -> [String: Any] {
-        let metadata: [String: Any] = [
-            "error_domain": error.domain,
-            "error_code": error.code
+        var metadata: [String: Any] = [
+            "error_type": getErrorType(error),
+            "error_subtype": getErrorSubtype(error),
+            "error_code": error.errorCode,
+            "severity": error.severity.rawValue
         ]
         
-        // Context should be tracked separately in production code
-        // For now, just return basic metadata
+        // Add specific metadata based on error type
+        switch error {
+        case .network(.serverError(let code)):
+            metadata["http_status_code"] = code
+        case .validation(.missingRequiredField(let field)):
+            metadata["field_name"] = field
+        case .validation(.valueOutOfRange(let field, let min, let max)):
+            metadata["field_name"] = field
+            metadata["min_value"] = min
+            metadata["max_value"] = max
+        default:
+            break
+        }
         
         return metadata
     }
     
     private func getErrorType(_ error: AppError) -> String {
         switch error {
-        case .network: return "network"
-        case .authentication: return "authentication"
-        case .validation: return "validation"
-        case .persistence: return "persistence"
-        case .unknown: return "unknown"
+        case .network:
+            return "network"
+        case .auth:
+            return "auth"
+        case .validation:
+            return "validation"
+        case .persistence:
+            return "persistence"
+        case .healthKit:
+            return "healthKit"
+        case .unknown:
+            return "unknown"
         }
     }
     
+    // swiftlint:disable:next cyclomatic_complexity
     private func getErrorSubtype(_ error: AppError) -> String {
         switch error {
         case .network(let type):
             switch type {
-            case .connectionFailed: return "connectionFailed"
-            case .timeout: return "timeout"
-            case .serverError: return "serverError"
-            case .invalidRequest: return "invalidRequest"
-            case .decodingFailed: return "decodingFailed"
+            case .noConnection:
+                return "noConnection"
+            case .timeout:
+                return "timeout"
+            case .serverError:
+                return "serverError"
+            case .unauthorized:
+                return "unauthorized"
+            case .notFound:
+                return "notFound"
+            case .invalidResponse:
+                return "invalidResponse"
             }
-        case .authentication(let type):
+        case .auth(let type):
             switch type {
-            case .invalidCredentials: return "invalidCredentials"
-            case .sessionExpired: return "sessionExpired"
-            case .unauthorized: return "unauthorized"
-            case .userNotFound: return "userNotFound"
+            case .invalidCredentials:
+                return "invalidCredentials"
+            case .sessionExpired:
+                return "sessionExpired"
+            case .biometricFailed:
+                return "biometricFailed"
+            case .biometricNotAvailable:
+                return "biometricNotAvailable"
+            case .tooManyAttempts:
+                return "tooManyAttempts"
+            case .accountLocked:
+                return "accountLocked"
+            case .emailNotVerified:
+                return "emailNotVerified"
             }
         case .validation(let type):
             switch type {
-            case .invalidEmail: return "invalidEmail"
-            case .passwordTooShort: return "passwordTooShort"
-            case .requiredFieldMissing: return "requiredFieldMissing"
-            case .invalidFormat: return "invalidFormat"
+            case .invalidEmail:
+                return "invalidEmail"
+            case .passwordTooShort:
+                return "passwordTooShort"
+            case .passwordTooWeak:
+                return "passwordTooWeak"
+            case .missingRequiredField:
+                return "missingRequiredField"
+            case .invalidDateRange:
+                return "invalidDateRange"
+            case .valueOutOfRange:
+                return "valueOutOfRange"
             }
         case .persistence(let type):
             switch type {
-            case .dataNotFound: return "dataNotFound"
-            case .saveFailed: return "saveFailed"
-            case .deleteFailed: return "deleteFailed"
-            case .corruptedData: return "corruptedData"
+            case .saveFailure:
+                return "saveFailure"
+            case .fetchFailure:
+                return "fetchFailure"
+            case .deleteFailure:
+                return "deleteFailure"
+            case .migrationFailure:
+                return "migrationFailure"
+            case .encryptionFailure:
+                return "encryptionFailure"
+            case .storageQuotaExceeded:
+                return "storageQuotaExceeded"
+            }
+        case .healthKit(let type):
+            switch type {
+            case .authorizationDenied:
+                return "authorizationDenied"
+            case .dataNotAvailable:
+                return "dataNotAvailable"
+            case .syncFailure:
+                return "syncFailure"
+            case .invalidDataType:
+                return "invalidDataType"
             }
         case .unknown:
             return "unknown"
@@ -282,14 +413,16 @@ public final class ErrorHandler {
         switch error {
         case .network:
             return "Connection Error"
-        case .authentication(.sessionExpired):
+        case .auth(.sessionExpired):
             return "Session Expired"
-        case .authentication:
+        case .auth:
             return "Authentication Error"
         case .validation:
             return "Invalid Input"
         case .persistence:
             return "Data Error"
+        case .healthKit:
+            return "Health Data Error"
         case .unknown:
             return "Error"
         }
@@ -300,7 +433,7 @@ public final class ErrorHandler {
         var actions: [ErrorPresentation.ErrorAction] = []
         
         // Add recovery action if available
-        if let recoveryAction = error.suggestedRecoveryAction {
+        if let recoveryAction = getSuggestedRecoveryAction(for: error) {
             switch recoveryAction {
             case .retry:
                 actions.append(ErrorPresentation.ErrorAction(
@@ -334,6 +467,34 @@ public final class ErrorHandler {
         
         return actions
     }
+    
+    private func getSuggestedRecoveryAction(for error: AppError) -> RecoveryAction? {
+        switch error {
+        case .network:
+            return .retry
+        case .auth(.sessionExpired), .auth(.invalidCredentials):
+            return .reAuthenticate
+        case .validation:
+            return .correctInput
+        default:
+            return nil
+        }
+    }
+}
+
+// MARK: - LogLevel Extension
+
+extension LogLevel {
+    init(from severity: ErrorSeverity) {
+        switch severity {
+        case .low:
+            self = .info
+        case .medium:
+            self = .warning
+        case .high, .critical:
+            self = .error
+        }
+    }
 }
 
 // MARK: - Default Logger Implementation
@@ -341,7 +502,7 @@ public final class ErrorHandler {
 public struct ConsoleLogger: LoggerProtocol {
     public init() {}
     
-    public func log(_ message: String, level: AppError.LogLevel, metadata: [String: Any]) {
+    public func log(_ message: String, level: LogLevel, metadata: [String: Any]) {
         let timestamp = ISO8601DateFormatter().string(from: Date())
         let metadataString = metadata.isEmpty ? "" : " | \(metadata)"
         print("[\(timestamp)] [\(level.rawValue.uppercased())] \(message)\(metadataString)")

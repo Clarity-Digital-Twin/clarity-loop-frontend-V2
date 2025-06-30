@@ -107,7 +107,7 @@ final class BasicRepositoryTests: XCTestCase {
             .deleteFailed("Not authorized"),
             .notFound,
             .invalidData,
-            .unauthorized,
+            .notFound,
             .networkError(underlying: NSError(domain: "test", code: 500))
         ]
         

@@ -184,7 +184,7 @@ struct ComprehensiveSecurityTests {
         let originalCount = sensitiveData.count
         
         // Use the data
-        let _ = sensitiveData.base64EncodedString()
+        _ = sensitiveData.base64EncodedString()
         
         // Clear sensitive data
         sensitiveData.withUnsafeMutableBytes { bytes in

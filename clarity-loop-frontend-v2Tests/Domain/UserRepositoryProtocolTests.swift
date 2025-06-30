@@ -52,7 +52,7 @@ final class UserRepositoryProtocolTests: XCTestCase {
         
         func delete(_ id: UUID) async throws {
             if shouldThrowError {
-                throw RepositoryError.deleteFailure("Test error")
+                throw RepositoryError.deleteFailed("Test error")
             }
             users.removeValue(forKey: id)
         }

@@ -15,8 +15,8 @@ public final class SecureStorage: SecureStorageProtocol {
     
     // MARK: - Properties
     
-    private let keychainService: SecureKeychainProtocol
-    private let biometricService: BiometricServiceProtocol
+    internal let keychainService: SecureKeychainProtocol
+    internal let biometricService: BiometricServiceProtocol
     private let encryptionSalt = "clarity.health.encryption.salt"
     
     // MARK: - Initialization

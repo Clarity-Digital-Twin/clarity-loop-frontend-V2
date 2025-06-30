@@ -24,7 +24,7 @@
       "targets": ["ClarityIntegrationTests"],
       "parallel": false,
       "timeout": 600,
-      "status": "disabled"
+      "status": "enabled"
     },
     "ui": {
       "targets": ["ClarityUITests"],

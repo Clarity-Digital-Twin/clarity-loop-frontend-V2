@@ -45,13 +45,23 @@ public final class AppDependencies {
             AppConfiguration.load()
         }
         
-        // Network Service
+        // Encrypted Request Interceptor
+        container.register(EncryptedRequestInterceptor.self, scope: .singleton) { container in
+            EncryptedRequestInterceptor(
+                secureStorage: container.require(SecureStorageProtocol.self)
+            )
+        }
+        
+        // Network Service with encryption interceptor
         container.register(NetworkServiceProtocol.self, scope: .singleton) { container in
             let config = container.require(AppConfiguration.self)
+            let encryptionInterceptor = container.require(EncryptedRequestInterceptor.self)
+            
             return NetworkService(
                 baseURL: config.apiBaseURL,
                 authService: container.require(AuthServiceProtocol.self),
-                tokenStorage: container.require(TokenStorageProtocol.self)
+                tokenStorage: container.require(TokenStorageProtocol.self),
+                interceptors: [encryptionInterceptor]
             )
         }
         

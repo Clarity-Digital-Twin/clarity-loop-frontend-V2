@@ -426,7 +426,7 @@ final class RepositoryProtocolTests: XCTestCase {
         } catch {
             XCTAssertTrue(error is RepositoryError)
             if let repoError = error as? RepositoryError {
-                XCTAssertEqual(repoError, .saveFailure("Mock failure"))
+                XCTAssertEqual(repoError, .saveFailed("Mock failure"))
             }
         }
     }

@@ -6,7 +6,7 @@
 //
 
 import Foundation
-@testable import ClarityInfrastructure
+@testable import ClarityData
 @testable import ClarityDomain
 
 final class MockTokenStorage: TokenStorageProtocol {

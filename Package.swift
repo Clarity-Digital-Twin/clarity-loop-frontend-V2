@@ -154,15 +154,11 @@ let package = Package(
                 "Core/Errors/AppErrorTests.swift",
                 "Core/Errors/ErrorHandlerTests.swift",
                 "Core/Errors/SimpleErrorTest.swift",
-                "Core/Errors/ErrorHandlerTestsSwift.swift",
                 "Mocks/MockAmplifyAuthService.swift",
                 "Mocks/MockTokenStorage.swift",
-                "Mocks/AmplifyMockTests.swift",
-                "Helpers/AmplifyMockService.swift",
-                "Security/ComprehensiveSecurityTests.swift",
-                "Security/EncryptedHealthMetricTests.swift"
+                "Mocks/AmplifyMockTests.swift"
             ],
-            sources: ["DI/", "Architecture/", "Examples/", "Core/Security/"]
+            sources: ["DI/", "Architecture/", "Examples/", "Core/Security/", "Core/Errors/ErrorHandlerTestsSwift.swift", "Helpers/AmplifyMockService.swift", "Security/ComprehensiveSecurityTests.swift", "Security/EncryptedHealthMetricTests.swift"]
         ),
         // UI tests temporarily disabled due to Swift 6 concurrency issues
         // .testTarget(

@@ -26,8 +26,8 @@ final class AppErrorTests: XCTestCase {
         let testCases: [(AppError, String)] = [
             (.network(.noConnection), "Unable to connect to the server. Please check your internet connection."),
             (.network(.timeout), "The request timed out. Please try again."),
-            (.authentication(.invalidCredentials), "Invalid email or password. Please try again."),
-            (.authentication(.sessionExpired), "Your session has expired. Please log in again."),
+            (.auth(.invalidCredentials), "Invalid email or password. Please try again."),
+            (.auth(.sessionExpired), "Your session has expired. Please log in again."),
             (.validation(.invalidEmail), "Please enter a valid email address."),
             (.validation(.passwordTooShort), "Password must be at least 8 characters long."),
             (.persistence(.fetchFailure), "The requested data could not be found."),
@@ -47,9 +47,9 @@ final class AppErrorTests: XCTestCase {
             (.network(.noConnection), 1001),
             (.network(.timeout), 1002),
             (.network(.serverError(500)), 1003),
-            (.authentication(.invalidCredentials), 2001),
-            (.authentication(.sessionExpired), 2002),
-            (.authentication(.unauthorized), 2003),
+            (.auth(.invalidCredentials), 2001),
+            (.auth(.sessionExpired), 2002),
+            (.auth(.unauthorized), 2003),
             (.validation(.invalidEmail), 3001),
             (.validation(.passwordTooShort), 3002),
             (.validation(.missingRequiredField("name")), 3003),
@@ -70,12 +70,12 @@ final class AppErrorTests: XCTestCase {
         let recoverableErrors: [AppError] = [
             .network(.noConnection),
             .network(.timeout),
-            .authentication(.sessionExpired),
+            .auth(.sessionExpired),
             .persistence(.saveFailure)
         ]
         
         let nonRecoverableErrors: [AppError] = [
-            .authentication(.invalidCredentials),
+            .auth(.invalidCredentials),
             .validation(.invalidEmail),
             .unknown("Fatal error")
         ]
@@ -95,8 +95,8 @@ final class AppErrorTests: XCTestCase {
         let testCases: [(AppError, AppError.RecoveryAction?)] = [
             (.network(.noConnection), .retry),
             (.network(.timeout), .retry),
-            (.authentication(.sessionExpired), .reAuthenticate),
-            (.authentication(.unauthorized), .reAuthenticate),
+            (.auth(.sessionExpired), .reAuthenticate),
+            (.auth(.unauthorized), .reAuthenticate),
             (.validation(.invalidEmail), .correctInput),
             (.persistence(.saveFailure), .retry),
             (.unknown("error"), nil)
@@ -156,8 +156,8 @@ final class AppErrorTests: XCTestCase {
         let testCases: [(AppError, LogLevel)] = [
             (.network(.noConnection), .warning),
             (.network(.serverError(500)), .error),
-            (.authentication(.invalidCredentials), .info),
-            (.authentication(.unauthorized), .warning),
+            (.auth(.invalidCredentials), .info),
+            (.auth(.unauthorized), .warning),
             (.validation(.invalidEmail), .debug),
             (.persistence(.fetchFailure), .warning),
             (.persistence(.migrationFailure), .error),

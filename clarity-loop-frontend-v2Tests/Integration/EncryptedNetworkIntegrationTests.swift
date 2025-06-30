@@ -10,7 +10,6 @@ import Foundation
 @testable import ClarityCore
 @testable import ClarityDomain
 @testable import ClarityData
-@testable import ClarityInfrastructure
 
 @Suite("Encrypted Network Integration Tests")
 struct EncryptedNetworkIntegrationTests {

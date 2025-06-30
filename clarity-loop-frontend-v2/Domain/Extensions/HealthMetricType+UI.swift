@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import ClarityDomain
 
 // MARK: - UI Properties
 public extension HealthMetricType {

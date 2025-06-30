@@ -187,7 +187,7 @@ public final class SecureKeychainService: SecureKeychainProtocol {
                 &error
             )
             
-            if let error = error {
+            if error != nil {
                 throw SecureKeychainError.systemError(-1)
             }
             

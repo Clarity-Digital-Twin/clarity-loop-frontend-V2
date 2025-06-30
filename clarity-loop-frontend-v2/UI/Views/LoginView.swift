@@ -8,6 +8,7 @@
 import SwiftUI
 import ClarityDomain
 import ClarityCore
+import ClarityData
 
 public struct LoginView: View {
     @State private var viewModel: LoginViewModel
@@ -146,7 +147,7 @@ public struct LoginView: View {
                     name: "\(user.firstName) \(user.lastName)"
                 )
             case .error(let error):
-                if let appError = error as? AppError {
+                if let appError = error as? ClarityDomain.AppError {
                     Task { @MainActor in
                         let errorHandler = ErrorHandler(
                             logger: ConsoleLogger(),

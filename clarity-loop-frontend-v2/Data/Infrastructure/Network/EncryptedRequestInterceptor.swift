@@ -127,7 +127,7 @@ public final class EncryptedRequestInterceptor: RequestInterceptor, @unchecked S
             
             return try encoder.encode(payloads)
             
-        } else if var createDTO = try? decoder.decode(CreateHealthMetricDTO.self, from: data) {
+        } else if let createDTO = try? decoder.decode(CreateHealthMetricDTO.self, from: data) {
             // Create DTO - encrypt the value field
             let secureStorage = self.secureStorage as! SecureStorage
             

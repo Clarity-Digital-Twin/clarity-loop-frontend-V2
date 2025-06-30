@@ -19,34 +19,10 @@ struct EncryptedNetworkIntegrationTests {
         // Setup
         let secureStorage = SecureStorage()
         let encryptionInterceptor = EncryptedRequestInterceptor(secureStorage: secureStorage)
-        let mockSession = MockURLSession()
-        
-        let networkService = NetworkService(
-            baseURL: URL(string: "https://api.clarity.health")!,
-            session: mockSession,
-            authService: MockAuthService(),
-            tokenStorage: MockTokenStorage(),
-            interceptors: [encryptionInterceptor]
-        )
-        
-        let apiClient = APIClient(networkService: networkService)
-        
-        // Create health metric
-        let metric = HealthMetric(
-            id: UUID(),
-            userId: UUID(),
-            type: .bloodPressureSystolic,
-            value: 120.0,
-            unit: "mmHg",
-            recordedAt: Date(),
-            notes: "Morning reading",
-            source: .manual
-        )
-        
         // Configure mock to capture the request
-        var capturedRequest: URLRequest?
-        mockSession.onDataTask = { request in
-            capturedRequest = request
+        let requestCapture = RequestCapture()
+        let mockSession = MockURLSession(onDataTask: { request in
+            Task { await requestCapture.capture(request) }
             
             // Return mock encrypted response
             let responsePayload = EncryptedHealthPayload(
@@ -71,13 +47,43 @@ struct EncryptedNetworkIntegrationTests {
             )!
             
             return (responseData, response)
-        }
+        })
         
-        // Create metric via API
-        let endpoint = HealthMetricEndpoint.create(metric)
-        _ = try? await apiClient.request(endpoint, responseType: HealthMetric.self)
+        let networkService = NetworkService(
+            baseURL: URL(string: "https://api.clarity.health")!,
+            session: mockSession,
+            authService: EncryptionTestMockAuthService(),
+            tokenStorage: EncryptionTestMockTokenStorage(),
+            interceptors: [encryptionInterceptor]
+        )
+        
+        let apiClient = APIClient(networkService: networkService)
+        
+        // Create health metric
+        let metric = HealthMetric(
+            id: UUID(),
+            userId: UUID(),
+            type: .bloodPressureSystolic,
+            value: 120.0,
+            unit: "mmHg",
+            recordedAt: Date(),
+            source: .manual,
+            notes: "Morning reading"
+        )
+        
+        // Create health data upload from metric
+        let healthData = HealthDataUpload(
+            data_type: metric.type.rawValue,
+            value: metric.value,
+            unit: metric.unit,
+            recorded_at: metric.recordedAt
+        )
+        
+        // Upload health data via API
+        _ = try? await apiClient.uploadHealthData(healthData)
         
         // Verify encryption was applied
+        let capturedRequest = await requestCapture.getRequest()
         #expect(capturedRequest != nil)
         #expect(capturedRequest?.value(forHTTPHeaderField: "Content-Type") == "application/vnd.clarity.encrypted+json")
         #expect(capturedRequest?.value(forHTTPHeaderField: "X-Encryption-Algorithm") == "AES-GCM-256")
@@ -194,8 +200,12 @@ struct EncryptedNetworkIntegrationTests {
 
 // MARK: - Mock URLSession
 
-private class MockURLSession: URLSessionProtocol {
-    var onDataTask: ((URLRequest) throws -> (Data, URLResponse))?
+private final class MockURLSession: URLSessionProtocol {
+    let onDataTask: (@Sendable (URLRequest) throws -> (Data, URLResponse))?
+    
+    init(onDataTask: (@Sendable (URLRequest) throws -> (Data, URLResponse))? = nil) {
+        self.onDataTask = onDataTask
+    }
     
     func data(for request: URLRequest) async throws -> (Data, URLResponse) {
         guard let onDataTask = onDataTask else {
@@ -207,7 +217,7 @@ private class MockURLSession: URLSessionProtocol {
 
 // MARK: - Mock Services
 
-private class MockAuthService: AuthServiceProtocol {
+private final class EncryptionTestMockAuthService: AuthServiceProtocol {
     func login(email: String, password: String) async throws -> AuthToken {
         return AuthToken(accessToken: "mock-token", refreshToken: "mock-refresh", expiresIn: 3600)
     }
@@ -223,22 +233,40 @@ private class MockAuthService: AuthServiceProtocol {
     }
 }
 
-private class MockTokenStorage: TokenStorageProtocol {
+private final class EncryptionTestMockTokenStorage: TokenStorageProtocol, @unchecked Sendable {
     private var token: AuthToken?
     
     func saveToken(_ token: AuthToken) async throws {
         self.token = token
     }
     
+    func getToken() async throws -> AuthToken? {
+        return token
+    }
+    
     func getAccessToken() async throws -> String? {
         return token?.accessToken
+    }
+    
+    func clearToken() async throws {
+        token = nil
     }
     
     func getRefreshToken() async throws -> String? {
         return token?.refreshToken
     }
+}
+
+// MARK: - Request Capture Actor
+
+private actor RequestCapture {
+    private var capturedRequest: URLRequest?
     
-    func clearToken() async throws {
-        token = nil
+    func capture(_ request: URLRequest) {
+        self.capturedRequest = request
+    }
+    
+    func getRequest() -> URLRequest? {
+        return capturedRequest
     }
 }

@@ -303,7 +303,7 @@ final class MockNetworkClient: APIClientProtocol, @unchecked Sendable {
             }
             
             // If response doesn't match expected type, throw error
-            throw NetworkError.invalidResponse("Mock response type mismatch")
+            throw NetworkError.invalidResponse
         }
         
         throw NetworkError.offline

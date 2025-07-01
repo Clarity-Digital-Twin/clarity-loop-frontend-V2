@@ -145,15 +145,4 @@ public extension View {
 }
 
 // MARK: - App Dependency Configurator
-
-/// Configures all app dependencies
-public struct AppDependencyConfigurator {
-    
-    public init() {}
-    
-    /// Configure all app dependencies
-    public func configure(_ container: Dependencies) {
-        // Note: These will be configured in AppDependencies.swift
-        // This is just the structure for the configurator
-    }
-}
+// Moved to AppDependencies+SwiftUI.swift to avoid duplication

@@ -13,7 +13,7 @@ import ClarityDomain
 // MARK: - LoginViewModelFactory
 
 private struct LoginViewModelFactoryKey: EnvironmentKey {
-    static let defaultValue: LoginViewModelFactory? = nil
+    nonisolated(unsafe) static let defaultValue: LoginViewModelFactory? = nil
 }
 
 extension EnvironmentValues {
@@ -26,7 +26,7 @@ extension EnvironmentValues {
 // MARK: - DashboardViewModelFactory
 
 private struct DashboardViewModelFactoryKey: EnvironmentKey {
-    static let defaultValue: DashboardViewModelFactory? = nil
+    nonisolated(unsafe) static let defaultValue: DashboardViewModelFactory? = nil
 }
 
 extension EnvironmentValues {
@@ -38,7 +38,7 @@ extension EnvironmentValues {
 
 // MARK: - View Extension for Dependencies
 
-extension View {
+public extension View {
     /// Inject all dependencies from a configured Dependencies container
     func withDependencies(_ deps: Dependencies) -> some View {
         self

@@ -73,7 +73,7 @@ private struct DashboardContentView: View {
     
     var body: some View {
         NavigationStack {
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(spacing: 24) {
                     // Welcome Header
                     VStack(alignment: .leading, spacing: 8) {

@@ -19,12 +19,7 @@ public struct RootView: View {
             // TODO: Implement navigation based on AppState
             // For now, just show the login view
             if appState.isAuthenticated {
-                // Temporary user for testing
-                MainTabView(
-                    userId: appState.currentUserId ?? UUID(),
-                    userName: appState.currentUserName ?? "User",
-                    userEmail: appState.currentUserEmail ?? "user@example.com"
-                )
+                MainTabView()
             } else {
                 LoginView()
             }
@@ -51,28 +46,4 @@ private struct RootLoadingView: View {
 }
 
 // MARK: - Main Tab View
-
-struct MainTabView: View {
-    let userId: UUID
-    let userName: String
-    let userEmail: String
-    
-    var body: some View {
-        TabView {
-            DashboardView()
-                .tabItem {
-                    Label("Dashboard", systemImage: "heart.text.square")
-                }
-            
-            HealthMetricsView()
-                .tabItem {
-                    Label("Metrics", systemImage: "chart.line.uptrend.xyaxis")
-                }
-            
-            ProfileView()
-                .tabItem {
-                    Label("Profile", systemImage: "person.circle")
-                }
-        }
-    }
-}
+// Removed duplicate - using MainTabView from MainTabView.swift

@@ -18,7 +18,9 @@ public struct LoginView: View {
     @State private var errorPresentation: ErrorPresentation?
     
     public init() {
+        print("LoginView init() called")
         let container = DIContainer.shared
+        print("DIContainer.shared in LoginView: \(container)")
         let factory = container.require(LoginViewModelFactory.self)
         let loginUseCase = factory.create()
         

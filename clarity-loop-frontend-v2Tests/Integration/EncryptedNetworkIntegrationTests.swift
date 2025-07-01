@@ -22,7 +22,7 @@ struct EncryptedNetworkIntegrationTests {
         // Configure mock to capture the request
         let requestCapture = RequestCapture()
         let mockSession = MockURLSession(onDataTask: { request in
-            Task { await requestCapture.capture(request) }
+            await requestCapture.capture(request)
             
             // Return mock encrypted response
             let responsePayload = EncryptedHealthPayload(
@@ -201,9 +201,9 @@ struct EncryptedNetworkIntegrationTests {
 // MARK: - Mock URLSession
 
 private final class MockURLSession: URLSessionProtocol {
-    let onDataTask: (@Sendable (URLRequest) throws -> (Data, URLResponse))?
+    let onDataTask: (@Sendable (URLRequest) async throws -> (Data, URLResponse))?
     
-    init(onDataTask: (@Sendable (URLRequest) throws -> (Data, URLResponse))? = nil) {
+    init(onDataTask: (@Sendable (URLRequest) async throws -> (Data, URLResponse))? = nil) {
         self.onDataTask = onDataTask
     }
     
@@ -211,7 +211,7 @@ private final class MockURLSession: URLSessionProtocol {
         guard let onDataTask = onDataTask else {
             throw URLError(.badServerResponse)
         }
-        return try onDataTask(request)
+        return try await onDataTask(request)
     }
 }
 
@@ -233,7 +233,7 @@ private final class EncryptionTestMockAuthService: AuthServiceProtocol {
     }
 }
 
-private final class EncryptionTestMockTokenStorage: TokenStorageProtocol, @unchecked Sendable {
+private actor EncryptionTestMockTokenStorage: TokenStorageProtocol {
     private var token: AuthToken?
     
     func saveToken(_ token: AuthToken) async throws {

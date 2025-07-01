@@ -15,6 +15,8 @@ targets:
     platform: iOS
     sources:
       - ClarityPulseWrapperApp.swift
+    resources:
+      - amplifyconfiguration.json
     dependencies:
       - package: ClarityPulse
         product: ClarityUI
@@ -36,9 +38,10 @@ targets:
       INFOPLIST_KEY_UILaunchStoryboardName: ""
       INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
       INFOPLIST_KEY_LSRequiresIPhoneOS: true
+      INFOPLIST_KEY_UIRequiresFullScreen: true
       INFOPLIST_KEY_CFBundleDisplayName: "CLARITY Pulse"
       CODE_SIGN_STYLE: Automatic
-      DEVELOPMENT_TEAM: 658T8WSC3R
+      DEVELOPMENT_TEAM: HJ7W9PTAD8
       PRODUCT_BUNDLE_IDENTIFIER: com.clarity.ClarityPulseWrapper
   
   ClarityPulseWrapperUITests:
@@ -54,7 +57,7 @@ targets:
       
 packages:
   ClarityPulse:
-    path: ..
+    path: /Users/ray/Desktop/CLARITY-DIGITAL-TWIN/clarity-loop-frontend-V2
   Amplify:
     url: https://github.com/aws-amplify/amplify-swift.git
     from: 2.48.1

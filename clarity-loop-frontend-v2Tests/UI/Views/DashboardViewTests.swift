@@ -14,22 +14,17 @@ import SwiftUI
 
 final class DashboardViewTests: XCTestCase {
     
-    func test_placeholder() {
-        // TODO: Re-enable these tests once we have a proper mocking strategy for @Observable classes
-        // The DashboardViewModel uses @Observable which is a final class and cannot be subclassed
-        // We need to either:
-        // 1. Create a protocol for DashboardViewModel and use that for mocking
-        // 2. Use a different mocking approach that works with @Observable
-        // 3. Write integration tests instead of unit tests for views
-        XCTAssertTrue(true, "Placeholder test until mocking strategy is resolved")
+    func test_placeholder() throws {
+        throw XCTSkip("Re-enable these tests once we have a proper mocking strategy for @Observable classes")
     }
     
     // MARK: - Dashboard Header Tests
     
     // TODO: Re-enable these tests once we have a proper mocking strategy for @Observable classes
-    /*
+    
     @MainActor
-    func test_dashboardView_shouldShowUserName_whenAppStateHasUser() {
+    func test_dashboardView_shouldShowUserName_whenAppStateHasUser() throws {
+        throw XCTSkip("Needs proper mocking strategy for @Observable classes")
         // Given
         let mockViewModel = createMockViewModel()
         let appState = AppState()
@@ -183,7 +178,7 @@ final class DashboardViewTests: XCTestCase {
         
         return viewModel
     }
-    */
+    
 }
 
 // MARK: - Mock Dashboard View Model
@@ -259,4 +254,4 @@ private struct MockDashboardViewModelFactory: DashboardViewModelFactory {
         return viewModel as! DashboardViewModel // This will fail at runtime, but we need a better approach
     }
 }
-*/
+

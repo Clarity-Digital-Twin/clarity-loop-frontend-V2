@@ -37,6 +37,18 @@ public final class DIContainer: @unchecked Sendable {
     private var services: [ServiceKey: ServiceEntry] = [:]
     private let lock = NSLock()
     
+    /// Expose registration count for debugging
+    public var registrations: [String: Any] {
+        lock.lock()
+        defer { lock.unlock() }
+        
+        var result: [String: Any] = [:]
+        for (key, _) in services {
+            result[key.type] = true
+        }
+        return result
+    }
+    
     // MARK: - Initialization
     
     public init() {}

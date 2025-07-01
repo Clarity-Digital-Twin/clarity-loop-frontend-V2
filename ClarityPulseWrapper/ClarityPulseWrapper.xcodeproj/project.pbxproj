@@ -197,7 +197,7 @@
 						TestTargetID = C09433A0BEC021A896AE7558;
 					};
 					C09433A0BEC021A896AE7558 = {
-						DevelopmentTeam = 658T8WSC3R;
+						DevelopmentTeam = HJ7W9PTAD8;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -214,7 +214,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				58CBC0B5AFC87EFEE6707F88 /* XCRemoteSwiftPackageReference "amplify-swift" */,
-				E057F6C592C2723D8DA68B12 /* XCLocalSwiftPackageReference ".." */,
+				28BB11ADFE6E5D6C48C8DA49 /* XCLocalSwiftPackageReference "/Users/ray/Desktop/CLARITY-DIGITAL-TWIN/clarity-loop-frontend-V2" */,
 			);
 			preferredProjectObjectVersion = 54;
 			projectDirPath = "";
@@ -268,12 +268,13 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 658T8WSC3R;
+				DEVELOPMENT_TEAM = HJ7W9PTAD8;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "CLARITY Pulse";
 				INFOPLIST_KEY_LSRequiresIPhoneOS = YES;
 				INFOPLIST_KEY_UIApplicationSupportsMultipleScenes = NO;
 				INFOPLIST_KEY_UILaunchStoryboardName = "";
+				INFOPLIST_KEY_UIRequiresFullScreen = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -383,12 +384,13 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 658T8WSC3R;
+				DEVELOPMENT_TEAM = HJ7W9PTAD8;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "CLARITY Pulse";
 				INFOPLIST_KEY_LSRequiresIPhoneOS = YES;
 				INFOPLIST_KEY_UIApplicationSupportsMultipleScenes = NO;
 				INFOPLIST_KEY_UILaunchStoryboardName = "";
+				INFOPLIST_KEY_UIRequiresFullScreen = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -498,9 +500,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		E057F6C592C2723D8DA68B12 /* XCLocalSwiftPackageReference ".." */ = {
+		28BB11ADFE6E5D6C48C8DA49 /* XCLocalSwiftPackageReference "/Users/ray/Desktop/CLARITY-DIGITAL-TWIN/clarity-loop-frontend-V2" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = ..;
+			relativePath = "/Users/ray/Desktop/CLARITY-DIGITAL-TWIN/clarity-loop-frontend-V2";
 		};
 /* End XCLocalSwiftPackageReference section */
 

@@ -369,29 +369,4 @@ private final class MockRequestInterceptor: RequestInterceptor, @unchecked Senda
     }
 }
 
-private final class MockTokenStorage: TokenStorageProtocol, @unchecked Sendable {
-    var mockAccessToken: String?
-    var mockToken: AuthToken?
-    var saveTokenCalled = false
-    var clearTokenCalled = false
-    
-    func saveToken(_ token: AuthToken) async throws {
-        saveTokenCalled = true
-        mockToken = token
-        mockAccessToken = token.accessToken
-    }
-    
-    func getToken() async throws -> AuthToken? {
-        return mockToken
-    }
-    
-    func getAccessToken() async throws -> String? {
-        return mockAccessToken
-    }
-    
-    func clearToken() async throws {
-        clearTokenCalled = true
-        mockToken = nil
-        mockAccessToken = nil
-    }
-}
+// Using shared mock from Shared/Mocks/SharedMockTokenStorage.swift

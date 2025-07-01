@@ -23,10 +23,16 @@ public final class AppDependencyConfigurator {
     public init() {}
     
     public func configure(_ container: Dependencies) {
+        print("AppDependencyConfigurator.configure() called")
         configureInfrastructure(container)
         configureDataLayer(container)
         configureDomainLayer(container)
         configureUILayer(container)
+        
+        // BRIDGE: Also configure legacy DIContainer to fix black screen issue
+        print("Configuring legacy container bridge...")
+        configureLegacyContainer(container)
+        print("Legacy container configured")
     }
     
     // MARK: - Infrastructure Configuration
@@ -136,6 +142,81 @@ public final class AppDependencyConfigurator {
         // ViewModels are created per-view, not registered in DI
         // They use @Environment to access dependencies
     }
+    
+    // MARK: - Legacy Container Bridge
+    
+    private func configureLegacyContainer(_ container: Dependencies) {
+        let legacyContainer = DIContainer.shared
+        print("Got legacy container: \(legacyContainer)")
+        
+        // Mirror all registrations to legacy container
+        
+        // Infrastructure
+        legacyContainer.register(NetworkServiceProtocol.self) { _ in
+            container.require(NetworkServiceProtocol.self)
+        }
+        
+        legacyContainer.register(APIClientProtocol.self) { _ in
+            container.require(APIClientProtocol.self)
+        }
+        
+        legacyContainer.register(KeychainServiceProtocol.self) { _ in
+            container.require(KeychainServiceProtocol.self)
+        }
+        
+        legacyContainer.register(BiometricAuthServiceProtocol.self) { _ in
+            container.require(BiometricAuthServiceProtocol.self)
+        }
+        
+        legacyContainer.register(TokenStorageProtocol.self) { _ in
+            container.require(TokenStorageProtocol.self)
+        }
+        
+        legacyContainer.register(AuthServiceProtocol.self) { _ in
+            container.require(AuthServiceProtocol.self)
+        }
+        
+        // Repositories
+        legacyContainer.register(UserRepositoryProtocol.self) { _ in
+            container.require(UserRepositoryProtocol.self)
+        }
+        
+        legacyContainer.register(HealthMetricRepositoryProtocol.self) { _ in
+            container.require(HealthMetricRepositoryProtocol.self)
+        }
+        
+        // Use Cases
+        legacyContainer.register(LoginUseCaseProtocol.self) { _ in
+            container.require(LoginUseCaseProtocol.self)
+        }
+        
+        legacyContainer.register(RecordHealthMetricUseCase.self) { _ in
+            container.require(RecordHealthMetricUseCase.self)
+        }
+        
+        // Model Container - Critical for app startup
+        legacyContainer.register(ModelContainer.self) { _ in
+            container.require(ModelContainer.self)
+        }
+        
+        legacyContainer.register(PersistenceServiceProtocol.self) { _ in
+            container.require(PersistenceServiceProtocol.self)
+        }
+        
+        // ViewModelFactories - these are what views actually require
+        legacyContainer.register(LoginViewModelFactory.self) { _ in
+            DefaultLoginViewModelFactory(
+                loginUseCase: container.require(LoginUseCaseProtocol.self)
+            )
+        }
+        
+        legacyContainer.register(DashboardViewModelFactory.self) { _ in
+            // Create factory without MainActor requirement
+            DefaultDashboardViewModelFactory(
+                healthMetricRepository: container.require(HealthMetricRepositoryProtocol.self)
+            )
+        }
+    }
 }
 
 // MARK: - SwiftUI Integration
@@ -161,12 +242,14 @@ public extension View {
 
 // MARK: - Amplify Configuration
 
-private protocol AmplifyConfigurable {
+public protocol AmplifyConfigurable {
     func configure() async throws
 }
 
-private final class AmplifyConfiguration: AmplifyConfigurable {
-    func configure() async throws {
+public final class AmplifyConfiguration: AmplifyConfigurable {
+    public init() {}
+    
+    public func configure() async throws {
         do {
             try Amplify.add(plugin: AWSCognitoAuthPlugin())
             try Amplify.add(plugin: AWSAPIPlugin())

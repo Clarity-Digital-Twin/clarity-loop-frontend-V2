@@ -41,7 +41,7 @@ let package = Package(
             path: "clarity-loop-frontend-v2/Core",
             exclude: ["README.md"]
         ),
-        
+
         // Domain module - Business logic and models
         .target(
             name: "ClarityDomain",
@@ -49,7 +49,7 @@ let package = Package(
             path: "clarity-loop-frontend-v2/Domain",
             exclude: ["README.md"]
         ),
-        
+
         // Data module - Repositories and data sources
         .target(
             name: "ClarityData",
@@ -63,7 +63,7 @@ let package = Package(
             path: "clarity-loop-frontend-v2/Data",
             exclude: ["README.md", "Infrastructure/README.md"]
         ),
-        
+
         // UI module - SwiftUI views and view models
         .target(
             name: "ClarityUI",
@@ -77,13 +77,13 @@ let package = Package(
             path: "clarity-loop-frontend-v2/UI",
             exclude: ["README.md"]
         ),
-        
+
         // Executable target - iOS App
         .executableTarget(
             name: "ClarityPulseApp",
             dependencies: [
                 "ClarityCore",
-                "ClarityDomain", 
+                "ClarityDomain",
                 "ClarityData",
                 "ClarityUI",
                 .product(name: "Amplify", package: "amplify-swift"),
@@ -92,22 +92,22 @@ let package = Package(
             ],
             path: "clarity-loop-frontend-v2",
             exclude: [
-                "clarity-loop-frontend-v2.entitlements", 
+                "clarity-loop-frontend-v2.entitlements",
                 "Config",
                 "amplifyconfiguration-setup.md",
                 "Core",
-                "Data", 
+                "Data",
                 "Domain",
                 "UI",
                 "Examples",
                 "Info.plist"
             ],
-            sources: ["ClarityPulseApp.swift", "AppDependencies.swift", "ContentView.swift"],
+            sources: ["ClarityPulseApp.swift", "ContentView.swift"],
             resources: [
                 .process("amplifyconfiguration.json")
             ]
         ),
-        
+
         // Test targets
         .testTarget(
             name: "ClarityDomainTests",
@@ -144,12 +144,12 @@ let package = Package(
             dependencies: ["ClarityCore", "ClarityDomain", "ClarityData", "ClarityUI"],
             path: "clarity-loop-frontend-v2Tests",
             exclude: [
-                "Domain", 
-                "Data", 
-                "UI", 
-                "Infrastructure", 
-                "Integration", 
-                "Core/Services/KeychainServiceTests.swift", 
+                "Domain",
+                "Data",
+                "UI",
+                "Infrastructure",
+                "Integration",
+                "Core/Services/KeychainServiceTests.swift",
                 "Core/Services/BiometricAuthServiceTests.swift",
                 "Core/Errors/AppErrorTests.swift",
                 "Core/Errors/ErrorHandlerTests.swift",

@@ -30,16 +30,7 @@ public struct LoginView: View {
         }
         .task {
             // Initialize viewModel from factory
-            print("🔍 LoginView.task - checking for factory...")
-            
-            guard let factory else {
-                print("❌ LoginViewModelFactory not provided via environment")
-                print("❌ This means .withDependencies() didn't inject the factory properly")
-                // Don't crash - just show loading forever
-                return
-            }
-            
-            print("✅ LoginViewModelFactory found, creating viewModel...")
+            print("🔍 LoginView.task - creating viewModel...")
             let loginUseCase = factory.create()
             viewModel = LoginViewModel(loginUseCase: loginUseCase)
             print("✅ LoginView viewModel created successfully")

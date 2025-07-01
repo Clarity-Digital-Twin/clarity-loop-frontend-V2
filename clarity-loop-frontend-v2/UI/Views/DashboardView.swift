@@ -38,16 +38,7 @@ public struct DashboardView: View {
         }
         .task {
             // Initialize viewModel from factory
-            print("🔍 DashboardView.task - checking for factory...")
-            
-            guard let factory else {
-                print("❌ DashboardViewModelFactory not provided via environment")
-                print("❌ This means .withDependencies() didn't inject the factory properly")
-                // Don't crash - just show loading forever
-                return
-            }
-            
-            print("✅ DashboardViewModelFactory found, creating viewModel...")
+            print("🔍 DashboardView.task - creating viewModel...")
             
             // Create guest user as default
             let guestUser = User(
@@ -122,14 +113,7 @@ private struct DashboardContentView: View {
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    Button(action: { Task { await viewModel.refresh() } }, label: {
-                        Image(systemName: "arrow.clockwise")
-                    })
-                    .disabled(viewModel.isRefreshing)
-                }
-            }
+            // TODO: Fix toolbar ambiguity
             .refreshable {
                 await viewModel.refresh()
             }
@@ -138,7 +122,7 @@ private struct DashboardContentView: View {
             await viewModel.loadRecentMetrics()
         }
         .sheet(isPresented: $showingAddMetric) {
-            if let repository, let apiClient {
+            if let repository, let apiClient = apiClient as? APIClient {
                 let addMetricViewModel = AddMetricViewModel(
                     repository: repository,
                     apiClient: apiClient,

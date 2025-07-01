@@ -25,7 +25,7 @@ public struct LoginView: View {
             } else {
                 ProgressView("Loading...")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color(.systemBackground))
+                    .background(Color(UIColor.systemBackground))
             }
         }
         .task {

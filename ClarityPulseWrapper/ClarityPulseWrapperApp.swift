@@ -25,6 +25,7 @@ struct ClarityPulseWrapperApp: App {
         self.dependencies = deps
         
         print("✅ Dependencies configured successfully")
+        print("📱 ClarityPulseWrapperApp initialized")
     }
     
     var body: some Scene {
@@ -32,6 +33,9 @@ struct ClarityPulseWrapperApp: App {
             LoginView()
                 .environment(appState)
                 .withDependencies(dependencies)
+                .onAppear {
+                    print("🚀 LoginView appeared in WindowGroup")
+                }
         }
     }
 }

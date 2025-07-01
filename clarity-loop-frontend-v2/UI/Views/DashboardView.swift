@@ -11,27 +11,59 @@ import ClarityCore
 import ClarityData
 
 public struct DashboardView: View {
-    @State private var viewModel: DashboardViewModel
+    @Environment(\.dashboardViewModelFactory) private var factory
+    @Environment(\.healthMetricRepository) private var repository
+    @Environment(\.apiClient) private var apiClient
+    @State private var viewModel: DashboardViewModel?
     @Environment(AppState.self) private var appState
     @State private var showingAddMetric = false
     
     public init() {
-        let container = DIContainer.shared
-        let factory = container.require(DashboardViewModelFactory.self)
-        
-        // Create guest user as default
-        let guestUser = User(
-            id: UUID(),
-            email: "guest@clarity.health",
-            firstName: "Guest",
-            lastName: "User"
-        )
-        
-        let vm = factory.create(guestUser)
-        self._viewModel = State(wrappedValue: vm)
+        // NO WORK IN INIT - dependencies resolved in .task
     }
     
     public var body: some View {
+        Group {
+            if let viewModel {
+                DashboardContentView(
+                    viewModel: viewModel,
+                    showingAddMetric: $showingAddMetric,
+                    repository: repository,
+                    apiClient: apiClient
+                )
+            } else {
+                ProgressView("Loading...")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+        .task {
+            // Initialize viewModel from factory
+            guard let factory else {
+                fatalError("DashboardViewModelFactory not provided via environment")
+            }
+            
+            // Create guest user as default
+            let guestUser = User(
+                id: UUID(),
+                email: "guest@clarity.health",
+                firstName: "Guest",
+                lastName: "User"
+            )
+            
+            viewModel = factory.create(guestUser)
+        }
+    }
+}
+
+// Separate view for dashboard content
+private struct DashboardContentView: View {
+    @Bindable var viewModel: DashboardViewModel
+    @Binding var showingAddMetric: Bool
+    let repository: HealthMetricRepositoryProtocol?
+    let apiClient: APIClientProtocol?
+    @Environment(AppState.self) private var appState
+    
+    var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 24) {
@@ -98,21 +130,22 @@ public struct DashboardView: View {
             await viewModel.loadRecentMetrics()
         }
         .sheet(isPresented: $showingAddMetric) {
-            let container = DIContainer.shared
-            let repository = container.require(HealthMetricRepositoryProtocol.self)
-            let apiClient = container.require(APIClient.self)
-            let addMetricViewModel = AddMetricViewModel(
-                repository: repository,
-                apiClient: apiClient,
-                userId: viewModel.user.id
-            )
-            AddMetricView(viewModel: addMetricViewModel)
-                .onDisappear {
-                    // Refresh metrics after adding
-                    Task {
-                        await viewModel.refresh()
+            if let repository, let apiClient {
+                let addMetricViewModel = AddMetricViewModel(
+                    repository: repository,
+                    apiClient: apiClient,
+                    userId: viewModel.user.id
+                )
+                AddMetricView(viewModel: addMetricViewModel)
+                    .onDisappear {
+                        // Refresh metrics after adding
+                        Task {
+                            await viewModel.refresh()
+                        }
                     }
-                }
+            } else {
+                Text("Error: Dependencies not available")
+            }
         }
         .overlay(alignment: .bottomTrailing) {
             // Floating Action Button

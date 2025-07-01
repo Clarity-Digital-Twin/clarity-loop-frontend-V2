@@ -11,6 +11,7 @@ import ClarityCore
 
 public struct ProfileView: View {
     @Environment(AppState.self) private var appState
+    @Environment(\.authService) private var authService
     @State private var showingLogoutAlert = false
     @State private var isLoggingOut = false
     
@@ -165,8 +166,11 @@ public struct ProfileView: View {
         
         Task {
             do {
-                let container = DIContainer.shared
-                let authService = container.require(AuthServiceProtocol.self)
+                guard let authService else {
+                    print("Error: AuthService not available")
+                    isLoggingOut = false
+                    return
+                }
                 
                 try await authService.logout()
                 

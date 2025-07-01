@@ -10,6 +10,7 @@ import ClarityDomain
 import ClarityCore
 
 public struct HealthMetricsView: View {
+    @Environment(\.healthMetricRepository) private var repository
     @State private var selectedMetricType: HealthMetricType = .heartRate
     @State private var metricValue: String = ""
     @State private var notes: String = ""
@@ -192,8 +193,14 @@ public struct HealthMetricsView: View {
         
         Task {
             do {
-                let container = DIContainer.shared
-                let repository = container.require(HealthMetricRepositoryProtocol.self)
+                guard let repository else {
+                    await MainActor.run {
+                        alertMessage = "Error: Health metric repository not available"
+                        showingAlert = true
+                        isLoading = false
+                    }
+                    return
+                }
                 
                 let metric = HealthMetric(
                     userId: userId,

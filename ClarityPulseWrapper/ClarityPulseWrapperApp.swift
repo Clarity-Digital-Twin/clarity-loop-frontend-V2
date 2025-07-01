@@ -18,14 +18,16 @@ struct ClarityPulseWrapperApp: App {
     private let dependencies = Dependencies()
     
     init() {
-        // Direct configuration to fix black screen immediately
-        DIContainerBridge.configureDirectly()
+        // Configure Dependencies properly - NO MORE BRIDGES!
+        let configurator = AppDependencyConfigurator()
+        configurator.configure(dependencies)
     }
     
     var body: some Scene {
         WindowGroup {
             LoginView()
                 .environment(appState)
+                .withDependencies(dependencies)
         }
     }
 }

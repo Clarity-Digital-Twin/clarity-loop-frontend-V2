@@ -11,23 +11,43 @@ import ClarityCore
 import ClarityData // For ErrorHandler access
 
 public struct LoginView: View {
-    @State private var viewModel: LoginViewModel
+    @Environment(\.loginViewModelFactory) private var factory
+    @State private var viewModel: LoginViewModel?
+    
+    public init() {
+        // NO WORK IN INIT - dependencies resolved in .task
+    }
+    
+    public var body: some View {
+        Group {
+            if let viewModel {
+                LoginContentView(viewModel: viewModel)
+            } else {
+                ProgressView("Loading...")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color(.systemBackground))
+            }
+        }
+        .task {
+            // Initialize viewModel from factory
+            guard let factory else {
+                fatalError("LoginViewModelFactory not provided via environment")
+            }
+            let loginUseCase = factory.create()
+            viewModel = LoginViewModel(loginUseCase: loginUseCase)
+        }
+    }
+}
+
+// Separate view that actually uses the viewModel
+private struct LoginContentView: View {
+    @Bindable var viewModel: LoginViewModel
     @Environment(AppState.self) private var appState
     @FocusState private var focusedField: Field?
     @State private var showingError = false
     @State private var errorPresentation: ErrorPresentation?
     
-    public init() {
-        print("LoginView init() called")
-        let container = DIContainer.shared
-        print("DIContainer.shared in LoginView: \(container)")
-        let factory = container.require(LoginViewModelFactory.self)
-        let loginUseCase = factory.create()
-        
-        self._viewModel = State(wrappedValue: LoginViewModel(loginUseCase: loginUseCase))
-    }
-    
-    public var body: some View {
+    var body: some View {
         NavigationStack {
             VStack(spacing: 24) {
                 // Logo/Header
@@ -195,9 +215,7 @@ public struct LoginView: View {
 
 // MARK: - Field Enum
 
-private extension LoginView {
-    enum Field: Hashable {
-        case email
-        case password
-    }
+private enum Field: Hashable {
+    case email
+    case password
 }

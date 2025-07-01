@@ -17,8 +17,8 @@ import ClarityData
 struct ClarityPulseApp: App {
     // MARK: - Properties
     
-    /// SwiftData model container
-    private let modelContainer: ModelContainer
+    /// Dependencies container
+    private let dependencies = Dependencies()
     
     /// App state management
     @State private var appState = AppState()
@@ -26,11 +26,9 @@ struct ClarityPulseApp: App {
     // MARK: - Initialization
     
     init() {
-        // Configure dependencies first
-        AppDependencies().configure()
-        
-        // Get the ModelContainer from DI
-        self.modelContainer = DIContainer.shared.require(ModelContainer.self)
+        // Configure dependencies properly
+        let configurator = AppDependencyConfigurator()
+        configurator.configure(dependencies)
     }
     
     // MARK: - Body
@@ -38,8 +36,8 @@ struct ClarityPulseApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
-                .modelContainer(modelContainer)
                 .environment(appState)
+                .withDependencies(dependencies)
         }
     }
 }

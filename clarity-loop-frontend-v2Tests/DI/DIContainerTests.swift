@@ -228,22 +228,7 @@ private final class MockRepository: MockRepositoryProtocol {
 
 // MARK: - Mock Implementations
 
-private final class MockAuthService: AuthServiceProtocol, @unchecked Sendable {
-    func login(email: String, password: String) async throws -> AuthToken {
-        AuthToken(accessToken: "mock", refreshToken: "mock", expiresIn: 3600)
-    }
-    
-    func logout() async throws {}
-    
-    func refreshToken(_ refreshToken: String) async throws -> AuthToken {
-        AuthToken(accessToken: "new", refreshToken: "new", expiresIn: 3600)
-    }
-    
-    @MainActor
-    func getCurrentUser() async throws -> User? {
-        User(id: UUID(), email: "test@example.com", firstName: "Test", lastName: "User")
-    }
-}
+// MockAuthService is imported from Shared/Mocks/SharedMockAuthService.swift
 
 private final class MockUserRepository: UserRepositoryProtocol, @unchecked Sendable {
     func create(_ user: User) async throws -> User { user }

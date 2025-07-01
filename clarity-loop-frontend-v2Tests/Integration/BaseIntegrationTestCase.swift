@@ -384,8 +384,7 @@ final class MockPersistenceService: PersistenceServiceProtocol, @unchecked Senda
     }
 }
 
-/// Mock auth service for integration tests
-final class MockAuthService: AuthServiceProtocol, @unchecked Sendable {
+// Using MockAuthService from Shared/Mocks/SharedMockAuthService.swift
     
     private actor Storage {
         private var mockAuthToken: AuthToken?

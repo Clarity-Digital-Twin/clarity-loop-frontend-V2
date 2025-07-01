@@ -162,7 +162,7 @@ let package = Package(
                 "Security/ComprehensiveSecurityTests.swift",
                 "Security/EncryptedHealthMetricTests.swift"
             ],
-            sources: ["DI/", "Architecture/", "Examples/", "Core/Security/"]
+            sources: ["DI/", "Architecture/", "Examples/", "Core/Security/", "Shared/"]
         ),
         // UI tests temporarily disabled due to Swift 6 concurrency issues
         // .testTarget(

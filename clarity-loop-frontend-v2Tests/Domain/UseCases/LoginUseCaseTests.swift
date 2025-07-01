@@ -12,42 +12,7 @@ final class LoginUseCaseTests: XCTestCase {
     
     // MARK: - Mocks
     
-    private final class MockAuthService: AuthServiceProtocol, @unchecked Sendable {
-        var shouldSucceed = true
-        var mockUser: User?
-        var loginCallCount = 0
-        
-        func login(email: String, password: String) async throws -> AuthToken {
-            loginCallCount += 1
-            
-            if !shouldSucceed {
-                throw NSError(domain: "MockAuth", code: 401, userInfo: [NSLocalizedDescriptionKey: "Invalid credentials"])
-            }
-            
-            return AuthToken(
-                accessToken: "mock-access-token",
-                refreshToken: "mock-refresh-token",
-                expiresIn: 3600
-            )
-        }
-        
-        func logout() async throws {
-            // Mock implementation
-        }
-        
-        func refreshToken(_ refreshToken: String) async throws -> AuthToken {
-            return AuthToken(
-                accessToken: "new-access-token",
-                refreshToken: "new-refresh-token",
-                expiresIn: 3600
-            )
-        }
-        
-        @MainActor
-        func getCurrentUser() async throws -> User? {
-            return mockUser
-        }
-    }
+    // Using MockAuthService from Shared/Mocks/SharedMockAuthService.swift
     
     private final class MockUserRepository: UserRepositoryProtocol, @unchecked Sendable {
         var users: [String: User] = [:]

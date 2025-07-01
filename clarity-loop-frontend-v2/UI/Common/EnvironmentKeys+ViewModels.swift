@@ -9,6 +9,7 @@ import SwiftUI
 import SwiftData
 import ClarityCore
 import ClarityDomain
+import ClarityData
 
 // MARK: - LoginViewModelFactory
 
@@ -52,39 +53,39 @@ private struct FatalErrorHealthMetricRepository: HealthMetricRepositoryProtocol 
     func create(_ metric: HealthMetric) async throws -> HealthMetric {
         fatalError("💥 HealthMetricRepositoryProtocol not injected - withDependencies() failed")
     }
-    
+
     func createBatch(_ metrics: [HealthMetric]) async throws -> [HealthMetric] {
         fatalError("💥 HealthMetricRepositoryProtocol not injected - withDependencies() failed")
     }
-    
+
     func findById(_ id: UUID) async throws -> HealthMetric? {
         fatalError("💥 HealthMetricRepositoryProtocol not injected - withDependencies() failed")
     }
-    
+
     func findByUserId(_ userId: UUID) async throws -> [HealthMetric] {
         fatalError("💥 HealthMetricRepositoryProtocol not injected - withDependencies() failed")
     }
-    
+
     func findByUserIdAndDateRange(userId: UUID, startDate: Date, endDate: Date) async throws -> [HealthMetric] {
         fatalError("💥 HealthMetricRepositoryProtocol not injected - withDependencies() failed")
     }
-    
+
     func findByUserIdAndType(userId: UUID, type: HealthMetricType) async throws -> [HealthMetric] {
         fatalError("💥 HealthMetricRepositoryProtocol not injected - withDependencies() failed")
     }
-    
+
     func update(_ metric: HealthMetric) async throws -> HealthMetric {
         fatalError("💥 HealthMetricRepositoryProtocol not injected - withDependencies() failed")
     }
-    
+
     func delete(_ id: UUID) async throws {
         fatalError("💥 HealthMetricRepositoryProtocol not injected - withDependencies() failed")
     }
-    
+
     func deleteAllForUser(_ userId: UUID) async throws {
         fatalError("💥 HealthMetricRepositoryProtocol not injected - withDependencies() failed")
     }
-    
+
     func getLatestByType(userId: UUID, type: HealthMetricType) async throws -> HealthMetric? {
         fatalError("💥 HealthMetricRepositoryProtocol not injected - withDependencies() failed")
     }
@@ -105,7 +106,7 @@ public extension View {
             .environment(\.persistenceService, deps.require(PersistenceServiceProtocol.self))
             .environment(\.modelContainer, deps.require(ModelContainer.self))
             .environment(\.loginUseCase, deps.require(LoginUseCaseProtocol.self))
-            // New factory keys  
+            // New factory keys
             .environment(\.loginViewModelFactory, deps.require(LoginViewModelFactory.self))
             .environment(\.dashboardViewModelFactory, deps.require(DashboardViewModelFactory.self))
     }

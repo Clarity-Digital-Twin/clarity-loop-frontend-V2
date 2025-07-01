@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 import ClarityDomain
 import ClarityCore
 import ClarityData // For ErrorHandler access

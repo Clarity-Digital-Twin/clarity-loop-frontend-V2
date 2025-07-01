@@ -22,9 +22,9 @@ final class LoginViewTests: XCTestCase {
         mockLoginUseCase.mockResult = .failure(AppError.auth(.invalidCredentials))
         let viewModel = LoginViewModel(loginUseCase: mockLoginUseCase)
         
-        // Create a test container
-        let container = DIContainer()
-        container.register(LoginViewModelFactory.self) { _ in
+        // Create a test dependencies container
+        let dependencies = Dependencies()
+        dependencies.register(LoginViewModelFactory.self) {
             MockLoginViewModelFactory(viewModel: viewModel)
         }
         

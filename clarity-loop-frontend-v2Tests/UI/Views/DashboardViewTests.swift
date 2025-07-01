@@ -30,9 +30,9 @@ final class DashboardViewTests: XCTestCase {
         let appState = AppState()
         appState.login(userId: UUID(), email: "test@example.com", name: "John Doe")
         
-        // Create test container
-        let container = DIContainer()
-        container.register(DashboardViewModelFactory.self) { _ in
+        // Create test dependencies
+        let dependencies = Dependencies()
+        dependencies.register(DashboardViewModelFactory.self) {
             MockDashboardViewModelFactory(viewModel: mockViewModel)
         }
         

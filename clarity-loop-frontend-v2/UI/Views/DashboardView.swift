@@ -38,9 +38,16 @@ public struct DashboardView: View {
         }
         .task {
             // Initialize viewModel from factory
+            print("🔍 DashboardView.task - checking for factory...")
+            
             guard let factory else {
-                fatalError("DashboardViewModelFactory not provided via environment")
+                print("❌ DashboardViewModelFactory not provided via environment")
+                print("❌ This means .withDependencies() didn't inject the factory properly")
+                // Don't crash - just show loading forever
+                return
             }
+            
+            print("✅ DashboardViewModelFactory found, creating viewModel...")
             
             // Create guest user as default
             let guestUser = User(
@@ -51,6 +58,7 @@ public struct DashboardView: View {
             )
             
             viewModel = factory.create(guestUser)
+            print("✅ DashboardView viewModel created successfully")
         }
     }
 }

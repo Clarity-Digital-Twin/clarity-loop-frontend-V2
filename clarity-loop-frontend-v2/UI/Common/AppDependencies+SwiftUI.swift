@@ -19,21 +19,48 @@ import ClarityData
 
 /// Configures all app dependencies for SwiftUI environment
 public final class AppDependencyConfigurator {
-    
+
     public init() {}
-    
+
     public func configure(_ container: Dependencies) {
-        print("AppDependencyConfigurator.configure() called")
+        print("🔧 AppDependencyConfigurator.configure() called")
         configureInfrastructure(container)
+        print("✅ Infrastructure configured")
         configureDataLayer(container)
+        print("✅ Data layer configured")
         configureDomainLayer(container)
+        print("✅ Domain layer configured")
         configureUILayer(container)
+        print("✅ UI layer configured")
+        print("🚀 All dependencies configured successfully")
     }
-    
+
     // MARK: - Infrastructure Configuration
-    
+
     private func configureInfrastructure(_ container: Dependencies) {
-        // Network Service
+        // Keychain Service (no dependencies)
+        container.register(KeychainServiceProtocol.self) {
+            KeychainService()
+        }
+
+        // Token Storage (depends on keychain only)
+        container.register(TokenStorageProtocol.self) {
+            TokenStorage(keychain: container.require(KeychainServiceProtocol.self))
+        }
+
+        // Biometric Auth Service (no dependencies)
+        container.register(BiometricAuthServiceProtocol.self) {
+            BiometricAuthService()
+        }
+
+        // Auth Service (depends on token storage only) - MOVED UP
+        container.register(AuthServiceProtocol.self) {
+            AmplifyAuthService(
+                tokenStorage: container.require(TokenStorageProtocol.self)
+            )
+        }
+
+        // Network Service (now can depend on auth service)
         container.register(NetworkServiceProtocol.self) {
             NetworkService(
                 baseURL: URL(string: "https://clarity.novamindnyc.com")!,
@@ -41,60 +68,38 @@ public final class AppDependencyConfigurator {
                 tokenStorage: container.require(TokenStorageProtocol.self)
             )
         }
-        
+
         // API Client - REAL implementation connected to backend!
         container.register(APIClientProtocol.self) {
             APIClient(networkService: container.require(NetworkServiceProtocol.self))
         }
-        
-        // Keychain Service
-        container.register(KeychainServiceProtocol.self) {
-            KeychainService()
-        }
-        
-        // Biometric Auth Service
-        container.register(BiometricAuthServiceProtocol.self) {
-            BiometricAuthService()
-        }
-        
-        // Token Storage
-        container.register(TokenStorageProtocol.self) {
-            TokenStorage(keychain: container.require(KeychainServiceProtocol.self))
-        }
-        
+
         // Model Container Factory
         container.register(ModelContainerFactory.self) {
             ModelContainerFactory()
         }
-        
+
         // Model Container
         container.register(ModelContainer.self) { dependencies in
             let factory = dependencies.require(ModelContainerFactory.self)
             return try! factory.createContainer()
         }
-        
+
         // Persistence
         container.register(PersistenceServiceProtocol.self) { dependencies in
             let modelContainer = dependencies.require(ModelContainer.self)
             return SwiftDataPersistence(container: modelContainer)
         }
-        
+
         // AWS Amplify Configuration
         container.register(AmplifyConfigurable.self) {
             AmplifyConfiguration()
         }
     }
-    
-    // MARK: - Data Layer Configuration
-    
+
+        // MARK: - Data Layer Configuration
+
     private func configureDataLayer(_ container: Dependencies) {
-        // Auth Service - Amplify Auth Service with Token Storage
-        container.register(AuthServiceProtocol.self) {
-            AmplifyAuthService(
-                tokenStorage: container.require(TokenStorageProtocol.self)
-            )
-        }
-        
         // User Repository
         container.register(UserRepositoryProtocol.self) { dependencies in
             UserRepositoryImplementation(
@@ -102,7 +107,7 @@ public final class AppDependencyConfigurator {
                 persistence: dependencies.require(PersistenceServiceProtocol.self)
             )
         }
-        
+
         // Health Metric Repository
         container.register(HealthMetricRepositoryProtocol.self) { dependencies in
             HealthMetricRepositoryImplementation(
@@ -111,9 +116,9 @@ public final class AppDependencyConfigurator {
             )
         }
     }
-    
+
     // MARK: - Domain Layer Configuration
-    
+
     private func configureDomainLayer(_ container: Dependencies) {
         // Login Use Case
         container.register(LoginUseCaseProtocol.self) { dependencies in
@@ -122,7 +127,7 @@ public final class AppDependencyConfigurator {
                 userRepository: dependencies.require(UserRepositoryProtocol.self)
             )
         }
-        
+
         // Record Health Metric Use Case
         container.register(RecordHealthMetricUseCase.self) { dependencies in
             RecordHealthMetricUseCase(
@@ -130,9 +135,9 @@ public final class AppDependencyConfigurator {
             )
         }
     }
-    
+
     // MARK: - UI Layer Configuration
-    
+
     private func configureUILayer(_ container: Dependencies) {
         // Register ViewModelFactories
         container.register(LoginViewModelFactory.self) { dependencies in
@@ -140,7 +145,7 @@ public final class AppDependencyConfigurator {
                 loginUseCase: dependencies.require(LoginUseCaseProtocol.self)
             )
         }
-        
+
         container.register(DashboardViewModelFactory.self) { dependencies in
             DefaultDashboardViewModelFactory(
                 healthMetricRepository: dependencies.require(HealthMetricRepositoryProtocol.self)
@@ -157,7 +162,7 @@ public extension View {
         let dependencies = Dependencies()
         let configurator = AppDependencyConfigurator()
         configurator.configure(dependencies)
-        
+
         return self
             .dependencies(dependencies)
             .authService(dependencies.require(AuthServiceProtocol.self))
@@ -178,7 +183,7 @@ public protocol AmplifyConfigurable {
 
 public final class AmplifyConfiguration: AmplifyConfigurable {
     public init() {}
-    
+
     public func configure() async throws {
         do {
             try Amplify.add(plugin: AWSCognitoAuthPlugin())
@@ -194,57 +199,57 @@ public final class AmplifyConfiguration: AmplifyConfigurable {
 // MARK: - Amplify Auth Service
 
 final class AmplifyAuthService: AuthServiceProtocol {
-    
+
     private let tokenStorage: TokenStorageProtocol
-    
+
     init(tokenStorage: TokenStorageProtocol) {
         self.tokenStorage = tokenStorage
     }
-    
+
     func login(email: String, password: String) async throws -> AuthToken {
         let result = try await Amplify.Auth.signIn(username: email, password: password)
-        
+
         guard result.isSignedIn else {
             throw AuthError.invalidCredentials
         }
-        
+
         // Get session tokens from AWS Cognito
         let session = try await Amplify.Auth.fetchAuthSession()
-        
+
         // Cast to AuthCognitoTokensProvider to get tokens
         guard let cognitoTokenProvider = session as? AuthCognitoTokensProvider else {
             throw NSError(domain: "AmplifyAuth", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to retrieve Cognito session"])
         }
-        
+
         // Get the user pool tokens
         let tokens = try cognitoTokenProvider.getCognitoTokens().get()
-        
+
         let authToken = AuthToken(
             accessToken: tokens.accessToken,
             refreshToken: tokens.refreshToken,
             expiresIn: 3600 // AWS Cognito default
         )
-        
+
         // Store the token
         try await tokenStorage.saveToken(authToken)
-        
+
         return authToken
     }
-    
+
     func logout() async throws {
         _ = await Amplify.Auth.signOut()
         try await tokenStorage.clearToken()
     }
-    
+
     func refreshToken(_ refreshToken: String) async throws -> AuthToken {
         // Force refresh the session
         let session = try await Amplify.Auth.fetchAuthSession(options: .forceRefresh())
-        
+
         // Cast to AuthCognitoTokensProvider to get tokens
         guard let cognitoTokenProvider = session as? AuthCognitoTokensProvider else {
             throw NSError(domain: "AmplifyAuth", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to retrieve Cognito session"])
         }
-        
+
         // Get the refreshed tokens
         do {
             let tokens = try cognitoTokenProvider.getCognitoTokens().get()
@@ -257,16 +262,16 @@ final class AmplifyAuthService: AuthServiceProtocol {
             throw AuthError.tokenExpired
         }
     }
-    
+
     @MainActor
     func getCurrentUser() async throws -> User? {
         let attributes = try await Amplify.Auth.fetchUserAttributes()
-        
+
         var email: String?
         var firstName: String?
         var lastName: String?
         var userId: String?
-        
+
         for attribute in attributes {
             switch attribute.key {
             case .email:
@@ -281,13 +286,13 @@ final class AmplifyAuthService: AuthServiceProtocol {
                 break
             }
         }
-        
+
         guard let email = email,
               let userId = userId,
               let uuid = UUID(uuidString: userId) else {
             return nil
         }
-        
+
         return User(
             id: uuid,
             email: email,

@@ -20,20 +20,35 @@ public struct LoginView: View {
 
     public var body: some View {
         VStack {
+            Text("🟡 LoginView is rendering")
+                .foregroundColor(.orange)
+                .padding()
+
             if let viewModel {
                 LoginContentView(viewModel: viewModel)
             } else {
-                ProgressView("Loading...")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(.background)
+                VStack {
+                    Text("⏳ Creating ViewModel...")
+                        .foregroundColor(.blue)
+                    ProgressView("Loading...")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(.background)
+                }
             }
         }
         .task {
             // Initialize viewModel from factory
             print("🔍 LoginView.task - creating viewModel...")
-            let loginUseCase = factory.create()
-            viewModel = LoginViewModel(loginUseCase: loginUseCase)
-            print("✅ LoginView viewModel created successfully")
+            print("🔍 Factory type: \(type(of: factory))")
+
+            do {
+                let loginUseCase = factory.create()
+                print("🔍 LoginUseCase created: \(type(of: loginUseCase))")
+                viewModel = LoginViewModel(loginUseCase: loginUseCase)
+                print("✅ LoginView viewModel created successfully")
+            } catch {
+                print("💥 ERROR creating viewModel: \(error)")
+            }
         }
     }
 }

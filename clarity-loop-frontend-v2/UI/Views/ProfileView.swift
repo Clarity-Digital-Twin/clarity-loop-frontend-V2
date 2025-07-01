@@ -14,9 +14,9 @@ public struct ProfileView: View {
     @Environment(\.authService) private var authService
     @State private var showingLogoutAlert = false
     @State private var isLoggingOut = false
-    
+
     public init() {}
-    
+
     public var body: some View {
         NavigationStack {
             List {
@@ -27,12 +27,12 @@ public struct ProfileView: View {
                         Image(systemName: "person.circle.fill")
                             .font(.system(size: 80))
                             .foregroundColor(.accentColor)
-                        
+
                         // User Name
                         Text(appState.currentUserName ?? "User")
                             .font(.title2)
                             .fontWeight(.semibold)
-                        
+
                         // Email
                         Text(appState.currentUserEmail ?? "user@example.com")
                             .font(.subheadline)
@@ -42,20 +42,20 @@ public struct ProfileView: View {
                     .padding(.vertical)
                 }
                 .listRowBackground(Color.clear)
-                
+
                 // Account Details
                 Section("Account Details") {
                     DetailRow(label: "Email", value: appState.currentUserEmail ?? "user@example.com")
                     DetailRow(label: "First Name", value: appState.currentUserName?.components(separatedBy: " ").first ?? "User")
                     DetailRow(label: "Last Name", value: appState.currentUserName?.components(separatedBy: " ").last ?? "")
-                    
+
                     // TODO: Add date of birth when stored in AppState
-                    
+
                     // TODO: Add phone number when stored in AppState
-                    
+
                     DetailRow(label: "Member Since", value: "January 2025")
                 }
-                
+
                 // Settings Section
                 Section("Settings") {
                     NavigationLink(destination: Text("Notifications Settings")) {
@@ -65,7 +65,7 @@ public struct ProfileView: View {
                             color: .red
                         )
                     }
-                    
+
                     NavigationLink(destination: Text("Privacy Settings")) {
                         SettingsRow(
                             icon: "lock",
@@ -73,7 +73,7 @@ public struct ProfileView: View {
                             color: .blue
                         )
                     }
-                    
+
                     NavigationLink(destination: Text("Health Data Sources")) {
                         SettingsRow(
                             icon: "heart.text.square",
@@ -81,7 +81,7 @@ public struct ProfileView: View {
                             color: .pink
                         )
                     }
-                    
+
                     NavigationLink(destination: Text("Export Data")) {
                         SettingsRow(
                             icon: "square.and.arrow.up",
@@ -90,7 +90,7 @@ public struct ProfileView: View {
                         )
                     }
                 }
-                
+
                 // Support Section
                 Section("Support") {
                     NavigationLink(destination: Text("Help Center")) {
@@ -100,7 +100,7 @@ public struct ProfileView: View {
                             color: .orange
                         )
                     }
-                    
+
                     NavigationLink(destination: Text("Terms of Service")) {
                         SettingsRow(
                             icon: "doc.text",
@@ -108,7 +108,7 @@ public struct ProfileView: View {
                             color: .gray
                         )
                     }
-                    
+
                     NavigationLink(destination: Text("Privacy Policy")) {
                         SettingsRow(
                             icon: "shield",
@@ -117,7 +117,7 @@ public struct ProfileView: View {
                         )
                     }
                 }
-                
+
                 // Danger Zone
                 Section {
                     Button(action: { showingLogoutAlert = true }) {
@@ -130,7 +130,7 @@ public struct ProfileView: View {
                                 Image(systemName: "rectangle.portrait.and.arrow.right")
                                     .foregroundColor(.red)
                             }
-                            
+
                             Text("Sign Out")
                                 .foregroundColor(.red)
                         }
@@ -152,28 +152,22 @@ public struct ProfileView: View {
             Text("Are you sure you want to sign out?")
         }
     }
-    
+
     // MARK: - Helper Functions
-    
+
     private func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         return formatter.string(from: date)
     }
-    
+
     private func performLogout() {
         isLoggingOut = true
-        
+
         Task {
             do {
-                guard let authService else {
-                    print("Error: AuthService not available")
-                    isLoggingOut = false
-                    return
-                }
-                
                 try await authService.logout()
-                
+
                 await MainActor.run {
                     appState.logout()
                     isLoggingOut = false
@@ -194,14 +188,14 @@ public struct ProfileView: View {
 struct DetailRow: View {
     let label: String
     let value: String
-    
+
     var body: some View {
         HStack {
             Text(label)
                 .foregroundColor(.secondary)
-            
+
             Spacer()
-            
+
             Text(value)
                 .foregroundColor(.primary)
         }
@@ -212,17 +206,17 @@ struct SettingsRow: View {
     let icon: String
     let title: String
     let color: Color
-    
+
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 20))
                 .foregroundColor(color)
                 .frame(width: 30)
-            
+
             Text(title)
                 .foregroundColor(.primary)
-            
+
             Spacer()
         }
     }

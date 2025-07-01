@@ -13,13 +13,13 @@ import ClarityData // For ErrorHandler access
 public struct LoginView: View {
     @Environment(\.loginViewModelFactory) private var factory
     @State private var viewModel: LoginViewModel?
-    
+
     public init() {
         // NO WORK IN INIT - dependencies resolved in .task
     }
-    
+
     public var body: some View {
-        Group {
+        VStack {
             if let viewModel {
                 LoginContentView(viewModel: viewModel)
             } else {
@@ -45,7 +45,7 @@ private struct LoginContentView: View {
     @FocusState private var focusedField: Field?
     @State private var showingError = false
     @State private var errorPresentation: ErrorPresentation?
-    
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 24) {
@@ -54,19 +54,19 @@ private struct LoginContentView: View {
                     Image(systemName: "heart.circle.fill")
                         .font(.system(size: 80))
                         .foregroundColor(.accentColor)
-                    
+
                     Text("CLARITY Pulse")
                         .font(.largeTitle)
                         .fontWeight(.bold)
-                    
+
                     Text("Your Health Companion")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
                 .padding(.top, 60)
-                
+
                 Spacer()
-                
+
                 // Login Form
                 VStack(spacing: 16) {
                     // Email Field
@@ -74,7 +74,7 @@ private struct LoginContentView: View {
                         Text("Email")
                             .font(.caption)
                             .foregroundColor(.secondary)
-                        
+
                         TextField("Enter your email", text: $viewModel.email)
                             .textFieldStyle(.roundedBorder)
                             #if os(iOS)
@@ -83,35 +83,35 @@ private struct LoginContentView: View {
                             .disabled(viewModel.viewState.isLoading)
                             .focused($focusedField, equals: Field.email)
                     }
-                    
+
                     // Password Field
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Password")
                             .font(.caption)
                             .foregroundColor(.secondary)
-                        
+
                         SecureField("Enter your password", text: $viewModel.password)
                             .textFieldStyle(.roundedBorder)
                             .disabled(viewModel.viewState.isLoading)
                             .focused($focusedField, equals: Field.password)
                     }
-                    
+
                     // Error Message
                     if case .error(let message) = viewModel.viewState {
                         HStack {
                             Image(systemName: "exclamationmark.circle.fill")
                                 .foregroundColor(.red)
-                            
+
                             Text(message.localizedDescription)
                                 .font(.caption)
                                 .foregroundColor(.red)
-                            
+
                             Spacer()
                         }
                         .padding(.horizontal, 4)
                         .transition(.opacity)
                     }
-                    
+
                     // Login Button
                     Button(action: { Task { await performLogin() } }) {
                         HStack {
@@ -130,7 +130,7 @@ private struct LoginContentView: View {
                         .cornerRadius(10)
                     }
                     .disabled(!viewModel.isLoginButtonEnabled)
-                    
+
                     // Forgot Password
                     Button("Forgot Password?") {
                         // TODO: Implement forgot password
@@ -139,14 +139,14 @@ private struct LoginContentView: View {
                     .foregroundColor(.accentColor)
                 }
                 .padding(.horizontal, 32)
-                
+
                 Spacer()
-                
+
                 // Sign Up Link
                 HStack {
                     Text("Don't have an account?")
                         .foregroundColor(.secondary)
-                    
+
                     Button("Sign Up") {
                         // TODO: Navigate to sign up
                     }
@@ -202,11 +202,11 @@ private struct LoginContentView: View {
             Text(presentation.message)
         }
     }
-    
+
     private func performLogin() async {
         // Hide keyboard
         focusedField = nil
-        
+
         // Perform login
         await viewModel.login()
     }

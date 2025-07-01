@@ -17,10 +17,10 @@ public struct HealthMetricsView: View {
     @State private var showingAlert = false
     @State private var alertMessage = ""
     @State private var isLoading = false
-    
+
     // TODO: Add AppState when implemented
     // @EnvironmentObject private var appState: AppState
-    
+
     private let metricTypes: [HealthMetricType] = [
         .heartRate,
         .steps,
@@ -37,9 +37,9 @@ public struct HealthMetricsView: View {
         .waterIntake,
         .exerciseDuration
     ]
-    
+
     public init() {}
-    
+
     public var body: some View {
         NavigationStack {
             ScrollView {
@@ -48,7 +48,7 @@ public struct HealthMetricsView: View {
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Metric Type")
                             .font(.headline)
-                        
+
                         Menu {
                             ForEach(metricTypes, id: \.self) { type in
                                 Button(type.displayName) {
@@ -60,9 +60,9 @@ public struct HealthMetricsView: View {
                             HStack {
                                 Text(selectedMetricType.displayName)
                                     .foregroundColor(.primary)
-                                
+
                                 Spacer()
-                                
+
                                 Image(systemName: "chevron.down")
                                     .foregroundColor(.secondary)
                             }
@@ -71,33 +71,33 @@ public struct HealthMetricsView: View {
                             .cornerRadius(10)
                         }
                     }
-                    
+
                     // Value Input
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Value")
                             .font(.headline)
-                        
+
                         HStack {
                             TextField(placeholderText, text: $metricValue)
                                 .textFieldStyle(.roundedBorder)
-                            
+
                             Text(unitText)
                                 .foregroundColor(.secondary)
                         }
                     }
-                    
+
                     // Notes
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Notes (Optional)")
                             .font(.headline)
-                        
+
                         TextEditor(text: $notes)
                             .frame(height: 100)
                             .padding(8)
                             .background(Color.gray.opacity(0.1))
                             .cornerRadius(10)
                     }
-                    
+
                     // Submit Button
                     Button(action: submitMetric) {
                         HStack {
@@ -117,13 +117,13 @@ public struct HealthMetricsView: View {
                         .cornerRadius(10)
                     }
                     .disabled(!submitButtonEnabled || isLoading)
-                    
+
                     // Recent Entries
                     VStack(alignment: .leading, spacing: 16) {
                         Text("Recent Entries")
                             .font(.headline)
                             .padding(.top)
-                        
+
                         Text("Recent entries will be displayed here")
                             .foregroundColor(.secondary)
                             .font(.caption)
@@ -151,9 +151,9 @@ public struct HealthMetricsView: View {
             Text(alertMessage)
         }
     }
-    
+
     // MARK: - Helper Properties
-    
+
     private var placeholderText: String {
         switch selectedMetricType {
         case .heartRate: return "e.g., 72"
@@ -172,36 +172,27 @@ public struct HealthMetricsView: View {
         default: return "Enter value"
         }
     }
-    
+
     private var unitText: String {
         selectedMetricType.unit
     }
-    
+
     private var submitButtonEnabled: Bool {
         !metricValue.isEmpty && Double(metricValue) != nil
     }
-    
+
     // MARK: - Actions
-    
+
     private func submitMetric() {
         guard let value = Double(metricValue) else { return }
-        
+
         // TODO: Get userId from appState when implemented
         let userId = UUID() // Temporary placeholder
-        
+
         isLoading = true
-        
+
         Task {
             do {
-                guard let repository else {
-                    await MainActor.run {
-                        alertMessage = "Error: Health metric repository not available"
-                        showingAlert = true
-                        isLoading = false
-                    }
-                    return
-                }
-                
                 let metric = HealthMetric(
                     userId: userId,
                     type: selectedMetricType,
@@ -211,9 +202,9 @@ public struct HealthMetricsView: View {
                     source: .manual,
                     notes: notes.isEmpty ? nil : notes
                 )
-                
+
                 _ = try await repository.create(metric)
-                
+
                 await MainActor.run {
                     alertMessage = "Successfully recorded \(selectedMetricType.displayName): \(value) \(unitText)"
                     showingAlert = true
@@ -228,7 +219,7 @@ public struct HealthMetricsView: View {
             }
         }
     }
-    
+
     private func clearForm() {
         metricValue = ""
         notes = ""
@@ -246,7 +237,7 @@ private extension HealthMetricType {
             return false
         }
     }
-    
+
     var unit: String {
         switch self {
         case .heartRate: return "BPM"
@@ -265,7 +256,7 @@ private extension HealthMetricType {
         case .custom: return ""
         }
     }
-    
+
     var displayName: String {
         switch self {
         case .heartRate: return "Heart Rate"

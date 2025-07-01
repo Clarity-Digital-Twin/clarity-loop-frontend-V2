@@ -26,9 +26,9 @@ import ClarityData
 /// ```
 public struct DependencyInjectedApp: View {
     @StateObject private var dependencies = Dependencies()
-    
+
     public init() {}
-    
+
     public var body: some View {
         ContentView()
             .onAppear {
@@ -46,15 +46,13 @@ private struct ContentView: View {
     @Environment(\.dependencies) private var dependencies
     @Environment(\.authService) private var authService
     @Environment(\.userRepository) private var userRepository
-    
+
     var body: some View {
         Text("Dependencies Configured")
             .onAppear {
                 // Example of accessing dependencies
-                if let auth = authService {
-                    print("Auth service available: \(type(of: auth))")
-                }
-                
+                print("Auth service available: \(type(of: authService))")
+
                 // Or through the container
                 if let repo = dependencies.resolve(UserRepositoryProtocol.self) {
                     print("User repository available: \(type(of: repo))")
@@ -68,18 +66,18 @@ private struct ContentView: View {
 /// Example of creating ViewModels with dependencies from environment
 public struct ViewModelFactory {
     let dependencies: Dependencies
-    
+
     public init(dependencies: Dependencies) {
         self.dependencies = dependencies
     }
-    
+
     @MainActor
     public func makeLoginViewModel() -> LoginViewModel {
         LoginViewModel(
             loginUseCase: dependencies.require(LoginUseCaseProtocol.self)
         )
     }
-    
+
     @MainActor
     public func makeDashboardViewModel(for user: User) -> DashboardViewModel {
         DashboardViewModel(
@@ -115,19 +113,19 @@ public extension Dependencies {
     /// Create test dependencies with mocked services
     static func test(configure: (Dependencies) -> Void = { _ in }) -> Dependencies {
         let dependencies = Dependencies()
-        
+
         // Register default test doubles
         dependencies.register(APIClientProtocol.self) {
             MockAPIClient()
         }
-        
+
         dependencies.register(PersistenceServiceProtocol.self) {
             MockPersistenceService()
         }
-        
+
         // Allow custom configuration
         configure(dependencies)
-        
+
         return dependencies
     }
 }
@@ -138,19 +136,19 @@ private struct MockAPIClient: APIClientProtocol {
     func get<T: Decodable>(_ endpoint: String, parameters: [String: String]?) async throws -> T {
         throw NetworkError.offline
     }
-    
+
     func post<T: Decodable, U: Encodable>(_ endpoint: String, body: U) async throws -> T {
         throw NetworkError.offline
     }
-    
+
     func put<T: Decodable, U: Encodable>(_ endpoint: String, body: U) async throws -> T {
         throw NetworkError.offline
     }
-    
+
     func delete<T: Decodable>(_ endpoint: String) async throws -> T {
         throw NetworkError.offline
     }
-    
+
     func delete<T: Identifiable>(type: T.Type, id: T.ID) async throws {
         throw NetworkError.offline
     }

@@ -13,7 +13,7 @@ import ClarityData
 // MARK: - Auth Service Key
 
 public struct AuthServiceKey: EnvironmentKey {
-    nonisolated(unsafe) public static let defaultValue: AuthServiceProtocol = FatalErrorAuthService()
+    public static let defaultValue: AuthServiceProtocol = FatalErrorAuthService()
 }
 
 public extension EnvironmentValues {
@@ -45,7 +45,7 @@ private struct FatalErrorAuthService: AuthServiceProtocol {
 // MARK: - User Repository Key
 
 public struct UserRepositoryKey: EnvironmentKey {
-    nonisolated(unsafe) public static let defaultValue: UserRepositoryProtocol = FatalErrorUserRepository()
+    public static let defaultValue: UserRepositoryProtocol = FatalErrorUserRepository()
 }
 
 public extension EnvironmentValues {
@@ -76,12 +76,16 @@ private struct FatalErrorUserRepository: UserRepositoryProtocol {
     func findByEmail(_ email: String) async throws -> User? {
         fatalError("💥 UserRepositoryProtocol not injected - withDependencies() failed")
     }
+
+    func findAll() async throws -> [User] {
+        fatalError("💥 UserRepositoryProtocol not injected - withDependencies() failed")
+    }
 }
 
 // MARK: - Health Metric Repository Key
 
 public struct HealthMetricRepositoryKey: EnvironmentKey {
-    nonisolated(unsafe) public static let defaultValue: HealthMetricRepositoryProtocol = FatalErrorHealthMetricRepository2()
+    public static let defaultValue: HealthMetricRepositoryProtocol = FatalErrorHealthMetricRepository2()
 }
 
 public extension EnvironmentValues {
@@ -137,7 +141,7 @@ private struct FatalErrorHealthMetricRepository2: HealthMetricRepositoryProtocol
 // MARK: - API Client Key
 
 public struct APIClientKey: EnvironmentKey {
-    nonisolated(unsafe) public static let defaultValue: APIClientProtocol = FatalErrorAPIClient()
+    public static let defaultValue: APIClientProtocol = FatalErrorAPIClient()
 }
 
 public extension EnvironmentValues {
@@ -149,7 +153,23 @@ public extension EnvironmentValues {
 
 // Fatal error placeholder for missing dependency
 private struct FatalErrorAPIClient: APIClientProtocol {
-    func request<T: Codable>(_ endpoint: APIEndpoint, responseType: T.Type) async throws -> T {
+    func get<T: Decodable>(_ endpoint: String, parameters: [String : String]?) async throws -> T {
+        fatalError("💥 APIClientProtocol not injected - withDependencies() failed")
+    }
+
+    func post<T: Decodable, U: Encodable>(_ endpoint: String, body: U) async throws -> T {
+        fatalError("💥 APIClientProtocol not injected - withDependencies() failed")
+    }
+
+    func put<T: Decodable, U: Encodable>(_ endpoint: String, body: U) async throws -> T {
+        fatalError("💥 APIClientProtocol not injected - withDependencies() failed")
+    }
+
+    func delete<T: Decodable>(_ endpoint: String) async throws -> T {
+        fatalError("💥 APIClientProtocol not injected - withDependencies() failed")
+    }
+
+    func delete<T: Identifiable>(type: T.Type, id: T.ID) async throws {
         fatalError("💥 APIClientProtocol not injected - withDependencies() failed")
     }
 }
@@ -157,7 +177,7 @@ private struct FatalErrorAPIClient: APIClientProtocol {
 // MARK: - Persistence Service Key
 
 public struct PersistenceServiceKey: EnvironmentKey {
-    nonisolated(unsafe) public static let defaultValue: PersistenceServiceProtocol = FatalErrorPersistenceService()
+    public static let defaultValue: PersistenceServiceProtocol = FatalErrorPersistenceService()
 }
 
 public extension EnvironmentValues {
@@ -169,15 +189,19 @@ public extension EnvironmentValues {
 
 // Fatal error placeholder for missing dependency
 private struct FatalErrorPersistenceService: PersistenceServiceProtocol {
-    func save<T: PersistentModel>(_ model: T) async throws {
+    func save<T: Identifiable>(_ object: T) async throws {
         fatalError("💥 PersistenceServiceProtocol not injected - withDependencies() failed")
     }
 
-    func fetch<T: PersistentModel>(_ type: T.Type, predicate: Predicate<T>?) async throws -> [T] {
+    func fetch<T: Identifiable>(_ id: T.ID) async throws -> T? {
         fatalError("💥 PersistenceServiceProtocol not injected - withDependencies() failed")
     }
 
-    func delete<T: PersistentModel>(_ model: T) async throws {
+    func delete<T: Identifiable>(type: T.Type, id: T.ID) async throws {
+        fatalError("💥 PersistenceServiceProtocol not injected - withDependencies() failed")
+    }
+
+    func fetchAll<T: Identifiable>() async throws -> [T] {
         fatalError("💥 PersistenceServiceProtocol not injected - withDependencies() failed")
     }
 }
@@ -185,7 +209,7 @@ private struct FatalErrorPersistenceService: PersistenceServiceProtocol {
 // MARK: - Model Container Key
 
 public struct ModelContainerKey: EnvironmentKey {
-    nonisolated(unsafe) public static let defaultValue: ModelContainer = FatalErrorModelContainer()
+    public static let defaultValue: ModelContainer = FatalErrorModelContainer()
 }
 
 public extension EnvironmentValues {
@@ -203,7 +227,7 @@ private func FatalErrorModelContainer() -> ModelContainer {
 // MARK: - Login Use Case Key
 
 public struct LoginUseCaseKey: EnvironmentKey {
-    nonisolated(unsafe) public static let defaultValue: LoginUseCaseProtocol = FatalErrorLoginUseCase2()
+    public static let defaultValue: LoginUseCaseProtocol = FatalErrorLoginUseCase2()
 }
 
 public extension EnvironmentValues {

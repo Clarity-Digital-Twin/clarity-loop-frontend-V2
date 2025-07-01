@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import UIKit
 import ClarityDomain
 import ClarityCore
 import ClarityData // For ErrorHandler access
@@ -26,7 +25,7 @@ public struct LoginView: View {
             } else {
                 ProgressView("Loading...")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color(UIColor.systemBackground))
+                    .background(.background)
             }
         }
         .task {

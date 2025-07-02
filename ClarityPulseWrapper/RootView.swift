@@ -20,8 +20,23 @@ struct RootView: View {
     let appState: AppState
     
     var body: some View {
-        Group {
-            if isInitializing {
+        ZStack {
+            // Debug overlay
+            VStack {
+                HStack {
+                    Text("showLoginView: \(showLoginView ? "true" : "false")")
+                        .foregroundColor(.red)
+                        .padding(5)
+                        .background(Color.white.opacity(0.8))
+                        .cornerRadius(5)
+                    Spacer()
+                }
+                Spacer()
+            }
+            .zIndex(999)
+            
+            Group {
+                if isInitializing {
                 // Initialization screen
                 VStack(spacing: 20) {
                     ProgressView()
@@ -51,11 +66,13 @@ struct RootView: View {
                 .background(Color(.systemBackground))
             } else if showLoginView {
                 // Login view - inject dependencies properly
+                let _ = print("🚀 Showing LoginView now! showLoginView = \(showLoginView)")
                 LoginView(dependencies: dependencies)
                     .environment(appState)
                     .withDependencies(dependencies)
                     .onAppear {
                         print("🔍 LoginView container appeared")
+                        print("🔍 Dependencies type: \(type(of: dependencies))")
                     }
             } else {
                 // Landing view
@@ -80,9 +97,7 @@ struct RootView: View {
                         print("🔘 Button tapped - showing LoginView")
                         print("🔘 Current showLoginView state: \(showLoginView)")
                         
-                        // Test dependency before navigation
-                        let factory = dependencies.require(LoginViewModelFactory.self)
-                        print("✅ Factory available: \(type(of: factory))")
+                        // Just navigate - let LoginView handle dependency resolution
                         showLoginView = true
                         print("🔘 New showLoginView state: \(showLoginView)")
                     }
@@ -91,6 +106,7 @@ struct RootView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color(.systemBackground))
+            }
             }
         }
         .task {

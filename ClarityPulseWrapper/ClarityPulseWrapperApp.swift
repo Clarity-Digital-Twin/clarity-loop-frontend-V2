@@ -44,7 +44,7 @@ struct ClarityPulseWrapperApp: App {
             // Use RootView which handles Amplify configuration and navigation
             RootView(dependencies: dependencies, appState: appState)
                 .environment(appState)
-                .environmentObject(dependencies)
+                .environment(\.dependencies, dependencies)
                 .onAppear {
                     print("🎯 RootView appeared")
                 }

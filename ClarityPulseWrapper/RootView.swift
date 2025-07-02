@@ -20,23 +20,8 @@ struct RootView: View {
     let appState: AppState
     
     var body: some View {
-        ZStack {
-            // Debug overlay
-            VStack {
-                HStack {
-                    Text("showLoginView: \(showLoginView ? "true" : "false")")
-                        .foregroundColor(.red)
-                        .padding(5)
-                        .background(Color.white.opacity(0.8))
-                        .cornerRadius(5)
-                    Spacer()
-                }
-                Spacer()
-            }
-            .zIndex(999)
-            
-            Group {
-                if isInitializing {
+        Group {
+            if isInitializing {
                 // Initialization screen
                 VStack(spacing: 20) {
                     ProgressView()
@@ -61,83 +46,87 @@ struct RootView: View {
                         .font(.body)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
+                    
+                    Button("Retry") {
+                        isInitializing = true
+                        configurationError = nil
+                        Task {
+                            await configureAmplify()
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .padding(.top)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color(.systemBackground))
             } else if showLoginView {
                 // Login view - inject dependencies properly
-                let _ = print("🚀 Showing LoginView now! showLoginView = \(showLoginView)")
                 LoginView(dependencies: dependencies)
                     .environment(appState)
                     .withDependencies(dependencies)
-                    .onAppear {
-                        print("🔍 LoginView container appeared")
-                        print("🔍 Dependencies type: \(type(of: dependencies))")
-                    }
             } else {
                 // Landing view
-                VStack(spacing: 20) {
+                VStack(spacing: 30) {
+                    Spacer()
+                    
                     Image(systemName: "heart.circle.fill")
-                        .font(.system(size: 80))
+                        .font(.system(size: 100))
                         .foregroundColor(.accentColor)
+                        .symbolRenderingMode(.multicolor)
                     
-                    Text("CLARITY Pulse")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                    
-                    Text("Your Health Companion")
-                        .font(.title2)
-                        .foregroundColor(.secondary)
-                    
-                    Text("Amplify configured successfully!")
-                        .font(.caption)
-                        .foregroundColor(.green)
-                    
-                    Button {
-                        print("🔘 Button tapped - showing LoginView")
-                        print("🔘 Current showLoginView state: \(showLoginView)")
+                    VStack(spacing: 8) {
+                        Text("CLARITY Pulse")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
                         
-                        // Toggle the state
-                        showLoginView.toggle()
-                        print("🔘 New showLoginView state: \(showLoginView)")
-                    } label: {
+                        Text("Your Health Companion")
+                            .font(.title2)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Spacer()
+                    
+                    Button(action: {
+                        withAnimation(.easeInOut) {
+                            showLoginView = true
+                        }
+                    }) {
                         Text("Continue to Login")
                             .font(.headline)
                             .foregroundColor(.white)
-                            .frame(width: 200, height: 50)
-                            .background(Color.blue)
-                            .cornerRadius(10)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 56)
+                            .background(Color.accentColor)
+                            .cornerRadius(12)
                     }
-                    .onTapGesture {
-                        print("🔘 TAP GESTURE - showing LoginView")
-                        showLoginView = true
-                    }
-                    .padding()
+                    .padding(.horizontal, 40)
+                    .padding(.bottom, 50)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color(.systemBackground))
             }
-            }
         }
         .task {
-            // Configure Amplify
-            print("🔄 Starting Amplify configuration task...")
-            do {
-                let amplifyConfig = dependencies.require(AmplifyConfigurable.self)
+            await configureAmplify()
+        }
+    }
+    
+    private func configureAmplify() async {
+        print("🔄 Starting Amplify configuration...")
+        do {
+            if let amplifyConfig = dependencies.resolve(AmplifyConfigurable.self) {
                 try await amplifyConfig.configure()
-                print("✅ Amplify configured successfully in task")
-                
-                // Small delay to ensure UI updates
-                try? await Task.sleep(nanoseconds: 100_000_000)
-                
-                isAmplifyConfigured = true
-                isInitializing = false
-                print("🏁 State updated: isAmplifyConfigured = \(isAmplifyConfigured), isInitializing = \(isInitializing)")
-            } catch {
-                print("❌ Failed to configure Amplify: \(error)")
-                configurationError = error
-                isInitializing = false
+                print("✅ Amplify configured successfully")
+            } else {
+                print("⚠️ AmplifyConfigurable not found in dependencies, skipping...")
             }
+            
+            isAmplifyConfigured = true
+            isInitializing = false
+        } catch {
+            print("❌ Failed to configure Amplify: \(error)")
+            configurationError = error
+            isInitializing = false
         }
     }
 }

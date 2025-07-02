@@ -51,9 +51,12 @@ struct RootView: View {
                 .background(Color(.systemBackground))
             } else if showLoginView {
                 // Login view - inject dependencies properly
-                LoginView()
+                LoginView(dependencies: dependencies)
                     .environment(appState)
                     .withDependencies(dependencies)
+                    .onAppear {
+                        print("🔍 LoginView container appeared")
+                    }
             } else {
                 // Landing view
                 VStack(spacing: 20) {
@@ -76,6 +79,10 @@ struct RootView: View {
                     Button("Continue to Login") {
                         print("🔘 Button tapped - showing LoginView")
                         print("🔘 Current showLoginView state: \(showLoginView)")
+                        
+                        // Test dependency before navigation
+                        let factory = dependencies.require(LoginViewModelFactory.self)
+                        print("✅ Factory available: \(type(of: factory))")
                         showLoginView = true
                         print("🔘 New showLoginView state: \(showLoginView)")
                     }

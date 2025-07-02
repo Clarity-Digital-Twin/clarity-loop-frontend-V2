@@ -12,15 +12,19 @@ import ClarityData // For ErrorHandler access
 
 public struct LoginView: View {
     @Environment(\.loginViewModelFactory) private var factory
+    @Environment(\.dependencies) private var dependencies
     @State private var viewModel: LoginViewModel?
+    
+    private let explicitDependencies: Dependencies?
 
-    public init() {
-        // NO WORK IN INIT - dependencies resolved in .task
+    public init(dependencies: Dependencies? = nil) {
+        self.explicitDependencies = dependencies
         print("🔍 LoginView init()")
     }
 
     public var body: some View {
         let _ = print("🔍 LoginView.body called, factory type: \(type(of: factory))")
+        let _ = print("🔍 LoginView viewModel is: \(viewModel == nil ? "nil" : "exists")")
         
         if let viewModel {
             LoginContentView(viewModel: viewModel)
@@ -28,21 +32,47 @@ public struct LoginView: View {
                     // Task already completed, viewModel exists
                 }
         } else {
-            ProgressView("Loading...")
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color(.systemBackground))
+            VStack {
+                ProgressView("Loading Login...")
+                    .scaleEffect(1.5)
+                Text("Initializing authentication...")
+                    .padding(.top)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.blue.opacity(0.1))
                 .onAppear {
                     print("🔍 LoginView loading screen appeared")
+                    print("🔍 About to check factory...")
                 }
                 .task {
                     // Initialize viewModel from factory
                     print("🔍 LoginView.task - creating viewModel...")
-                    print("🔍 Factory type: \(type(of: factory))")
                     
-                    let loginUseCase = factory.create()
-                    print("🔍 LoginUseCase created: \(type(of: loginUseCase))")
-                    viewModel = LoginViewModel(loginUseCase: loginUseCase)
-                    print("✅ LoginView viewModel created successfully")
+                    do {
+                        // Use explicit dependencies if provided
+                        let deps = explicitDependencies ?? dependencies
+                        print("🔍 Using dependencies: \(type(of: deps))")
+                        
+                        // Try to get factory from dependencies
+                        if let realFactory = deps.resolve(LoginViewModelFactory.self) {
+                            print("🔍 Got factory from dependencies: \(type(of: realFactory))")
+                            let loginUseCase = realFactory.create()
+                            print("🔍 LoginUseCase created: \(type(of: loginUseCase))")
+                            viewModel = LoginViewModel(loginUseCase: loginUseCase)
+                            print("✅ LoginView viewModel created successfully from dependencies")
+                        } else {
+                            // Fall back to environment factory
+                            print("⚠️ Factory not in dependencies, using environment factory")
+                            let loginUseCase = factory.create()
+                            viewModel = LoginViewModel(loginUseCase: loginUseCase)
+                            print("✅ LoginView viewModel created successfully from environment")
+                        }
+                    } catch {
+                        print("❌ Error creating viewModel: \(error)")
+                        // Use environment factory as last resort
+                        let loginUseCase = factory.create()
+                        viewModel = LoginViewModel(loginUseCase: loginUseCase)
+                    }
                 }
         }
     }

@@ -14,9 +14,7 @@ import ClarityData
 // MARK: - LoginViewModelFactory
 
 private struct LoginViewModelFactoryKey: EnvironmentKey {
-    nonisolated(unsafe) static let defaultValue: LoginViewModelFactory = DefaultLoginViewModelFactory(
-        loginUseCase: FatalErrorLoginUseCase()
-    )
+    nonisolated(unsafe) static let defaultValue: LoginViewModelFactory = NoOpLoginViewModelFactory()
 }
 
 public extension EnvironmentValues {
@@ -26,19 +24,24 @@ public extension EnvironmentValues {
     }
 }
 
-// Fatal error placeholder for missing dependency
-private struct FatalErrorLoginUseCase: LoginUseCaseProtocol {
+// No-op factory that returns a safe default implementation
+private struct NoOpLoginViewModelFactory: LoginViewModelFactory {
+    func create() -> LoginUseCaseProtocol {
+        NoOpLoginUseCase()
+    }
+}
+
+// Safe no-op implementation that throws an error instead of crashing
+private struct NoOpLoginUseCase: LoginUseCaseProtocol {
     func execute(email: String, password: String) async throws -> User {
-        fatalError("💥 LoginUseCaseProtocol not injected - withDependencies() failed")
+        throw AppError.unknown
     }
 }
 
 // MARK: - DashboardViewModelFactory
 
 private struct DashboardViewModelFactoryKey: EnvironmentKey {
-    nonisolated(unsafe) static let defaultValue: DashboardViewModelFactory = DefaultDashboardViewModelFactory(
-        healthMetricRepository: FatalErrorHealthMetricRepository()
-    )
+    nonisolated(unsafe) static let defaultValue: DashboardViewModelFactory = NoOpDashboardViewModelFactory()
 }
 
 public extension EnvironmentValues {
@@ -48,46 +51,62 @@ public extension EnvironmentValues {
     }
 }
 
-// Fatal error placeholder for missing dependency
-private struct FatalErrorHealthMetricRepository: HealthMetricRepositoryProtocol {
+// No-op factory that returns a safe default implementation
+private struct NoOpDashboardViewModelFactory: DashboardViewModelFactory {
+    func create(_ user: User) -> DashboardViewModel {
+        // Capture repository before entering MainActor context
+        let repository = NoOpHealthMetricRepository()
+        
+        // We need to use MainActor.assumeIsolated since DashboardViewModel requires MainActor
+        // This is safe because create() is always called from View context which is MainActor
+        return MainActor.assumeIsolated {
+            DashboardViewModel(user: user, healthMetricRepository: repository)
+        }
+    }
+}
+
+// Safe no-op implementation that throws errors instead of crashing
+private struct NoOpHealthMetricRepository: HealthMetricRepositoryProtocol {
+    private let error = AppError.unknown
+    
     func create(_ metric: HealthMetric) async throws -> HealthMetric {
-        fatalError("💥 HealthMetricRepositoryProtocol not injected - withDependencies() failed")
+        throw error
     }
 
     func createBatch(_ metrics: [HealthMetric]) async throws -> [HealthMetric] {
-        fatalError("💥 HealthMetricRepositoryProtocol not injected - withDependencies() failed")
+        throw error
     }
 
     func findById(_ id: UUID) async throws -> HealthMetric? {
-        fatalError("💥 HealthMetricRepositoryProtocol not injected - withDependencies() failed")
+        throw error
     }
 
     func findByUserId(_ userId: UUID) async throws -> [HealthMetric] {
-        fatalError("💥 HealthMetricRepositoryProtocol not injected - withDependencies() failed")
+        throw error
     }
 
     func findByUserIdAndDateRange(userId: UUID, startDate: Date, endDate: Date) async throws -> [HealthMetric] {
-        fatalError("💥 HealthMetricRepositoryProtocol not injected - withDependencies() failed")
+        throw error
     }
 
     func findByUserIdAndType(userId: UUID, type: HealthMetricType) async throws -> [HealthMetric] {
-        fatalError("💥 HealthMetricRepositoryProtocol not injected - withDependencies() failed")
+        throw error
     }
 
     func update(_ metric: HealthMetric) async throws -> HealthMetric {
-        fatalError("💥 HealthMetricRepositoryProtocol not injected - withDependencies() failed")
+        throw error
     }
 
     func delete(_ id: UUID) async throws {
-        fatalError("💥 HealthMetricRepositoryProtocol not injected - withDependencies() failed")
+        throw error
     }
 
     func deleteAllForUser(_ userId: UUID) async throws {
-        fatalError("💥 HealthMetricRepositoryProtocol not injected - withDependencies() failed")
+        throw error
     }
 
     func getLatestByType(userId: UUID, type: HealthMetricType) async throws -> HealthMetric? {
-        fatalError("💥 HealthMetricRepositoryProtocol not injected - withDependencies() failed")
+        throw error
     }
 }
 

@@ -50,9 +50,10 @@ struct RootView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color(.systemBackground))
             } else if showLoginView {
-                // Login view - dependencies already available via environment
+                // Login view - inject dependencies properly
                 LoginView()
                     .environment(appState)
+                    .withDependencies(dependencies)
             } else {
                 // Landing view
                 VStack(spacing: 20) {

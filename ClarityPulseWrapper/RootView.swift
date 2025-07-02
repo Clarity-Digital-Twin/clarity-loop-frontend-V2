@@ -93,15 +93,25 @@ struct RootView: View {
                         .font(.caption)
                         .foregroundColor(.green)
                     
-                    Button("Continue to Login") {
+                    Button {
                         print("🔘 Button tapped - showing LoginView")
                         print("🔘 Current showLoginView state: \(showLoginView)")
                         
-                        // Just navigate - let LoginView handle dependency resolution
-                        showLoginView = true
+                        // Toggle the state
+                        showLoginView.toggle()
                         print("🔘 New showLoginView state: \(showLoginView)")
+                    } label: {
+                        Text("Continue to Login")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .frame(width: 200, height: 50)
+                            .background(Color.blue)
+                            .cornerRadius(10)
                     }
-                    .buttonStyle(.borderedProminent)
+                    .onTapGesture {
+                        print("🔘 TAP GESTURE - showing LoginView")
+                        showLoginView = true
+                    }
                     .padding()
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)

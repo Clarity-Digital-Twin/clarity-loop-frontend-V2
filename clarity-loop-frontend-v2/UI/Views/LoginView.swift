@@ -39,14 +39,10 @@ public struct LoginView: View {
                     print("🔍 LoginView.task - creating viewModel...")
                     print("🔍 Factory type: \(type(of: factory))")
                     
-                    do {
-                        let loginUseCase = factory.create()
-                        print("🔍 LoginUseCase created: \(type(of: loginUseCase))")
-                        viewModel = LoginViewModel(loginUseCase: loginUseCase)
-                        print("✅ LoginView viewModel created successfully")
-                    } catch {
-                        print("❌ Failed to create viewModel: \(error)")
-                    }
+                    let loginUseCase = factory.create()
+                    print("🔍 LoginUseCase created: \(type(of: loginUseCase))")
+                    viewModel = LoginViewModel(loginUseCase: loginUseCase)
+                    print("✅ LoginView viewModel created successfully")
                 }
         }
     }

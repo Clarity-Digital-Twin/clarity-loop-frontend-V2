@@ -53,11 +53,9 @@ public final class AppDependencyConfigurator {
             BiometricAuthService()
         }
 
-        // Auth Service (depends on token storage only) - MOVED UP
+        // Auth Service (using Amplify) - MOVED UP
         container.register(AuthServiceProtocol.self) {
-            AmplifyAuthService(
-                tokenStorage: container.require(TokenStorageProtocol.self)
-            )
+            AmplifyAuthService()
         }
 
         // Network Service (now can depend on auth service)

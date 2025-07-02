@@ -26,6 +26,8 @@ targets:
           echo "Copying amplifyconfiguration.json to Resources"
           cp "${SRCROOT}/amplifyconfiguration.json" "${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/"
         name: "Copy amplifyconfiguration.json"
+        outputFiles:
+          - "$(BUILT_PRODUCTS_DIR)/$(PRODUCT_NAME).app/amplifyconfiguration.json"
     dependencies:
       - package: ClarityPulse
         product: ClarityUI
@@ -61,7 +63,7 @@ targets:
       
 packages:
   ClarityPulse:
-    path: /Users/ray/Desktop/CLARITY-DIGITAL-TWIN/clarity-loop-frontend-V2
+    path: ../
   Amplify:
     url: https://github.com/aws-amplify/amplify-swift.git
     from: 2.48.1

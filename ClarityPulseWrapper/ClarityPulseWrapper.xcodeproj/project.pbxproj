@@ -3,10 +3,11 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 63;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0057A2F5EAF538756348C89C /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_344C16C8-9D01-48AA-9743-B181F9DBB44B" /* RootView.swift */; };
 		1B917CB96B224F85F98792AE /* AWSAPIPlugin in Frameworks */ = {isa = PBXBuildFile; productRef = 9E52E5C0955DC3AB67498A5E /* AWSAPIPlugin */; };
 		1DD5F84947F97F8FE78C6E0E /* AWSCognitoAuthPlugin in Frameworks */ = {isa = PBXBuildFile; productRef = 91EEB045982A92E9D7047A20 /* AWSCognitoAuthPlugin */; };
 		320DB66F8AD3CC8E85BAEDF6 /* ClarityDomain in Frameworks */ = {isa = PBXBuildFile; productRef = C4381B7982B10E8698245855 /* ClarityDomain */; };
@@ -14,13 +15,12 @@
 		5C7DE0EC6D0D5D876436F28E /* ScreenshotComparison.swift in Sources */ = {isa = PBXBuildFile; fileRef = 367DA145C4E7C5B6AB69327F /* ScreenshotComparison.swift */; };
 		6884F59BEFB71A2ACF4088E5 /* ClarityCore in Frameworks */ = {isa = PBXBuildFile; productRef = BF8256B2BDE57299E192DF95 /* ClarityCore */; };
 		723183E5F63A2D7B7835B341 /* BaseUITestCaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E830616814363E749B4760 /* BaseUITestCaseTests.swift */; };
-		904251A4FFB700A04A779883 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_7A8F1162-4E1B-41CE-B13A-20B4D83541AD" /* RootView.swift */; };
 		9AAAFB474A7A6332ED680050 /* LoginScreenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87343A307196F5C14E519FC6 /* LoginScreenTests.swift */; };
 		9C0DA5714658C54FBA436FFD /* LoginScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E295632CD6C45851670B673 /* LoginScreen.swift */; };
 		AADDCCAC7FB5C040AD961EC0 /* BaseUITestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21C1304D9B98C10E3B1D521 /* BaseUITestCase.swift */; };
 		B89ED7A09FA0A81DBAB96FB0 /* ClarityLoopFrontendV2UITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8ADD299C1D6D292C1E8827C /* ClarityLoopFrontendV2UITestsLaunchTests.swift */; };
 		BC23B782AD21AF06752C9C0F /* Amplify in Frameworks */ = {isa = PBXBuildFile; productRef = 0A7EE1CAE98E6FD93D442659 /* Amplify */; };
-		C2BEE1322A6F8C4052AF0EFE /* ClarityPulseWrapperApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_F773D225-E068-4D8B-AFDB-230D3AE9E999" /* ClarityPulseWrapperApp.swift */; };
+		C962EDCC5139EB9486A0D0F7 /* ClarityPulseWrapperApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_82F0EFAD-85AF-4C67-B768-DD36A18B4822" /* ClarityPulseWrapperApp.swift */; };
 		D5FB3B9CCD52C8D387E4A98C /* ClarityData in Frameworks */ = {isa = PBXBuildFile; productRef = 2630632567852F5D55F56C10 /* ClarityData */; };
 		DCAF2D4DC605E53257E0597F /* ClarityUI in Frameworks */ = {isa = PBXBuildFile; productRef = FEDABD0F0E331008D67455ED /* ClarityUI */; };
 		DD52E4916AA2BF6465ABDE24 /* BaseScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1885F106F553B1399190D4A4 /* BaseScreen.swift */; };
@@ -46,12 +46,12 @@
 		7E295632CD6C45851670B673 /* LoginScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginScreen.swift; sourceTree = "<group>"; };
 		87343A307196F5C14E519FC6 /* LoginScreenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginScreenTests.swift; sourceTree = "<group>"; };
 		A3E830616814363E749B4760 /* BaseUITestCaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseUITestCaseTests.swift; sourceTree = "<group>"; };
-		A66607095E3AE6329973EB7E /* ClarityPulseWrapperUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ClarityPulseWrapperUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A66607095E3AE6329973EB7E /* ClarityPulseWrapperUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = ClarityPulseWrapperUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C8ADD299C1D6D292C1E8827C /* ClarityLoopFrontendV2UITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClarityLoopFrontendV2UITestsLaunchTests.swift; sourceTree = "<group>"; };
-		D55271CE8750AA0169449347 /* ClarityPulseWrapper.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ClarityPulseWrapper.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D55271CE8750AA0169449347 /* ClarityPulseWrapper.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ClarityPulseWrapper.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E21C1304D9B98C10E3B1D521 /* BaseUITestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseUITestCase.swift; sourceTree = "<group>"; };
-		"TEMP_7A8F1162-4E1B-41CE-B13A-20B4D83541AD" /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
-		"TEMP_F773D225-E068-4D8B-AFDB-230D3AE9E999" /* ClarityPulseWrapperApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClarityPulseWrapperApp.swift; sourceTree = "<group>"; };
+		"TEMP_344C16C8-9D01-48AA-9743-B181F9DBB44B" /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		"TEMP_82F0EFAD-85AF-4C67-B768-DD36A18B4822" /* ClarityPulseWrapperApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClarityPulseWrapperApp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,15 +100,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		71A5374A2E153F2F00FA6475 /* Recovered References */ = {
-			isa = PBXGroup;
-			children = (
-				"TEMP_F773D225-E068-4D8B-AFDB-230D3AE9E999" /* ClarityPulseWrapperApp.swift */,
-				"TEMP_7A8F1162-4E1B-41CE-B13A-20B4D83541AD" /* RootView.swift */,
-			);
-			name = "Recovered References";
-			sourceTree = "<group>";
-		};
 		7FFD0F0C37F87A21E8C2F033 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
@@ -123,7 +114,6 @@
 				0F29689888C3636A24A3F8CE /* clarity-loop-frontend-V2 */,
 				7FFD0F0C37F87A21E8C2F033 /* Packages */,
 				4C4F006CAD4CD5E4943261B5 /* Products */,
-				71A5374A2E153F2F00FA6475 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -147,6 +137,15 @@
 				58ECBCB36C19B13A963DBC19 /* ScreenshotComparisonTests.swift */,
 			);
 			path = Utilities;
+			sourceTree = "<group>";
+		};
+		"TEMP_6C610DB8-AB4C-4B07-8E04-13AC96898EDB" /* ClarityPulseWrapper */ = {
+			isa = PBXGroup;
+			children = (
+				"TEMP_344C16C8-9D01-48AA-9743-B181F9DBB44B" /* RootView.swift */,
+				"TEMP_82F0EFAD-85AF-4C67-B768-DD36A18B4822" /* ClarityPulseWrapperApp.swift */,
+			);
+			path = ClarityPulseWrapper;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -203,7 +202,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1640;
+				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					8B3914CEE1152D4D4DCFE042 = {
 						TestTargetID = C09433A0BEC021A896AE7558;
@@ -226,8 +225,9 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				58CBC0B5AFC87EFEE6707F88 /* XCRemoteSwiftPackageReference "amplify-swift" */,
-				28BB11ADFE6E5D6C48C8DA49 /* XCLocalSwiftPackageReference "/Users/ray/Desktop/CLARITY-DIGITAL-TWIN/clarity-loop-frontend-V2" */,
+				109E8539F11E648908473B68 /* XCLocalSwiftPackageReference "..//" */,
 			);
+			preferredProjectObjectVersion = 54;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -251,6 +251,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/$(PRODUCT_NAME).app/amplifyconfiguration.json",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -279,8 +280,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C2BEE1322A6F8C4052AF0EFE /* ClarityPulseWrapperApp.swift in Sources */,
-				904251A4FFB700A04A779883 /* RootView.swift in Sources */,
+				C962EDCC5139EB9486A0D0F7 /* ClarityPulseWrapperApp.swift in Sources */,
+				0057A2F5EAF538756348C89C /* RootView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -386,7 +387,6 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -464,7 +464,6 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -525,9 +524,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		28BB11ADFE6E5D6C48C8DA49 /* XCLocalSwiftPackageReference "/Users/ray/Desktop/CLARITY-DIGITAL-TWIN/clarity-loop-frontend-V2" */ = {
+		109E8539F11E648908473B68 /* XCLocalSwiftPackageReference "..//" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = "/Users/ray/Desktop/CLARITY-DIGITAL-TWIN/clarity-loop-frontend-V2";
+			relativePath = "..//";
 		};
 /* End XCLocalSwiftPackageReference section */
 

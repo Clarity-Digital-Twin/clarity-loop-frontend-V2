@@ -17,8 +17,6 @@ import Amplify
 struct ClarityPulseWrapperApp: App {
     private let appState = AppState()
     private let dependencies: Dependencies
-    @State private var email = ""
-    @State private var password = ""
 
     init() {
         // Configure dependencies ONCE

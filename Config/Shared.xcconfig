@@ -6,9 +6,9 @@
 // ==========================================
 // Project Identity
 // ==========================================
-PRODUCT_NAME = MyProject
-PRODUCT_DISPLAY_NAME = MyProject
-PRODUCT_BUNDLE_IDENTIFIER = com.mycompany.MyProject
+PRODUCT_NAME = ClarityPulse
+PRODUCT_DISPLAY_NAME = CLARITY Pulse
+PRODUCT_BUNDLE_IDENTIFIER = com.clarity.pulse
 MARKETING_VERSION = 1.0
 CURRENT_PROJECT_VERSION = 1
 

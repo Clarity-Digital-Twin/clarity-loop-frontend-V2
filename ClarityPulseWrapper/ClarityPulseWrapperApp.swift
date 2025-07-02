@@ -26,26 +26,25 @@ struct ClarityPulseWrapperApp: App {
 
         print("✅ Dependencies configured successfully")
         print("📱 ClarityPulseWrapperApp initialized")
+        
+        // Debug: Check if amplifyconfiguration.json is in bundle
+        if let path = Bundle.main.path(forResource: "amplifyconfiguration", ofType: "json") {
+            print("✅ amplifyconfiguration.json found at: \(path)")
+        } else {
+            print("❌ amplifyconfiguration.json NOT found in bundle!")
+            print("📁 Bundle path: \(Bundle.main.bundlePath)")
+            print("📁 Resources: \(Bundle.main.resourcePath ?? "none")")
+        }
     }
 
     var body: some Scene {
         WindowGroup {
-            VStack {
-                Text("🔥 DEBUG: App is running!")
-                    .foregroundColor(.red)
-                    .font(.headline)
-                    .padding()
-
-                LoginView()
-                    .environment(appState)
-                    .withDependencies(dependencies)
-                    .onAppear {
-                        print("🚀 LoginView appeared in WindowGroup")
-                    }
-            }
-            .onAppear {
-                print("📱 WindowGroup appeared - app UI should be visible")
-            }
+            LoginView()
+                .environment(appState)
+                .withDependencies(dependencies)
+                .onAppear {
+                    print("🚀 LoginView appeared in WindowGroup")
+                }
         }
     }
 }

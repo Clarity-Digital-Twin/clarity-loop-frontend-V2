@@ -14,9 +14,16 @@ targets:
     type: application
     platform: iOS
     sources:
-      - ClarityPulseWrapperApp.swift
-    resources:
-      - amplifyconfiguration.json
+      - path: .
+        includes:
+          - "*.swift"
+        excludes:
+          - "*.json"
+    postBuildScripts:
+      - script: |
+          echo "Copying amplifyconfiguration.json to Resources"
+          cp "${SRCROOT}/amplifyconfiguration.json" "${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/"
+        name: "Copy amplifyconfiguration.json"
     dependencies:
       - package: ClarityPulse
         product: ClarityUI

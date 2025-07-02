@@ -19,36 +19,25 @@ public struct LoginView: View {
     }
 
     public var body: some View {
-        VStack {
-            Text("🟡 LoginView is rendering")
-                .foregroundColor(.orange)
-                .padding()
-
-            if let viewModel {
-                LoginContentView(viewModel: viewModel)
-            } else {
-                VStack {
-                    Text("⏳ Creating ViewModel...")
-                        .foregroundColor(.blue)
-                    ProgressView("Loading...")
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(.background)
+        if let viewModel {
+            LoginContentView(viewModel: viewModel)
+                .task {
+                    // Task already completed, viewModel exists
                 }
-            }
-        }
-        .task {
-            // Initialize viewModel from factory
-            print("🔍 LoginView.task - creating viewModel...")
-            print("🔍 Factory type: \(type(of: factory))")
-
-            do {
-                let loginUseCase = factory.create()
-                print("🔍 LoginUseCase created: \(type(of: loginUseCase))")
-                viewModel = LoginViewModel(loginUseCase: loginUseCase)
-                print("✅ LoginView viewModel created successfully")
-            } catch {
-                print("💥 ERROR creating viewModel: \(error)")
-            }
+        } else {
+            ProgressView("Loading...")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color(.systemBackground))
+                .task {
+                    // Initialize viewModel from factory
+                    print("🔍 LoginView.task - creating viewModel...")
+                    print("🔍 Factory type: \(type(of: factory))")
+                    
+                    let loginUseCase = factory.create()
+                    print("🔍 LoginUseCase created: \(type(of: loginUseCase))")
+                    viewModel = LoginViewModel(loginUseCase: loginUseCase)
+                    print("✅ LoginView viewModel created successfully")
+                }
         }
     }
 }

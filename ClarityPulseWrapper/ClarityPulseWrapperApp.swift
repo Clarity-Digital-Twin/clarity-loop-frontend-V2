@@ -15,7 +15,8 @@ import ClarityUI
 
 @main
 struct ClarityPulseWrapperApp: App {
-    private let appState = AppState()
+    @State private var appState = AppState()
+    @State private var authenticationService: AuthenticationService?
     private let dependencies: Dependencies
 
     init() {
@@ -31,22 +32,29 @@ struct ClarityPulseWrapperApp: App {
         // Debug: Check if amplifyconfiguration.json is in bundle
         if let path = Bundle.main.path(forResource: "amplifyconfiguration", ofType: "json") {
             print("✅ amplifyconfiguration.json found at: \(path)")
-            // Don't configure Amplify here - let RootView handle it
         } else {
             print("❌ amplifyconfiguration.json NOT found in bundle!")
             print("📁 Bundle path: \(Bundle.main.bundlePath)")
-            print("📁 Resources: \(Bundle.main.resourcePath ?? "none")")
         }
     }
 
     var body: some Scene {
         WindowGroup {
-            // Use RootView which handles Amplify configuration and navigation
-            RootView(dependencies: dependencies, appState: appState)
+            RootView(dependencies: dependencies)
                 .environment(appState)
                 .environment(\.dependencies, dependencies)
-                .onAppear {
-                    print("🎯 RootView appeared")
+                .authenticationService(authenticationService)
+                .task {
+                    // Initialize authentication service
+                    if authenticationService == nil,
+                       let authService = dependencies.resolve(AuthServiceProtocol.self),
+                       let userRepo = dependencies.resolve(UserRepositoryProtocol.self) {
+                        authenticationService = AuthenticationService(
+                            authService: authService,
+                            userRepository: userRepo
+                        )
+                        print("✅ AuthenticationService initialized")
+                    }
                 }
         }
     }

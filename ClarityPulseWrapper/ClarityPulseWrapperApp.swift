@@ -31,14 +31,7 @@ struct ClarityPulseWrapperApp: App {
         // Debug: Check if amplifyconfiguration.json is in bundle
         if let path = Bundle.main.path(forResource: "amplifyconfiguration", ofType: "json") {
             print("✅ amplifyconfiguration.json found at: \(path)")
-            
-            // Configure Amplify
-            do {
-                try Amplify.configure()
-                print("✅ Amplify configured successfully")
-            } catch {
-                print("❌ Unable to configure Amplify: \(error)")
-            }
+            // Don't configure Amplify here - let RootView handle it
         } else {
             print("❌ amplifyconfiguration.json NOT found in bundle!")
             print("📁 Bundle path: \(Bundle.main.bundlePath)")
@@ -56,4 +49,5 @@ struct ClarityPulseWrapperApp: App {
                     print("🎯 RootView appeared")
                 }
         }
+    }
 }

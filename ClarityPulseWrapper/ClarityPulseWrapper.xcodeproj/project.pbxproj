@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0057A2F5EAF538756348C89C /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_344C16C8-9D01-48AA-9743-B181F9DBB44B" /* RootView.swift */; };
 		1B917CB96B224F85F98792AE /* AWSAPIPlugin in Frameworks */ = {isa = PBXBuildFile; productRef = 9E52E5C0955DC3AB67498A5E /* AWSAPIPlugin */; };
 		1DD5F84947F97F8FE78C6E0E /* AWSCognitoAuthPlugin in Frameworks */ = {isa = PBXBuildFile; productRef = 91EEB045982A92E9D7047A20 /* AWSCognitoAuthPlugin */; };
 		320DB66F8AD3CC8E85BAEDF6 /* ClarityDomain in Frameworks */ = {isa = PBXBuildFile; productRef = C4381B7982B10E8698245855 /* ClarityDomain */; };
@@ -20,11 +19,12 @@
 		AADDCCAC7FB5C040AD961EC0 /* BaseUITestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21C1304D9B98C10E3B1D521 /* BaseUITestCase.swift */; };
 		B89ED7A09FA0A81DBAB96FB0 /* ClarityLoopFrontendV2UITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8ADD299C1D6D292C1E8827C /* ClarityLoopFrontendV2UITestsLaunchTests.swift */; };
 		BC23B782AD21AF06752C9C0F /* Amplify in Frameworks */ = {isa = PBXBuildFile; productRef = 0A7EE1CAE98E6FD93D442659 /* Amplify */; };
-		C962EDCC5139EB9486A0D0F7 /* ClarityPulseWrapperApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_82F0EFAD-85AF-4C67-B768-DD36A18B4822" /* ClarityPulseWrapperApp.swift */; };
+		D2BC9FD2AB991D27607CC09E /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_CD675DAF-3081-47C6-899E-984157E3176E" /* RootView.swift */; };
 		D5FB3B9CCD52C8D387E4A98C /* ClarityData in Frameworks */ = {isa = PBXBuildFile; productRef = 2630632567852F5D55F56C10 /* ClarityData */; };
 		DCAF2D4DC605E53257E0597F /* ClarityUI in Frameworks */ = {isa = PBXBuildFile; productRef = FEDABD0F0E331008D67455ED /* ClarityUI */; };
 		DD52E4916AA2BF6465ABDE24 /* BaseScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1885F106F553B1399190D4A4 /* BaseScreen.swift */; };
 		E8FCD52CA71E82CD42F54388 /* ScreenshotComparisonTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58ECBCB36C19B13A963DBC19 /* ScreenshotComparisonTests.swift */; };
+		FA7022B1FD3D027F2ACCD781 /* ClarityPulseWrapperApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_AE395F5A-C12A-469B-B065-10B3D2A21198" /* ClarityPulseWrapperApp.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -50,8 +50,8 @@
 		C8ADD299C1D6D292C1E8827C /* ClarityLoopFrontendV2UITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClarityLoopFrontendV2UITestsLaunchTests.swift; sourceTree = "<group>"; };
 		D55271CE8750AA0169449347 /* ClarityPulseWrapper.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ClarityPulseWrapper.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E21C1304D9B98C10E3B1D521 /* BaseUITestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseUITestCase.swift; sourceTree = "<group>"; };
-		"TEMP_344C16C8-9D01-48AA-9743-B181F9DBB44B" /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
-		"TEMP_82F0EFAD-85AF-4C67-B768-DD36A18B4822" /* ClarityPulseWrapperApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClarityPulseWrapperApp.swift; sourceTree = "<group>"; };
+		"TEMP_AE395F5A-C12A-469B-B065-10B3D2A21198" /* ClarityPulseWrapperApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClarityPulseWrapperApp.swift; sourceTree = "<group>"; };
+		"TEMP_CD675DAF-3081-47C6-899E-984157E3176E" /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -139,11 +139,11 @@
 			path = Utilities;
 			sourceTree = "<group>";
 		};
-		"TEMP_6C610DB8-AB4C-4B07-8E04-13AC96898EDB" /* ClarityPulseWrapper */ = {
+		"TEMP_081C0BFC-E9E7-4BA6-ADB5-7F716CA5C995" /* ClarityPulseWrapper */ = {
 			isa = PBXGroup;
 			children = (
-				"TEMP_344C16C8-9D01-48AA-9743-B181F9DBB44B" /* RootView.swift */,
-				"TEMP_82F0EFAD-85AF-4C67-B768-DD36A18B4822" /* ClarityPulseWrapperApp.swift */,
+				"TEMP_CD675DAF-3081-47C6-899E-984157E3176E" /* RootView.swift */,
+				"TEMP_AE395F5A-C12A-469B-B065-10B3D2A21198" /* ClarityPulseWrapperApp.swift */,
 			);
 			path = ClarityPulseWrapper;
 			sourceTree = "<group>";
@@ -280,8 +280,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C962EDCC5139EB9486A0D0F7 /* ClarityPulseWrapperApp.swift in Sources */,
-				0057A2F5EAF538756348C89C /* RootView.swift in Sources */,
+				FA7022B1FD3D027F2ACCD781 /* ClarityPulseWrapperApp.swift in Sources */,
+				D2BC9FD2AB991D27607CC09E /* RootView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -43,7 +43,7 @@ struct ClarityPulseWrapperApp: App {
             RootView(dependencies: dependencies)
                 .environment(appState)
                 .environment(\.dependencies, dependencies)
-                .authenticationService(authenticationService)
+                .environment(\.authenticationService, authenticationService)
                 .task {
                     // Initialize authentication service
                     if authenticationService == nil,

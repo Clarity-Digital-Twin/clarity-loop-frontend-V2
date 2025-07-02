@@ -53,7 +53,7 @@ public final class AppDependencyConfigurator {
             BiometricAuthService()
         }
 
-        // Auth Service (using Amplify) - MOVED UP
+        // Auth Service
         container.register(AuthServiceProtocol.self) {
             AmplifyAuthService()
         }

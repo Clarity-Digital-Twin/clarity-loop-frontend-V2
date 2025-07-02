@@ -11,6 +11,7 @@ import ClarityDomain
 import ClarityUI
 
 struct RootView: View {
+    @Environment(AppState.self) private var appState
     @State private var isInitializing = true
     @State private var isAmplifyConfigured = false
     @State private var configurationError: Error?
@@ -60,8 +61,7 @@ struct RootView: View {
                 .background(Color(.systemBackground))
             } else if showLoginView {
                 // Login view
-                LoginView()
-                    .environment(appState)
+                LoginView(dependencies: dependencies)
             } else {
                 // Landing view
                 VStack(spacing: 30) {
@@ -119,12 +119,18 @@ struct RootView: View {
                 print("⚠️ AmplifyConfigurable not found in dependencies, skipping...")
             }
             
-            isAmplifyConfigured = true
-            isInitializing = false
+            await MainActor.run {
+                isAmplifyConfigured = true
+                isInitializing = false
+                print("📌 RootView state updated - isInitializing: \(isInitializing), isAmplifyConfigured: \(isAmplifyConfigured)")
+            }
         } catch {
             print("❌ Failed to configure Amplify: \(error)")
-            configurationError = error
-            isInitializing = false
+            await MainActor.run {
+                configurationError = error
+                isInitializing = false
+                print("📌 RootView error state - isInitializing: \(isInitializing), error: \(error)")
+            }
         }
     }
 }

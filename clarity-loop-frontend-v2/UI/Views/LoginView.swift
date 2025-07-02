@@ -15,7 +15,6 @@ public struct LoginView: View {
     
     @State private var email = ""
     @State private var password = ""
-    @State private var showingError = false
     @FocusState private var focusedField: Field?
     
     // For backwards compatibility with existing initializer
@@ -44,7 +43,7 @@ public struct LoginView: View {
             .background(Color(.systemBackground))
             .ignoresSafeArea(.keyboard)
         }
-        .alert("Login Failed", isPresented: $showingError) {
+        .alert("Login Failed", isPresented: .constant(authService?.error != nil)) {
             Button("OK") {
                 authService?.clearError()
             }
@@ -53,11 +52,11 @@ public struct LoginView: View {
                 Text(error.localizedDescription)
             }
         }
-        .onChange(of: authService?.error) { _, newError in
-            showingError = newError != nil
-        }
-        .onChange(of: authService?.isAuthenticated) { _, isAuthenticated in
-            if isAuthenticated, let user = authService?.currentUser {
+        .onChange(of: authService?.isAuthenticated ?? false) { _, isAuthenticated in
+            // Handle authentication state changes
+            if isAuthenticated, 
+               let authService = authService,
+               let user = authService.currentUser {
                 // Update app state
                 appState.login(
                     userId: user.id,

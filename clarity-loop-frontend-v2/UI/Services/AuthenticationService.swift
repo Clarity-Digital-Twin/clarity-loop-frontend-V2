@@ -37,14 +37,16 @@ public final class AuthenticationService {
             // Authenticate with backend
             let authToken = try await authService.login(email: email, password: password)
             
-            // Fetch user profile
-            let user = try await userRepository.getCurrentUser()
-            
-            // Update state
-            self.currentUser = user
-            self.isAuthenticated = true
-            
-            print("✅ Login successful for user: \(user.email)")
+            // Fetch user profile from auth service
+            if let user = try await authService.getCurrentUser() {
+                // Update state
+                self.currentUser = user
+                self.isAuthenticated = true
+                
+                print("✅ Login successful for user: \(user.email)")
+            } else {
+                throw AuthError.unknown("Failed to fetch user profile")
+            }
         } catch {
             print("❌ Login failed: \(error)")
             self.error = error
@@ -79,11 +81,8 @@ public final class AuthenticationService {
         isLoading = true
         
         do {
-            let isValid = try await authService.isAuthenticated()
-            
-            if isValid {
-                // Fetch current user
-                let user = try await userRepository.getCurrentUser()
+            // Check if we have a current user via auth service
+            if let user = try await authService.getCurrentUser() {
                 self.currentUser = user
                 self.isAuthenticated = true
             } else {

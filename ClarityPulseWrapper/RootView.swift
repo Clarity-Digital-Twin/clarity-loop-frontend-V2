@@ -74,8 +74,10 @@ struct RootView: View {
                         .foregroundColor(.green)
                     
                     Button("Continue to Login") {
-                        print("Button tapped - showing LoginView")
+                        print("🔘 Button tapped - showing LoginView")
+                        print("🔘 Current showLoginView state: \(showLoginView)")
                         showLoginView = true
+                        print("🔘 New showLoginView state: \(showLoginView)")
                     }
                     .buttonStyle(.borderedProminent)
                     .padding()

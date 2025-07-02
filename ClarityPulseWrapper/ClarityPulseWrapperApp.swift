@@ -11,7 +11,7 @@ import ClarityCore
 import ClarityDomain
 import ClarityData
 import ClarityUI
-import Amplify
+// import Amplify // TEMPORARILY DISABLED
 
 @main
 struct ClarityPulseWrapperApp: App {

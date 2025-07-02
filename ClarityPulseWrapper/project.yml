@@ -19,6 +19,8 @@ targets:
           - "*.swift"
         excludes:
           - "*.json"
+    resources:
+      - Assets.xcassets
     postBuildScripts:
       - script: |
           echo "Copying amplifyconfiguration.json to Resources"
@@ -40,12 +42,7 @@ targets:
       - package: Amplify
         product: AWSAPIPlugin
     settings:
-      GENERATE_INFOPLIST_FILE: true
-      INFOPLIST_KEY_UIApplicationSupportsMultipleScenes: false
-      INFOPLIST_KEY_UILaunchStoryboardName: ""
-      INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
-      INFOPLIST_KEY_LSRequiresIPhoneOS: true
-      INFOPLIST_KEY_UIRequiresFullScreen: true
+      INFOPLIST_FILE: Info.plist
       INFOPLIST_KEY_CFBundleDisplayName: "CLARITY Pulse"
       CODE_SIGN_STYLE: Automatic
       DEVELOPMENT_TEAM: HJ7W9PTAD8

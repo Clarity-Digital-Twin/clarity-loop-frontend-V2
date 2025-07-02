@@ -16,9 +16,12 @@ public struct LoginView: View {
 
     public init() {
         // NO WORK IN INIT - dependencies resolved in .task
+        print("🔍 LoginView init()")
     }
 
     public var body: some View {
+        let _ = print("🔍 LoginView.body called, factory type: \(type(of: factory))")
+        
         if let viewModel {
             LoginContentView(viewModel: viewModel)
                 .task {
@@ -28,15 +31,22 @@ public struct LoginView: View {
             ProgressView("Loading...")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color(.systemBackground))
+                .onAppear {
+                    print("🔍 LoginView loading screen appeared")
+                }
                 .task {
                     // Initialize viewModel from factory
                     print("🔍 LoginView.task - creating viewModel...")
                     print("🔍 Factory type: \(type(of: factory))")
                     
-                    let loginUseCase = factory.create()
-                    print("🔍 LoginUseCase created: \(type(of: loginUseCase))")
-                    viewModel = LoginViewModel(loginUseCase: loginUseCase)
-                    print("✅ LoginView viewModel created successfully")
+                    do {
+                        let loginUseCase = factory.create()
+                        print("🔍 LoginUseCase created: \(type(of: loginUseCase))")
+                        viewModel = LoginViewModel(loginUseCase: loginUseCase)
+                        print("✅ LoginView viewModel created successfully")
+                    } catch {
+                        print("❌ Failed to create viewModel: \(error)")
+                    }
                 }
         }
     }

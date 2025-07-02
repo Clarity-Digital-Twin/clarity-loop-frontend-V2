@@ -11,10 +11,11 @@ import ClarityCore
 import ClarityDomain
 import ClarityData
 import ClarityUI
+import Amplify
 
 @main
 struct ClarityPulseWrapperApp: App {
-    @State private var appState = AppState()
+    private let appState = AppState()
     private let dependencies: Dependencies
 
     init() {
@@ -39,14 +40,38 @@ struct ClarityPulseWrapperApp: App {
 
     var body: some Scene {
         WindowGroup {
-            LoginView()
-                .environment(appState)
-                .withDependencies(dependencies)
-                .onAppear {
-                    print("🚀 LoginView appeared in WindowGroup")
+            // Test - show a simple view directly
+            VStack {
+                Image(systemName: "heart.circle.fill")
+                    .font(.system(size: 80))
+                    .foregroundColor(.red)
+                
+                Text("CLARITY Pulse")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                
+                Text("Login Screen")
+                    .font(.title2)
+                
+                // Add simple login fields
+                VStack(spacing: 16) {
+                    TextField("Email", text: .constant(""))
+                        .textFieldStyle(.roundedBorder)
+                        .padding(.horizontal)
+                    
+                    SecureField("Password", text: .constant(""))
+                        .textFieldStyle(.roundedBorder)
+                        .padding(.horizontal)
+                    
+                    Button("Sign In") {
+                        print("Sign in tapped")
+                    }
+                    .buttonStyle(.borderedProminent)
                 }
+                .padding(.top, 40)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color(.systemBackground))
         }
     }
 }
-
-// RootContainerView removed - dependencies now injected directly in App

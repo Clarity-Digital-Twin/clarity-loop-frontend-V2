@@ -2,259 +2,187 @@
 //  LoginView.swift
 //  clarity-loop-frontend-v2
 //
-//  Login screen with TDD-driven ViewModel
+//  Clean SwiftUI login view following MV pattern - no ViewModels
 //
 
 import SwiftUI
 import ClarityDomain
 import ClarityCore
-import ClarityData // For ErrorHandler access
 
 public struct LoginView: View {
-    @Environment(\.loginViewModelFactory) private var factory
-    @Environment(\.dependencies) private var dependencies
-    @State private var viewModel: LoginViewModel?
-    
-    private let explicitDependencies: Dependencies?
-
-    public init(dependencies: Dependencies? = nil) {
-        self.explicitDependencies = dependencies
-        print("🔍 LoginView init()")
-    }
-
-    public var body: some View {
-        let _ = print("🔍 LoginView.body called, factory type: \(type(of: factory))")
-        let _ = print("🔍 LoginView viewModel is: \(viewModel == nil ? "nil" : "exists")")
-        
-        if let viewModel {
-            LoginContentView(viewModel: viewModel)
-                .task {
-                    // Task already completed, viewModel exists
-                }
-        } else {
-            VStack {
-                ProgressView("Loading Login...")
-                    .scaleEffect(1.5)
-                Text("Initializing authentication...")
-                    .padding(.top)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.blue.opacity(0.1))
-                .onAppear {
-                    print("🔍 LoginView loading screen appeared")
-                    print("🔍 About to check factory...")
-                }
-                .task {
-                    // Initialize viewModel from factory
-                    print("🔍 LoginView.task - creating viewModel...")
-                    
-                    do {
-                        // Use explicit dependencies if provided
-                        let deps = explicitDependencies ?? dependencies
-                        print("🔍 Using dependencies: \(type(of: deps))")
-                        
-                        // Try to get factory from dependencies
-                        if let realFactory = deps.resolve(LoginViewModelFactory.self) {
-                            print("🔍 Got factory from dependencies: \(type(of: realFactory))")
-                            let loginUseCase = realFactory.create()
-                            print("🔍 LoginUseCase created: \(type(of: loginUseCase))")
-                            viewModel = LoginViewModel(loginUseCase: loginUseCase)
-                            print("✅ LoginView viewModel created successfully from dependencies")
-                        } else {
-                            // Fall back to environment factory
-                            print("⚠️ Factory not in dependencies, using environment factory")
-                            let loginUseCase = factory.create()
-                            viewModel = LoginViewModel(loginUseCase: loginUseCase)
-                            print("✅ LoginView viewModel created successfully from environment")
-                        }
-                    } catch {
-                        print("❌ Error creating viewModel: \(error)")
-                        // Use environment factory as last resort
-                        let loginUseCase = factory.create()
-                        viewModel = LoginViewModel(loginUseCase: loginUseCase)
-                    }
-                }
-        }
-    }
-}
-
-// Separate view that actually uses the viewModel
-private struct LoginContentView: View {
-    @Bindable var viewModel: LoginViewModel
+    @Environment(\.authenticationService) private var authService
     @Environment(AppState.self) private var appState
-    @FocusState private var focusedField: Field?
+    
+    @State private var email = ""
+    @State private var password = ""
     @State private var showingError = false
-    @State private var errorPresentation: ErrorPresentation?
-
-    var body: some View {
+    @FocusState private var focusedField: Field?
+    
+    // For backwards compatibility with existing initializer
+    private let dependencies: Dependencies?
+    
+    public init(dependencies: Dependencies? = nil) {
+        self.dependencies = dependencies
+    }
+    
+    private enum Field {
+        case email, password
+    }
+    
+    public var body: some View {
         NavigationStack {
-            VStack(spacing: 24) {
-                // Logo/Header
-                VStack(spacing: 8) {
-                    Image(systemName: "heart.circle.fill")
-                        .font(.system(size: 80))
-                        .foregroundColor(.accentColor)
-
-                    Text("CLARITY Pulse")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-
-                    Text("Your Health Companion")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                .padding(.top, 60)
-
-                Spacer()
-
-                // Login Form
-                VStack(spacing: 16) {
-                    // Email Field
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Email")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-
-                        TextField("Enter your email", text: $viewModel.email)
-                            .textFieldStyle(.roundedBorder)
-                            #if os(iOS)
-                            .textInputAutocapitalization(.never)
-                            #endif
-                            .disabled(viewModel.viewState.isLoading)
-                            .focused($focusedField, equals: Field.email)
-                    }
-
-                    // Password Field
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Password")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-
-                        SecureField("Enter your password", text: $viewModel.password)
-                            .textFieldStyle(.roundedBorder)
-                            .disabled(viewModel.viewState.isLoading)
-                            .focused($focusedField, equals: Field.password)
-                    }
-
-                    // Error Message
-                    if case .error(let message) = viewModel.viewState {
-                        HStack {
-                            Image(systemName: "exclamationmark.circle.fill")
-                                .foregroundColor(.red)
-
-                            Text(message.localizedDescription)
-                                .font(.caption)
-                                .foregroundColor(.red)
-
-                            Spacer()
+            ScrollView {
+                VStack(spacing: 40) {
+                    // Logo Header
+                    VStack(spacing: 16) {
+                        Image(systemName: "heart.circle.fill")
+                            .font(.system(size: 100))
+                            .foregroundStyle(.tint)
+                            .symbolRenderingMode(.multicolor)
+                        
+                        VStack(spacing: 8) {
+                            Text("CLARITY Pulse")
+                                .font(.largeTitle)
+                                .fontWeight(.bold)
+                            
+                            Text("Your Health Companion")
+                                .font(.title3)
+                                .foregroundStyle(.secondary)
                         }
-                        .padding(.horizontal, 4)
-                        .transition(.opacity)
                     }
-
-                    // Login Button
-                    Button(action: { Task { await performLogin() } }) {
-                        HStack {
-                            if viewModel.viewState.isLoading {
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                    .scaleEffect(0.8)
-                            } else {
-                                Text("Sign In")
+                    .padding(.top, 60)
+                    
+                    // Login Form
+                    VStack(spacing: 20) {
+                        // Email Field
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Email")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                            
+                            TextField("Enter your email", text: $email)
+                                .textFieldStyle(.roundedBorder)
+                                .keyboardType(.emailAddress)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
+                                .focused($focusedField, equals: .email)
+                                .disabled(authService?.isLoading ?? false)
+                        }
+                        
+                        // Password Field
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Password")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                            
+                            SecureField("Enter your password", text: $password)
+                                .textFieldStyle(.roundedBorder)
+                                .focused($focusedField, equals: .password)
+                                .disabled(authService?.isLoading ?? false)
+                                .onSubmit {
+                                    if canLogin {
+                                        Task {
+                                            await performLogin()
+                                        }
+                                    }
+                                }
+                        }
+                        
+                        // Login Button
+                        Button(action: {
+                            Task {
+                                await performLogin()
                             }
+                        }) {
+                            Group {
+                                if authService?.isLoading ?? false {
+                                    ProgressView()
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                } else {
+                                    Text("Sign In")
+                                        .fontWeight(.semibold)
+                                }
+                            }
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 56)
+                            .background(canLogin ? Color.accentColor : Color.gray)
+                            .foregroundStyle(.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(viewModel.isLoginButtonEnabled ? Color.accentColor : Color.gray)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
+                        .disabled(!canLogin || (authService?.isLoading ?? false))
+                        
+                        // Forgot Password Link
+                        Button("Forgot Password?") {
+                            // TODO: Implement forgot password
+                        }
+                        .font(.subheadline)
+                        .foregroundStyle(.tint)
                     }
-                    .disabled(!viewModel.isLoginButtonEnabled)
-
-                    // Forgot Password
-                    Button("Forgot Password?") {
-                        // TODO: Implement forgot password
+                    .padding(.horizontal, 32)
+                    
+                    Spacer(minLength: 40)
+                    
+                    // Sign Up Link
+                    HStack {
+                        Text("Don't have an account?")
+                            .foregroundStyle(.secondary)
+                        
+                        Button("Sign Up") {
+                            // TODO: Navigate to sign up
+                        }
+                        .fontWeight(.medium)
+                        .foregroundStyle(.tint)
                     }
-                    .font(.caption)
-                    .foregroundColor(.accentColor)
+                    .font(.subheadline)
                 }
-                .padding(.horizontal, 32)
-
-                Spacer()
-
-                // Sign Up Link
-                HStack {
-                    Text("Don't have an account?")
-                        .foregroundColor(.secondary)
-
-                    Button("Sign Up") {
-                        // TODO: Navigate to sign up
-                    }
-                    .foregroundColor(.accentColor)
-                }
-                .font(.footnote)
                 .padding(.bottom, 32)
             }
-            #if os(iOS)
-            .toolbar(.hidden, for: .navigationBar)
-            #endif
+            .scrollBounceBehavior(.basedOnSize)
+            .background(Color(.systemBackground))
+            .ignoresSafeArea(.keyboard)
         }
-        .onChange(of: viewModel.viewState) { _, newState in
-            switch newState {
-            case .success(let user):
+        .alert("Login Failed", isPresented: $showingError) {
+            Button("OK") {
+                authService?.clearError()
+            }
+        } message: {
+            if let error = authService?.error {
+                Text(error.localizedDescription)
+            }
+        }
+        .onChange(of: authService?.error) { _, newError in
+            showingError = newError != nil
+        }
+        .onChange(of: authService?.isAuthenticated) { _, isAuthenticated in
+            if isAuthenticated, let user = authService?.currentUser {
+                // Update app state
                 appState.login(
                     userId: user.id,
                     email: user.email,
                     name: "\(user.firstName) \(user.lastName)"
                 )
-            case .error(let error):
-                if let appError = error as? ClarityDomain.AppError {
-                    Task { @MainActor in
-                        let errorHandler = ErrorHandler(
-                            logger: ConsoleLogger(),
-                            analytics: NoOpAnalytics()
-                        )
-                        errorPresentation = await errorHandler.presentToUser(appError)
-                        showingError = true
-                    }
-                }
-            default:
-                break
             }
-        }
-        .alert(
-            errorPresentation?.title ?? "Error",
-            isPresented: $showingError,
-            presenting: errorPresentation
-        ) { presentation in
-            ForEach(presentation.actions.indices, id: \.self) { index in
-                let action = presentation.actions[index]
-                Button(action.title) {
-                    if let handler = action.handler {
-                        Task {
-                            await handler()
-                        }
-                    }
-                    viewModel.clearError()
-                }
-            }
-        } message: { presentation in
-            Text(presentation.message)
         }
     }
-
+    
+    // MARK: - Private Properties
+    
+    private var canLogin: Bool {
+        !email.isEmpty && !password.isEmpty && email.contains("@")
+    }
+    
+    // MARK: - Private Methods
+    
     private func performLogin() async {
-        // Hide keyboard
+        // Dismiss keyboard
         focusedField = nil
-
+        
         // Perform login
-        await viewModel.login()
+        guard let authService else {
+            print("❌ AuthenticationService not available")
+            return
+        }
+        
+        await authService.login(email: email, password: password)
     }
-}
-
-// MARK: - Field Enum
-
-private enum Field: Hashable {
-    case email
-    case password
 }

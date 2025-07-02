@@ -17,7 +17,6 @@ struct RootView: View {
     @State private var showLoginView = false
     
     let dependencies: Dependencies
-    let appState: AppState
     
     var body: some View {
         Group {
@@ -60,10 +59,9 @@ struct RootView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color(.systemBackground))
             } else if showLoginView {
-                // Login view - inject dependencies properly
-                LoginView(dependencies: dependencies)
+                // Login view
+                LoginView()
                     .environment(appState)
-                    .withDependencies(dependencies)
             } else {
                 // Landing view
                 VStack(spacing: 30) {

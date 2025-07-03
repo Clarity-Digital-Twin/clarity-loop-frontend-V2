@@ -207,6 +207,9 @@ Temporary Items
 .env.test.local
 .env.production.local
 
+# MCP configuration (contains API keys)
+.mcp.json
+
 # Python
 **/__pycache__/
 **/*.py[cod]

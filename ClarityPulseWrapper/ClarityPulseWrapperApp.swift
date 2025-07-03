@@ -20,7 +20,7 @@ struct ClarityPulseWrapperApp: App {
         WindowGroup {
             Group {
                 if isAmplifyConfigured {
-                    // ✅ Once Amplify is ready, show the simple authenticated app
+                    // ✅ Once Amplify is ready, show the authenticated app
                     AuthenticatedApp()
                 } else if let error = amplifyError {
                     // ❌ Show error but allow proceeding
@@ -63,18 +63,21 @@ struct ClarityPulseWrapperApp: App {
     }
 }
 
-// 🎯 Simple authenticated app without heavy dependencies
+// 🎯 Fixed authenticated app with proper auth state management
 struct AuthenticatedApp: View {
     @State private var authService = SimpleAuthService()
 
     var body: some View {
         Group {
-            if authService.isAuthenticated {
-                // 🎉 User is logged in - show simple dashboard
+            if authService.isCheckingAuth {
+                // 🔄 Still checking auth state - show loading
+                LoadingView(step: "Checking authentication...")
+            } else if authService.isAuthenticated {
+                // 🎉 User is authenticated - show dashboard
                 SimpleDashboard()
                     .environmentObject(authService)
             } else {
-                // 🔐 User needs to log in
+                // 🔐 User needs to authenticate - show login
                 SimpleLoginView()
                     .environmentObject(authService)
             }
@@ -85,7 +88,7 @@ struct AuthenticatedApp: View {
     }
 }
 
-// 🔐 Lightweight login view
+// 🔐 Fixed login view with better error handling
 struct SimpleLoginView: View {
     @EnvironmentObject var authService: SimpleAuthService
     @State private var username = ""
@@ -103,6 +106,8 @@ struct SimpleLoginView: View {
             VStack(spacing: 16) {
                 TextField("Username", text: $username)
                     .textFieldStyle(.roundedBorder)
+                    .autocapitalization(.none)
+                    .disableAutocorrection(true)
 
                 SecureField("Password", text: $password)
                     .textFieldStyle(.roundedBorder)
@@ -111,6 +116,8 @@ struct SimpleLoginView: View {
                     Text(errorMessage)
                         .foregroundColor(.red)
                         .font(.caption)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
                 }
 
                 Button(action: login) {
@@ -127,6 +134,11 @@ struct SimpleLoginView: View {
             .padding(.horizontal, 40)
         }
         .padding()
+        .onAppear {
+            // 🔍 Debug: Log when login view appears
+            print("🔐 [LOGIN] Login view appeared")
+            print("🔐 [LOGIN] Auth state - authenticated: \(authService.isAuthenticated), checking: \(authService.isCheckingAuth)")
+        }
     }
 
     private func login() {
@@ -136,9 +148,24 @@ struct SimpleLoginView: View {
         Task {
             do {
                 try await authService.signIn(username: username, password: password)
+                // Reset form on success
+                await MainActor.run {
+                    username = ""
+                    password = ""
+                    isLoading = false
+                }
             } catch {
                 await MainActor.run {
-                    errorMessage = error.localizedDescription
+                    // 🎯 Better error handling for specific auth errors
+                    if error.localizedDescription.contains("already") {
+                        errorMessage = "You're already signed in. Refreshing..."
+                        // Force refresh auth state
+                        Task {
+                            await authService.checkAuthState()
+                        }
+                    } else {
+                        errorMessage = error.localizedDescription
+                    }
                     isLoading = false
                 }
             }
@@ -204,6 +231,9 @@ struct SimpleDashboard: View {
             .navigationTitle("CLARITY")
             .navigationBarTitleDisplayMode(.inline)
         }
+        .onAppear {
+            print("🎉 [DASHBOARD] Dashboard appeared for user: \(authService.currentUser ?? "unknown")")
+        }
     }
 }
 
@@ -259,14 +289,16 @@ struct LoadingView: View {
     }
 }
 
-// 🔐 Lightweight auth service without heavy dependencies
+// 🔐 Fixed auth service with proper state management
 @MainActor
 class SimpleAuthService: ObservableObject {
     @Published var isAuthenticated = false
+    @Published var isCheckingAuth = true  // 🎯 NEW: Track checking state
     @Published var currentUser: String?
 
     func checkAuthState() async {
         print("🔐 [AUTH] Checking current auth state...")
+        isCheckingAuth = true
 
         do {
             let session = try await Amplify.Auth.fetchAuthSession()
@@ -286,10 +318,22 @@ class SimpleAuthService: ObservableObject {
             isAuthenticated = false
             currentUser = nil
         }
+
+        isCheckingAuth = false  // 🎯 Auth check complete
     }
 
     func signIn(username: String, password: String) async throws {
         print("🔐 [AUTH] Attempting sign in for: \(username)")
+
+        // 🎯 Check if already signed in BEFORE attempting login
+        let session = try await Amplify.Auth.fetchAuthSession()
+        if session.isSignedIn {
+            print("✅ [AUTH] User already signed in, updating state...")
+            let user = try await Amplify.Auth.getCurrentUser()
+            isAuthenticated = true
+            currentUser = user.userId
+            return  // Don't attempt sign in again
+        }
 
         let result = try await Amplify.Auth.signIn(
             username: username,

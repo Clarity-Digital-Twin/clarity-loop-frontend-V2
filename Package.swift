@@ -127,8 +127,6 @@ let package = Package(
                 "Core/Errors/ErrorHandlerTestsSwift.swift",
                 "Mocks/MockAmplifyAuthService.swift",
                 "Mocks/MockTokenStorage.swift",
-                "Mocks/AmplifyMockTests.swift",
-                "Helpers/AmplifyMockService.swift",
                 "Security/ComprehensiveSecurityTests.swift",
                 "Security/EncryptedHealthMetricTests.swift",
                 "Shared"

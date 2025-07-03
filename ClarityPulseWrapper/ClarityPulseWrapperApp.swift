@@ -289,50 +289,86 @@ struct LoadingView: View {
     }
 }
 
-// 🔐 Fixed auth service with proper state management
+// 🔐 Fixed auth service with timeout protection and comprehensive error handling
 @MainActor
 class SimpleAuthService: ObservableObject {
     @Published var isAuthenticated = false
-    @Published var isCheckingAuth = true  // 🎯 NEW: Track checking state
+    @Published var isCheckingAuth = true  // 🎯 Track checking state
     @Published var currentUser: String?
 
     func checkAuthState() async {
-        print("🔐 [AUTH] Checking current auth state...")
+        print("🔐 [AUTH] Starting authentication check...")
         isCheckingAuth = true
 
         do {
-            let session = try await Amplify.Auth.fetchAuthSession()
-            if session.isSignedIn {
-                // Get user details
-                let user = try await Amplify.Auth.getCurrentUser()
-                isAuthenticated = true
-                currentUser = user.userId
-                print("🔐 [AUTH] User is signed in: \(user.userId)")
-            } else {
-                isAuthenticated = false
-                currentUser = nil
-                print("🔐 [AUTH] No current session")
+            // 🎯 Add timeout protection (5 seconds max)
+            let authCheck = Task {
+                let session = try await Amplify.Auth.fetchAuthSession()
+                if session.isSignedIn {
+                    // Get user details
+                    let user = try await Amplify.Auth.getCurrentUser()
+                    return (true, user.userId)
+                } else {
+                    return (false, nil)
+                }
             }
+
+            // Wait for auth check or timeout
+            let result = try await withThrowingTaskGroup(of: (Bool, String?).self) { group in
+                group.addTask {
+                    return try await authCheck.value
+                }
+
+                group.addTask {
+                    try await Task.sleep(nanoseconds: 5_000_000_000) // 5 seconds
+                    throw AuthCheckError.timeout
+                }
+
+                let result = try await group.next()!
+                group.cancelAll()
+                return result
+            }
+
+            isAuthenticated = result.0
+            currentUser = result.1
+
+            if isAuthenticated {
+                print("✅ [AUTH] User is signed in: \(currentUser ?? "unknown")")
+            } else {
+                print("🔐 [AUTH] No current session - user needs to login")
+            }
+
         } catch {
-            print("❌ [AUTH] Error checking auth state: \(error)")
+            print("⚠️ [AUTH] Auth check failed: \(error)")
+            // 🎯 On any error, assume not authenticated and continue
             isAuthenticated = false
             currentUser = nil
+
+            if error is AuthCheckError {
+                print("⏰ [AUTH] Auth check timed out - proceeding to login")
+            }
         }
 
-        isCheckingAuth = false  // 🎯 Auth check complete
+        isCheckingAuth = false  // 🎯 ALWAYS set this to false
+        print("🔐 [AUTH] Auth check complete - isAuthenticated: \(isAuthenticated)")
     }
 
     func signIn(username: String, password: String) async throws {
         print("🔐 [AUTH] Attempting sign in for: \(username)")
 
         // 🎯 Check if already signed in BEFORE attempting login
-        let session = try await Amplify.Auth.fetchAuthSession()
-        if session.isSignedIn {
-            print("✅ [AUTH] User already signed in, updating state...")
-            let user = try await Amplify.Auth.getCurrentUser()
-            isAuthenticated = true
-            currentUser = user.userId
-            return  // Don't attempt sign in again
+        do {
+            let session = try await Amplify.Auth.fetchAuthSession()
+            if session.isSignedIn {
+                print("✅ [AUTH] User already signed in, updating state...")
+                let user = try await Amplify.Auth.getCurrentUser()
+                isAuthenticated = true
+                currentUser = user.userId
+                return  // Don't attempt sign in again
+            }
+        } catch {
+            print("⚠️ [AUTH] Could not check existing session: \(error)")
+            // Continue with sign in attempt
         }
 
         let result = try await Amplify.Auth.signIn(
@@ -358,4 +394,9 @@ class SimpleAuthService: ObservableObject {
             print("❌ [AUTH] Sign out error: \(error)")
         }
     }
+}
+
+// 🎯 Custom error for auth timeout
+enum AuthCheckError: Error {
+    case timeout
 }

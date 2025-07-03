@@ -27,6 +27,7 @@
 		DCAF2D4DC605E53257E0597F /* ClarityUI in Frameworks */ = {isa = PBXBuildFile; productRef = FEDABD0F0E331008D67455ED /* ClarityUI */; };
 		DD52E4916AA2BF6465ABDE24 /* BaseScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1885F106F553B1399190D4A4 /* BaseScreen.swift */; };
 		E8FCD52CA71E82CD42F54388 /* ScreenshotComparisonTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58ECBCB36C19B13A963DBC19 /* ScreenshotComparisonTests.swift */; };
+		AMPLIFY123456789ABCDEF /* amplifyconfiguration.json in Resources */ = {isa = PBXBuildFile; fileRef = AMPLIFYFILE123456789ABC /* amplifyconfiguration.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,6 +57,7 @@
 		"TEMP_B2472BEC-3F36-43EB-9FFA-FE102E0418F8" /* ClarityPulseWrapperApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClarityPulseWrapperApp.swift; sourceTree = "<group>"; };
 
 		"TEMP_E61D43A0-665A-495C-B222-330391CABE78" /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		AMPLIFYFILE123456789ABC /* amplifyconfiguration.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = amplifyconfiguration.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -109,6 +111,7 @@
 			children = (
 				"TEMP_B2472BEC-3F36-43EB-9FFA-FE102E0418F8" /* ClarityPulseWrapperApp.swift */,
 				"TEMP_E61D43A0-665A-495C-B222-330391CABE78" /* RootView.swift */,
+				AMPLIFYFILE123456789ABC /* amplifyconfiguration.json */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
@@ -180,7 +183,7 @@
 			buildPhases = (
 				97924C16D239AE9774034F89 /* Sources */,
 				E0366211178D7688FC00A88E /* Frameworks */,
-				FB580FB2063179F289C6B9F5 /* Copy amplifyconfiguration.json */,
+				RESOURCES123456789ABCDEF /* Resources */,
 			);
 			buildRules = (
 			);
@@ -241,27 +244,16 @@
 		};
 /* End PBXProject section */
 
-/* Begin PBXShellScriptBuildPhase section */
-		FB580FB2063179F289C6B9F5 /* Copy amplifyconfiguration.json */ = {
-			isa = PBXShellScriptBuildPhase;
+/* Begin PBXResourcesBuildPhase section */
+		RESOURCES123456789ABCDEF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Copy amplifyconfiguration.json";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(BUILT_PRODUCTS_DIR)/$(PRODUCT_NAME).app/amplifyconfiguration.json",
+				AMPLIFY123456789ABCDEF /* amplifyconfiguration.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "echo \"Copying amplifyconfiguration.json to Resources\"\ncp \"${SRCROOT}/amplifyconfiguration.json\" \"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/\"\n";
 		};
-/* End PBXShellScriptBuildPhase section */
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		91EA6BE5F18057F33C81AD8E /* Sources */ = {

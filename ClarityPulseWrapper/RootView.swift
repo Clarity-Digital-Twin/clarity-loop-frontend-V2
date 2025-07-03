@@ -163,7 +163,7 @@ struct RootView: View {
 
         do {
             // Use a more robust timeout mechanism
-            let result = try await withThrowingTaskGroup(of: Void.self) { group in
+            try await withThrowingTaskGroup(of: Void.self) { group in
                 // Add the Amplify configuration task
                 group.addTask {
                     let amplifyConfig = AmplifyConfiguration()

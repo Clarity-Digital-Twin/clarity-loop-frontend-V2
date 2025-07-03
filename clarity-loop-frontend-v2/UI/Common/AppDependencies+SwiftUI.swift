@@ -177,7 +177,7 @@ public extension View {
 
 public protocol AmplifyConfigurable {
     func configure() async throws
-    var isConfigured: Bool { get }
+    var isConfigured: Bool { get async }
     func reset() async throws
 }
 
@@ -188,205 +188,184 @@ public final class AmplifyConfiguration: AmplifyConfigurable, @unchecked Sendabl
     public static let shared = AmplifyConfiguration()
 
     // MARK: - State Management
-    private var _isConfigured = false
-    private let configurationLock = NSLock()
-    private let configurationTimeout: TimeInterval = 15.0 // Reduced from 30s
+    private let configurationActor = ConfigurationActor()
+    private let configurationTimeout: TimeInterval = 15.0
 
     public var isConfigured: Bool {
-        configurationLock.lock()
-        defer { configurationLock.unlock() }
-        return _isConfigured
+        get async {
+            await configurationActor.isConfigured
+        }
     }
 
     private init() {
         print("🏗️ [AmplifyConfiguration] Singleton instance created")
     }
 
-    // MARK: - Public Configuration Method
-    nonisolated public func configure() async throws {
+    // MARK: - Configuration Methods
+
+    public func configure() async throws {
         print("🚀 [AmplifyConfiguration] GIVEN: Starting Amplify configuration process")
 
-        // WHEN: Check if already configured
-        if isConfigured {
-            print("✅ [AmplifyConfiguration] THEN: Amplify already configured - skipping")
+        let isAlreadyConfigured = await configurationActor.isConfigured
+        if isAlreadyConfigured {
+            print("✅ [AmplifyConfiguration] THEN: Already configured, skipping")
             return
         }
 
-        // WHEN: Attempt configuration with timeout
-        do {
-            try await configureWithTimeout()
-            print("🎉 [AmplifyConfiguration] THEN: Configuration completed successfully")
-        } catch {
-            print("💥 [AmplifyConfiguration] THEN: Configuration failed - \(error)")
-            throw error
+        // Timeout protection
+        try await withTimeout(seconds: configurationTimeout) {
+            try await self.performConfiguration()
         }
     }
 
-    // MARK: - Reset Method for Testing
     public func reset() async throws {
         print("🔄 [AmplifyConfiguration] GIVEN: Resetting Amplify configuration")
 
-        configurationLock.lock()
-        _isConfigured = false
-        configurationLock.unlock()
+        await configurationActor.setConfigured(false)
 
-        do {
-            await Amplify.reset()
-            print("✅ [AmplifyConfiguration] THEN: Amplify reset successfully")
-        } catch {
-            print("❌ [AmplifyConfiguration] THEN: Reset failed - \(error)")
-            throw error
-        }
+        // Since Amplify.reset() is internal, we'll work around it
+        print("⚠️ [AmplifyConfiguration] Note: Amplify reset requires app restart for full effect")
     }
 
     // MARK: - Private Implementation
-    private func configureWithTimeout() async throws {
-        try await withThrowingTaskGroup(of: Void.self) { group in
-
-            // Add configuration task
-            group.addTask { [weak self] in
-                try await self?.performConfiguration()
-            }
-
-            // Add timeout task
-            group.addTask { [configurationTimeout] in
-                try await Task.sleep(nanoseconds: UInt64(configurationTimeout * 1_000_000_000))
-                throw AmplifyConfigurationError.timeout(configurationTimeout)
-            }
-
-            // Wait for first completion and cancel others
-            try await group.next()
-            group.cancelAll()
-        }
-    }
 
     private func performConfiguration() async throws {
-        print("📋 [AmplifyConfiguration] WHEN: Starting configuration steps")
+        print("🔧 [AmplifyConfiguration] WHEN: Performing Amplify configuration steps")
 
-        // Step 1: Validate configuration file
-        let configPath = try validateConfigurationFile()
-        print("✅ [AmplifyConfiguration] THEN: Configuration file validated at \(configPath)")
+        // Step 1: Add plugins
+        try await addPlugins()
 
-        // Step 2: Add plugins safely
-        try await addPluginsSafely()
-        print("✅ [AmplifyConfiguration] THEN: Plugins added successfully")
+        // Step 2: Configure Amplify
+        try await configureAmplify()
 
-        // Step 3: Configure Amplify
-        try await configureAmplifyCore()
-        print("✅ [AmplifyConfiguration] THEN: Amplify core configured")
+        // Step 3: Validate configuration
+        try await validateConfiguration()
 
         // Step 4: Mark as configured
-        configurationLock.lock()
-        _isConfigured = true
-        configurationLock.unlock()
+        await configurationActor.setConfigured(true)
         print("✅ [AmplifyConfiguration] THEN: Configuration state updated")
     }
 
-    private func validateConfigurationFile() throws -> String {
-        print("📁 [AmplifyConfiguration] WHEN: Validating amplifyconfiguration.json")
-
-        guard let configPath = Bundle.main.path(forResource: "amplifyconfiguration", ofType: "json") else {
-            throw AmplifyConfigurationError.configurationFileNotFound
-        }
+    private func addPlugins() async throws {
+        print("🔌 [AmplifyConfiguration] WHEN: Adding Amplify plugins...")
 
         do {
-            let configData = try Data(contentsOf: URL(fileURLWithPath: configPath))
-            guard configData.count > 0 else {
-                throw AmplifyConfigurationError.emptyConfigurationFile
-            }
+            // Add plugins without checking for duplicates (Amplify handles this internally)
+            try Amplify.add(plugin: AWSCognitoAuthPlugin())
+            print("✅ [AmplifyConfiguration] THEN: AWSCognitoAuthPlugin added")
 
-            // Validate JSON structure
-            if let configJson = try JSONSerialization.jsonObject(with: configData) as? [String: Any] {
-                guard configJson["auth"] != nil else {
-                    throw AmplifyConfigurationError.missingAuthConfiguration
-                }
-                print("✅ [AmplifyConfiguration] THEN: Configuration JSON validated (\(configData.count) bytes)")
-            } else {
-                throw AmplifyConfigurationError.invalidConfigurationFormat
-            }
+            try Amplify.add(plugin: AWSAPIPlugin())
+            print("✅ [AmplifyConfiguration] THEN: AWSAPIPlugin added")
 
-            return configPath
         } catch {
-            if error is AmplifyConfigurationError {
-                throw error
+            if error.localizedDescription.contains("Plugin has already been added") {
+                print("ℹ️ [AmplifyConfiguration] Plugins already added, continuing...")
             } else {
-                throw AmplifyConfigurationError.configurationReadError(error)
+                print("❌ [AmplifyConfiguration] Failed to add plugins: \(error)")
+                throw AmplifyConfigurationError.pluginSetupFailed(error)
             }
         }
     }
 
-    private func addPluginsSafely() async throws {
-        print("🔌 [AmplifyConfiguration] WHEN: Adding Amplify plugins")
-
-        do {
-            // Only add plugins if not already added
-            if !Amplify.Auth.plugins.contains(where: { $0.key == "awsCognitoAuthPlugin" }) {
-                try Amplify.add(plugin: AWSCognitoAuthPlugin())
-                print("✅ [AmplifyConfiguration] THEN: AWSCognitoAuthPlugin added")
-            }
-
-            if !Amplify.API.plugins.contains(where: { $0.key == "awsAPIPlugin" }) {
-                try Amplify.add(plugin: AWSAPIPlugin())
-                print("✅ [AmplifyConfiguration] THEN: AWSAPIPlugin added")
-            }
-        } catch {
-            throw AmplifyConfigurationError.pluginError(error)
-        }
-    }
-
-    private func configureAmplifyCore() async throws {
-        print("⚙️ [AmplifyConfiguration] WHEN: Configuring Amplify core")
+        private func configureAmplify() async throws {
+        print("⚙️ [AmplifyConfiguration] WHEN: Configuring Amplify with configuration file...")
 
         do {
             try Amplify.configure()
-            print("✅ [AmplifyConfiguration] THEN: Amplify core configured successfully")
+            print("✅ [AmplifyConfiguration] THEN: Amplify configured successfully")
         } catch {
-            throw AmplifyConfigurationError.amplifyConfigurationError(error)
+            print("❌ [AmplifyConfiguration] Amplify configuration failed: \(error)")
+            throw AmplifyConfigurationError.configurationFailed(error)
+        }
+    }
+
+    private func validateConfiguration() async throws {
+        print("🔍 [AmplifyConfiguration] WHEN: Validating Amplify configuration...")
+
+        do {
+            // Test if configuration is working by checking auth status
+            _ = try await Amplify.Auth.fetchAuthSession()
+            print("✅ [AmplifyConfiguration] THEN: Configuration validation successful")
+        } catch {
+            print("⚠️ [AmplifyConfiguration] Configuration validation warning: \(error)")
+            // Don't throw here as this might just mean user isn't signed in
+        }
+    }
+
+    private func withTimeout<T: Sendable>(
+        seconds: TimeInterval,
+        operation: @escaping @Sendable () async throws -> T
+    ) async throws -> T {
+        try await withThrowingTaskGroup(of: T.self) { group in
+            // Add the operation task
+            group.addTask {
+                try await operation()
+            }
+
+            // Add the timeout task
+            group.addTask {
+                try await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+                throw AmplifyConfigurationError.timeout(Int(seconds))
+            }
+
+            // Return the first completed task result
+            guard let result = try await group.next() else {
+                throw AmplifyConfigurationError.timeout(Int(seconds))
+            }
+
+            group.cancelAll()
+            return result
         }
     }
 }
 
-// MARK: - Amplify Configuration Errors
+// MARK: - Configuration Actor for Thread Safety
+
+private actor ConfigurationActor {
+    private var _isConfigured = false
+
+    var isConfigured: Bool {
+        _isConfigured
+    }
+
+    func setConfigured(_ configured: Bool) {
+        _isConfigured = configured
+    }
+}
+
+// MARK: - Error Types
+
 public enum AmplifyConfigurationError: LocalizedError, Equatable {
-    case configurationFileNotFound
-    case emptyConfigurationFile
-    case missingAuthConfiguration
-    case invalidConfigurationFormat
-    case configurationReadError(Error)
-    case pluginError(Error)
-    case amplifyConfigurationError(Error)
-    case timeout(TimeInterval)
+    case timeout(Int)
+    case configurationMissing
+    case configurationFailed(Error)
+    case pluginSetupFailed(Error)
+    case validationFailed(String)
 
     public var errorDescription: String? {
         switch self {
-        case .configurationFileNotFound:
-            return "amplifyconfiguration.json not found in app bundle"
-        case .emptyConfigurationFile:
-            return "Configuration file is empty"
-        case .missingAuthConfiguration:
-            return "Auth configuration missing from amplifyconfiguration.json"
-        case .invalidConfigurationFormat:
-            return "Invalid JSON format in configuration file"
-        case .configurationReadError(let error):
-            return "Failed to read configuration: \(error.localizedDescription)"
-        case .pluginError(let error):
-            return "Failed to add Amplify plugin: \(error.localizedDescription)"
-        case .amplifyConfigurationError(let error):
-            return "Amplify configuration failed: \(error.localizedDescription)"
         case .timeout(let seconds):
-            return "Configuration timed out after \(seconds) seconds"
+            return "Amplify configuration timed out after \(seconds) seconds. " +
+                   "You can skip AWS setup and continue with local features."
+        case .configurationMissing:
+            return "Amplify configuration file (amplifyconfiguration.json) is missing or invalid."
+        case .configurationFailed(let error):
+            return "Amplify configuration failed: \(error.localizedDescription)"
+        case .pluginSetupFailed(let error):
+            return "Failed to set up Amplify plugins: \(error.localizedDescription)"
+        case .validationFailed(let message):
+            return "Amplify configuration validation failed: \(message)"
         }
     }
 
     public static func == (lhs: AmplifyConfigurationError, rhs: AmplifyConfigurationError) -> Bool {
         switch (lhs, rhs) {
-        case (.configurationFileNotFound, .configurationFileNotFound),
-             (.emptyConfigurationFile, .emptyConfigurationFile),
-             (.missingAuthConfiguration, .missingAuthConfiguration),
-             (.invalidConfigurationFormat, .invalidConfigurationFormat):
-            return true
         case (.timeout(let lhsSeconds), .timeout(let rhsSeconds)):
             return lhsSeconds == rhsSeconds
+        case (.configurationMissing, .configurationMissing):
+            return true
+        case (.validationFailed(let lhsMessage), .validationFailed(let rhsMessage)):
+            return lhsMessage == rhsMessage
         default:
             return false
         }

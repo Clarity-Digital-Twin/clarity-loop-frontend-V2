@@ -17,29 +17,62 @@ struct RootView: View {
     @State private var isAmplifyConfigured = false
     @State private var configurationError: Error?
     @State private var showLoginView = false
+    @State private var initializationTimer = 0
+    @State private var showSkipOption = false
+    @State private var timer: Timer?
 
     let dependencies: Dependencies
 
     var body: some View {
         Group {
             if isInitializing {
-                // Initialization screen
+                // Enhanced initialization screen with progress feedback
                 VStack(spacing: 20) {
                     ProgressView()
                         .scaleEffect(1.5)
-                    Text("Initializing...")
-                        .font(.title2)
+
+                    VStack(spacing: 8) {
+                        Text("Initializing...")
+                            .font(.title2)
+
+                        Text("Setting up AWS services...")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+
+                        if initializationTimer > 0 {
+                            Text("⏱️ \(max(0, 10 - initializationTimer))s")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .monospacedDigit()
+                        }
+                    }
+
+                    if showSkipOption {
+                        Button("Skip AWS Setup") {
+                            stopTimer()
+                            isInitializing = false
+                            configurationError = TimeoutError(seconds: 10)
+                        }
+                        .buttonStyle(.bordered)
+                        .padding(.top)
+                    }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color(.systemBackground))
+                .onAppear {
+                    startTimer()
+                }
+                .onDisappear {
+                    stopTimer()
+                }
             } else if let error = configurationError {
-                // Error screen
+                // Error screen with option to skip AWS setup
                 VStack(spacing: 20) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.system(size: 60))
-                        .foregroundColor(.red)
+                        .foregroundColor(.orange)
 
-                    Text("Configuration Failed")
+                    Text("AWS Configuration Issue")
                         .font(.title)
                         .fontWeight(.bold)
 
@@ -48,15 +81,30 @@ struct RootView: View {
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
 
-                    Button("Retry") {
-                        isInitializing = true
-                        configurationError = nil
-                        Task {
-                            await configureAmplify()
+                    VStack(spacing: 12) {
+                        Button("Retry AWS Setup") {
+                            isInitializing = true
+                            configurationError = nil
+                            Task {
+                                await configureAmplify()
+                            }
                         }
+                        .buttonStyle(.borderedProminent)
+
+                        Button("Skip & Continue with Local Features") {
+                            configurationError = nil
+                            // Continue without AWS - app will use mock/local services
+                        }
+                        .buttonStyle(.bordered)
                     }
-                    .buttonStyle(.borderedProminent)
                     .padding(.top)
+
+                    Text("💡 Tip: You can skip AWS setup during development and still use the app with local features.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                        .padding(.top, 8)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color(.systemBackground))
@@ -112,25 +160,75 @@ struct RootView: View {
 
     private func configureAmplify() async {
         print("🔄 Starting Amplify configuration...")
-        do {
-            // FIXED: Use direct configuration like ClarityPulseApp instead of dependency injection
-            // This avoids the hanging issue with dependency resolution
-            let amplifyConfig = AmplifyConfiguration()
-            try await amplifyConfig.configure()
-            print("✅ Amplify configured successfully in RootView")
 
+        do {
+            // Use a more robust timeout mechanism
+            let result = try await withThrowingTaskGroup(of: Void.self) { group in
+                // Add the Amplify configuration task
+                group.addTask {
+                    let amplifyConfig = AmplifyConfiguration()
+                    try await amplifyConfig.configure()
+                    print("✅ Amplify configured successfully in RootView")
+                }
+
+                // Add timeout task
+                group.addTask {
+                    try await Task.sleep(nanoseconds: 30_000_000_000) // 30 seconds
+                    throw TimeoutError(seconds: 30)
+                }
+
+                // Wait for the first one to complete
+                try await group.next()
+
+                // Cancel all remaining tasks
+                group.cancelAll()
+            }
+
+            // If we get here, Amplify was configured successfully
             await MainActor.run {
+                stopTimer()
                 isAmplifyConfigured = true
                 isInitializing = false
                 print("📌 RootView state updated - isInitializing: \(isInitializing), isAmplifyConfigured: \(isAmplifyConfigured)")
             }
+
         } catch {
             print("❌ Failed to configure Amplify: \(error)")
             await MainActor.run {
+                stopTimer()
                 configurationError = error
                 isInitializing = false
                 print("📌 RootView error state - isInitializing: \(isInitializing), error: \(error)")
             }
         }
+    }
+
+    // MARK: - Helper Methods
+    private func startTimer() {
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+            Task { @MainActor in
+                initializationTimer += 1
+                if initializationTimer >= 10 {
+                    showSkipOption = true
+                }
+                if initializationTimer >= 30 || !isInitializing {
+                    stopTimer()
+                }
+            }
+        }
+    }
+
+    private func stopTimer() {
+        timer?.invalidate()
+        timer = nil
+    }
+}
+
+// MARK: - Timeout Error
+private struct TimeoutError: LocalizedError {
+    let seconds: TimeInterval
+
+    var errorDescription: String? {
+        return "Configuration timed out after \(Int(seconds)) seconds. You can skip AWS setup and continue with local features."
     }
 }

@@ -1,25 +1,73 @@
-# ClarityPulse iOS App Wrapper
+# ClarityPulseWrapper - Xcode Wrapper
 
-This is a minimal Xcode wrapper project that creates an iOS app bundle from our Swift Package.
+## 🚨 CRITICAL: HOW TO BUILD AND RUN 🚨
 
-## Why This Exists
+### ALWAYS USE THE WORKSPACE
 
-- Pure SPM's `.iOSApplication` product is still experimental/beta
-- This wrapper provides a stable, production-ready iOS app target
-- Only 4 files needed to create a full iOS app
+```bash
+# Navigate here
+cd ClarityPulseWrapper
 
-## Setup
+# Open workspace (NOT the .xcodeproj)
+open ClarityPulse.xcworkspace
+```
 
-1. Install xcodegen if needed: `brew install xcodegen`
-2. Generate the Xcode project: `xcodegen generate`
-3. Open `ClarityPulseWrapper.xcodeproj` in Xcode
-4. Run on simulator with ⌘R
+### IN XCODE
 
-## What's in This Folder
+1. **Select Scheme:** ClarityPulseWrapper (NOT ClarityPulseApp)
+2. **Build:** Product → Run (⌘R)
+3. **Target:** iPhone 16 simulator or physical device
 
-- `ClarityPulseWrapperApp.swift` - The @main app entry point
-- `project.yml` - Xcodegen configuration
-- `.gitignore` - Keeps generated files out of git
-- This README
+### COMMAND LINE BUILD
 
-The actual app code lives in the parent Swift Package.
+```bash
+# Build
+xcodebuild -workspace ClarityPulse.xcworkspace -scheme ClarityPulseWrapper -destination 'platform=iOS Simulator,name=iPhone 16' build
+
+# Run
+xcodebuild -workspace ClarityPulse.xcworkspace -scheme ClarityPulseWrapper -destination 'platform=iOS Simulator,name=iPhone 16' run
+```
+
+## FILES IN THIS DIRECTORY
+
+- **ClarityPulse.xcworkspace** ← **USE THIS**
+- **ClarityPulseWrapper.xcodeproj** ← Never open directly
+- **amplifyconfiguration.json** ← AWS Amplify config
+- **LoginView.swift** ← Login UI component
+- **RootView.swift** ← App initialization
+- **ClarityPulseWrapperApp.swift** ← App entry point
+
+## ARCHITECTURE
+
+This wrapper project:
+1. Imports the SPM package (`clarity-loop-frontend-v2`)
+2. Provides iOS app shell and entry point
+3. Configures AWS Amplify authentication
+4. Handles app lifecycle and dependencies
+
+## TROUBLESHOOTING
+
+### "Initializing..." Hang
+- Check `amplifyconfiguration.json` exists
+- Verify PoolId is not empty
+- Clean build folder: ⌘⇧K
+
+### Build Errors
+- Use workspace, not project
+- Clean DerivedData: `rm -rf ~/Library/Developer/Xcode/DerivedData`
+- Reset simulator if needed
+
+### Authentication Issues
+- Verify AWS backend is running
+- Check Cognito configuration
+- Ensure valid credentials
+
+## RELATED DOCS
+
+- **Complete Build Guide:** `../CLARITY_APP_BUILD_PROCESS.md`
+- **Backend Reference:** `../BACKEND_REFERENCE/`
+- **SPM Package:** `../clarity-loop-frontend-v2/`
+
+---
+
+**🚨 REMEMBER: WORKSPACE ONLY, NEVER THE PROJECT 🚨**

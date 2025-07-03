@@ -1,134 +1,61 @@
-# CLARITY Pulse V2 - iOS Health Monitoring App
+# CLARITY Digital Twin - Frontend V2
 
-A modern iOS application for health metric tracking using a **workspace + SPM package** architecture for clean separation between app shell and feature code.
+## 🚨 CRITICAL BUILD INSTRUCTIONS 🚨
 
-## AI Assistant Rules Files
+**BEFORE DOING ANYTHING:** Read `CLARITY_APP_BUILD_PROCESS.md` for complete build instructions.
 
-This template includes **opinionated rules files** for popular AI coding assistants. These files establish coding standards, architectural patterns, and best practices for modern iOS development using the latest APIs and Swift features.
-
-### Included Rules Files
-- **Claude Code**: `CLAUDE.md` - Claude Code rules
-- **Cursor**: `.cursor/*.mdc` - Cursor-specific rules
-- **GitHub Copilot**: `.github/copilot-instructions.md` - GitHub Copilot rules
-
-### Customization Options
-These rules files are **starting points** - feel free to:
-- ✅ **Edit them** to match your team's coding standards
-- ✅ **Delete them** if you prefer different approaches
-- ✅ **Add your own** rules for other AI tools
-- ✅ **Update them** as new iOS APIs become available
-
-### What Makes These Rules Opinionated
-- **No ViewModels**: Embraces pure SwiftUI state management patterns
-- **Swift 6+ Concurrency**: Enforces modern async/await over legacy patterns
-- **Latest APIs**: Recommends iOS 18+ features with optional iOS 26 guidelines
-- **Testing First**: Promotes Swift Testing framework over XCTest
-- **Performance Focus**: Emphasizes @Observable over @Published for better performance
-
-**Note for AI assistants**: You MUST read the relevant rules files before making changes to ensure consistency with project standards.
-
-## Project Architecture
-
-```
-MyProject/
-├── MyProject.xcworkspace/              # Open this file in Xcode
-├── MyProject.xcodeproj/                # App shell project
-├── MyProject/                          # App target (minimal)
-│   ├── Assets.xcassets/                # App-level assets (icons, colors)
-│   ├── MyProjectApp.swift              # App entry point
-│   └── MyProject.xctestplan            # Test configuration
-├── MyProjectPackage/                   # 🚀 Primary development area
-│   ├── Package.swift                   # Package configuration
-│   ├── Sources/MyProjectFeature/       # Your feature code
-│   └── Tests/MyProjectFeatureTests/    # Unit tests
-└── MyProjectUITests/                   # UI automation tests
+**QUICK START:**
+```bash
+cd ClarityPulseWrapper
+open ClarityPulse.xcworkspace  # ⚠️ WORKSPACE, NOT PROJECT
+# Select ClarityPulseWrapper scheme in Xcode
+# Product → Run (⌘R)
 ```
 
-## Key Architecture Points
+## Architecture
 
-### Workspace + SPM Structure
-- **App Shell**: `MyProject/` contains minimal app lifecycle code
-- **Feature Code**: `MyProjectPackage/Sources/MyProjectFeature/` is where most development happens
-- **Separation**: Business logic lives in the SPM package, app target just imports and displays it
+This is a Swift iOS application for CLARITY's concierge psychiatry platform with clean architecture:
 
-### Buildable Folders (Xcode 16)
-- Files added to the filesystem automatically appear in Xcode
-- No need to manually add files to project targets
-- Reduces project file conflicts in teams
+- **Backend:** Complete AWS infrastructure in `BACKEND_REFERENCE/`
+- **SPM Package:** Modular Swift package in `clarity-loop-frontend-v2/`
+- **Wrapper:** Xcode project in `ClarityPulseWrapper/`
 
-## Development Notes
+## Project Structure
 
-### Code Organization
-Most development happens in `MyProjectPackage/Sources/MyProjectFeature/` - organize your code as you prefer.
-
-### Public API Requirements
-Types exposed to the app target need `public` access:
-```swift
-public struct NewView: View {
-    public init() {}
-    
-    public var body: some View {
-        // Your view code
-    }
-}
+```
+├── BACKEND_REFERENCE/          # AWS backend (Python/FastAPI)
+├── clarity-loop-frontend-v2/   # Swift Package Manager modules
+│   ├── Core/                   # Services, DI, security
+│   ├── Domain/                 # Business logic, entities
+│   ├── Data/                   # Repositories, persistence
+│   └── UI/                     # SwiftUI views, ViewModels
+└── ClarityPulseWrapper/        # Xcode wrapper
+    └── ClarityPulse.xcworkspace # 👈 ALWAYS USE THIS
 ```
 
-### Adding Dependencies
-Edit `MyProjectPackage/Package.swift` to add SPM dependencies:
-```swift
-dependencies: [
-    .package(url: "https://github.com/example/SomePackage", from: "1.0.0")
-],
-targets: [
-    .target(
-        name: "MyProjectFeature",
-        dependencies: ["SomePackage"]
-    ),
-]
-```
+## Development Workflow
 
-### Test Structure
-- **Unit Tests**: `MyProjectPackage/Tests/MyProjectFeatureTests/` (Swift Testing framework)
-- **UI Tests**: `MyProjectUITests/` (XCUITest framework)
-- **Test Plan**: `MyProject.xctestplan` coordinates all tests
+1. **Open:** `ClarityPulseWrapper/ClarityPulse.xcworkspace` (NEVER the .xcodeproj)
+2. **Select:** ClarityPulseWrapper scheme
+3. **Build:** Product → Run (⌘R)
+4. **Edit:** Make changes in `clarity-loop-frontend-v2/` modules
+5. **Test:** Build and run through the workspace
 
-## Configuration
+## Key Features
 
-### XCConfig Build Settings
-Build settings are managed through **XCConfig files** in `Config/`:
-- `Config/Shared.xcconfig` - Common settings (bundle ID, versions, deployment target)
-- `Config/Debug.xcconfig` - Debug-specific settings  
-- `Config/Release.xcconfig` - Release-specific settings
-- `Config/Tests.xcconfig` - Test-specific settings
+- AWS Cognito authentication
+- Health data tracking
+- SwiftUI + Swift 6 strict concurrency
+- Clean architecture with dependency injection
+- Comprehensive testing suite
 
-### Entitlements Management
-App capabilities are managed through a **declarative entitlements file**:
-- `Config/MyProject.entitlements` - All app entitlements and capabilities
-- AI agents can safely edit this XML file to add HealthKit, CloudKit, Push Notifications, etc.
-- No need to modify complex Xcode project files
+## Documentation
 
-### Code Quality
+- **Build Process:** `CLARITY_APP_BUILD_PROCESS.md` ⭐ **READ THIS FIRST**
+- **AWS Setup:** `CLARITY_AWS_AMPLIFY_SETUP.md`
+- **Accessibility:** `CLARITY_ACCESSIBILITY_GUIDE.md`
+- **Agents:** `AGENTS.md`
 
-#### SwiftLint Integration
-The project uses SwiftLint for consistent code style:
-- **Configuration**: `.swiftlint.yml` defines project rules
-- **Pre-commit Hook**: Automatically runs SwiftLint on staged files
-- **Setup**: Run `./Scripts/install-hooks.sh` to install git hooks
-- **Manual Fix**: Run `swiftlint --fix` to auto-fix violations
+---
 
-### Asset Management
-- **App-Level Assets**: `MyProject/Assets.xcassets/` (app icon, accent color)
-- **Feature Assets**: Add `Resources/` folder to SPM package if needed
-
-### SPM Package Resources
-To include assets in your feature package:
-```swift
-.target(
-    name: "MyProjectFeature",
-    dependencies: [],
-    resources: [.process("Resources")]
-)
-```
-
-### Generated with XcodeBuildMCP
-This project was scaffolded using [XcodeBuildMCP](https://github.com/cameroncooke/XcodeBuildMCP), which provides tools for AI-assisted iOS development workflows.
+**🚨 REMEMBER: ALWAYS USE THE WORKSPACE (`ClarityPulse.xcworkspace`), NEVER THE PROJECT 🚨**

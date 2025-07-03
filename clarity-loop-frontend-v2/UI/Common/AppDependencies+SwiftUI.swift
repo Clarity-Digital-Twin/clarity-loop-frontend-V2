@@ -180,19 +180,101 @@ public protocol AmplifyConfigurable {
 }
 
 public final class AmplifyConfiguration: AmplifyConfigurable, @unchecked Sendable {
+
+    private var isAmplifyConfigured = false
+
     public init() {}
 
     nonisolated public func configure() async throws {
-        do {
-            try Amplify.add(plugin: AWSCognitoAuthPlugin())
-            try Amplify.add(plugin: AWSAPIPlugin())
+        print("🚀 [AmplifyConfiguration] Starting Amplify configuration...")
+        print("🔍 [AmplifyConfiguration] Bundle path: \(Bundle.main.bundlePath)")
 
-            // Configure using default amplifyconfiguration.json from bundle
+        do {
+            // Step 1: Check if configuration file exists
+            print("📁 [AmplifyConfiguration] Step 1: Checking for amplifyconfiguration.json...")
+            guard let configPath = Bundle.main.path(forResource: "amplifyconfiguration", ofType: "json") else {
+                let error = NSError(domain: "AmplifyConfiguration", code: 404, userInfo: [
+                    NSLocalizedDescriptionKey: "amplifyconfiguration.json not found in bundle"
+                ])
+                print("❌ [AmplifyConfiguration] Configuration file not found")
+                throw error
+            }
+            print("✅ [AmplifyConfiguration] Configuration file found at: \(configPath)")
+
+            // Step 2: Validate configuration content
+            print("🔐 [AmplifyConfiguration] Step 2: Validating configuration content...")
+            let configData = try Data(contentsOf: URL(fileURLWithPath: configPath))
+            print("✅ [AmplifyConfiguration] Configuration data loaded: \(configData.count) bytes")
+
+            // Step 3: Parse and validate JSON structure
+            print("🌐 [AmplifyConfiguration] Step 3: Parsing configuration JSON...")
+            if let configJson = try JSONSerialization.jsonObject(with: configData) as? [String: Any] {
+                print("✅ [AmplifyConfiguration] Configuration JSON parsed successfully")
+                if configJson["auth"] != nil {
+                    print("✅ [AmplifyConfiguration] Auth section found in config")
+                }
+                if configJson["api"] != nil {
+                    print("✅ [AmplifyConfiguration] API section found in config")
+                }
+            }
+
+            // Step 4: Check if Amplify is already configured
+            print("⚙️ [AmplifyConfiguration] Step 4: Checking Amplify state...")
+            if isAmplifyConfigured {
+                print("✅ [AmplifyConfiguration] Amplify already configured")
+                return
+            }
+
+            // Step 5: Configure Amplify with proper error handling
+            print("🌐 [AmplifyConfiguration] Step 5: Adding Amplify plugins...")
+
+            print("🔐 [AmplifyConfiguration] Adding AWSCognitoAuthPlugin...")
+            try Amplify.add(plugin: AWSCognitoAuthPlugin())
+            print("✅ [AmplifyConfiguration] AWSCognitoAuthPlugin added successfully")
+
+            print("🌐 [AmplifyConfiguration] Adding AWSAPIPlugin...")
+            try Amplify.add(plugin: AWSAPIPlugin())
+            print("✅ [AmplifyConfiguration] AWSAPIPlugin added successfully")
+
+            print("⚙️ [AmplifyConfiguration] Configuring Amplify with configuration file...")
             try Amplify.configure()
-            print("✅ Amplify configured successfully")
+            print("✅ [AmplifyConfiguration] Amplify configured successfully!")
+
+            // Step 6: Mark as configured
+            print("🔍 [AmplifyConfiguration] Step 6: Marking Amplify as configured...")
+            isAmplifyConfigured = true
+            print("✅ [AmplifyConfiguration] Configuration state updated")
+
+            print("🎉 [AmplifyConfiguration] All steps completed successfully!")
+
         } catch {
-            print("Failed to configure Amplify: \(error)")
+            print("💥 [AmplifyConfiguration] Configuration failed: \(error)")
+            print("🚨 [AmplifyConfiguration] Error type: \(type(of: error))")
+            print("🚨 [AmplifyConfiguration] Error description: \(error.localizedDescription)")
+
+            // Enhanced error reporting for debugging
+            if let nsError = error as NSError? {
+                print("🚨 [AmplifyConfiguration] Error domain: \(nsError.domain)")
+                print("🚨 [AmplifyConfiguration] Error code: \(nsError.code)")
+                print("🚨 [AmplifyConfiguration] Error userInfo: \(nsError.userInfo)")
+            }
+
+            // Don't bypass - throw the error so we can fix it properly
             throw error
         }
+    }
+}
+
+// MARK: - Timeout Helper
+
+private struct TimeoutError: LocalizedError {
+    let seconds: TimeInterval
+
+    init(seconds: TimeInterval = 30) {
+        self.seconds = seconds
+    }
+
+    var errorDescription: String? {
+        return "Operation timed out after \(seconds) seconds"
     }
 }

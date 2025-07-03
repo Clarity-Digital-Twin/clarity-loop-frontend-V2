@@ -18,31 +18,31 @@ public final class AuthenticationService {
     public var currentUser: User?
     public var isLoading = false
     public var error: Error?
-    
+
     // MARK: - Dependencies
     private let authService: AuthServiceProtocol
     private let userRepository: UserRepositoryProtocol
-    
+
     public init(authService: AuthServiceProtocol, userRepository: UserRepositoryProtocol) {
         self.authService = authService
         self.userRepository = userRepository
     }
-    
+
     // MARK: - Public Methods
     public func login(email: String, password: String) async {
         isLoading = true
         error = nil
-        
+
         do {
             // Authenticate with backend
-            let authToken = try await authService.login(email: email, password: password)
-            
+            _ = try await authService.login(email: email, password: password)
+
             // Fetch user profile from auth service
             if let user = try await authService.getCurrentUser() {
                 // Update state
                 self.currentUser = user
                 self.isAuthenticated = true
-                
+
                 print("✅ Login successful for user: \(user.email)")
             } else {
                 throw AuthError.unknown("Failed to fetch user profile")
@@ -53,33 +53,33 @@ public final class AuthenticationService {
             self.isAuthenticated = false
             self.currentUser = nil
         }
-        
+
         isLoading = false
     }
-    
+
     public func logout() async {
         isLoading = true
-        
+
         do {
             try await authService.logout()
-            
+
             // Clear state
             self.currentUser = nil
             self.isAuthenticated = false
             self.error = nil
-            
+
             print("✅ Logout successful")
         } catch {
             print("❌ Logout failed: \(error)")
             self.error = error
         }
-        
+
         isLoading = false
     }
-    
+
     public func checkAuthStatus() async {
         isLoading = true
-        
+
         do {
             // Check if we have a current user via auth service
             if let user = try await authService.getCurrentUser() {
@@ -94,10 +94,10 @@ public final class AuthenticationService {
             self.isAuthenticated = false
             self.currentUser = nil
         }
-        
+
         isLoading = false
     }
-    
+
     public func clearError() {
         error = nil
     }

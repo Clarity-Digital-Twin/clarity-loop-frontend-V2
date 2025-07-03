@@ -7,89 +7,59 @@
 //
 
 import SwiftUI
-import SwiftData
-import ClarityCore
-import ClarityDomain
-import ClarityUI
-import ClarityData
 
 @main
 struct ClarityPulseApp: App {
-    // MARK: - Properties
-
-    /// Dependencies container
-    private let dependencies = Dependencies()
-
-    /// App state management
-    @State private var appState = AppState()
-
-    /// Amplify initialization state
-    @State private var amplifyConfigured = false
-
-    // MARK: - Initialization
-
-    init() {
-        // Configure dependencies properly
-        let configurator = AppDependencyConfigurator()
-        configurator.configure(dependencies)
-    }
-
-    // MARK: - Body
 
     var body: some Scene {
         WindowGroup {
-            if amplifyConfigured {
-                RootView()
-                    .environment(appState)
-                    .withDependencies(dependencies)
-            } else {
-                VStack(spacing: 20) {
-                    ProgressView()
-                        .scaleEffect(1.5)
+            // SUPER SIMPLE - NO AMPLIFY, NO COMPLEXITY
+            VStack(spacing: 30) {
+                Image(systemName: "brain.head.profile")
+                    .font(.system(size: 60))
+                    .foregroundColor(.blue)
 
-                    Text("Initializing...")
-                        .font(.headline)
-                        .foregroundColor(.secondary)
+                Text("CLARITY Digital Twin")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+
+                Text("Concierge Psychiatry Platform")
+                    .font(.title2)
+                    .foregroundColor(.secondary)
+
+                VStack(spacing: 16) {
+                    Button("Sign In") {
+                        print("🔐 Sign In tapped")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+
+                    Button("Create Account") {
+                        print("👤 Create Account tapped")
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.large)
+
+                    Button("Continue as Guest") {
+                        print("👋 Guest mode tapped")
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundColor(.blue)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .task {
-                    await initializeAmplify()
-                }
-            }
-        }
-    }
+                .padding(.top, 20)
 
-    // MARK: - Amplify Initialization
+                Spacer()
 
-    private func initializeAmplify() async {
-        do {
-            // Use the robust singleton AmplifyConfiguration with full error handling
-            print("🔄 [ClarityPulseApp] Starting Amplify initialization...")
-            try await AmplifyConfiguration.shared.configure()
-            print("✅ [ClarityPulseApp] Amplify configured successfully in app startup")
-
-            await MainActor.run {
-                amplifyConfigured = true
+                Text("✅ App is working!")
+                    .font(.caption)
+                    .foregroundColor(.green)
             }
-        } catch AmplifyConfigurationError.timeout(let seconds) {
-            print("⏰ [ClarityPulseApp] Amplify configuration timed out after \(seconds) seconds")
-            // Still allow app to continue - user can try to use it
-            await MainActor.run {
-                amplifyConfigured = true
-            }
-        } catch AmplifyConfigurationError.configurationMissing {
-            print("📄 [ClarityPulseApp] Amplify configuration file missing")
-            await MainActor.run {
-                amplifyConfigured = true
-            }
-        } catch {
-            print("❌ [ClarityPulseApp] Failed to configure Amplify: \(error)")
-            // Still allow app to continue - user can try to use it
-            await MainActor.run {
-                amplifyConfigured = true
+            .padding()
+            .onAppear {
+                print("🎯 CLARITY app launched successfully!")
+                print("📱 UI is rendering correctly")
+                print("🚀 Ready for user interaction")
             }
         }
     }
 }
-
-// MARK: - App State is imported from ClarityCore

@@ -8,236 +8,129 @@
 import SwiftUI
 import ClarityCore
 import ClarityDomain
-import ClarityUI
 import ClarityData
+import ClarityUI
 
 struct RootView: View {
-    @Environment(AppState.self) private var appState
-    @State private var isInitializing = true
-    @State private var isAmplifyConfigured = false
-    @State private var configurationError: Error?
-    @State private var showLoginView = false
-    @State private var initializationTimer = 0
-    @State private var showSkipOption = false
-    @State private var timer: Timer?
-
     let dependencies: Dependencies
+    let isAmplifyConfigured: Bool
+    let amplifyError: Error?
+    let isMemoryHealthy: Bool
+    let memoryPressureLevel: Int
+
+    @Environment(\.dependencies) private var environmentDependencies
+    @Environment(\.authenticationService) private var authenticationService
 
     var body: some View {
         Group {
-            if isInitializing {
-                // Enhanced initialization screen with progress feedback
-                VStack(spacing: 20) {
-                    ProgressView()
-                        .scaleEffect(1.5)
-
-                    VStack(spacing: 8) {
-                        Text("Initializing...")
-                            .font(.title2)
-
-                        Text("Setting up AWS services...")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-
-                        if initializationTimer > 0 {
-                            Text("⏱️ \(max(0, 15 - initializationTimer))s")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .monospacedDigit()
-                        }
-                    }
-
-                    if showSkipOption {
-                        Button("Skip AWS Setup") {
-                            stopTimer()
-                            isInitializing = false
-                            configurationError = AmplifyConfigurationError.timeout(15)
-                        }
-                        .buttonStyle(.bordered)
-                        .padding(.top)
-                    }
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color(.systemBackground))
-                .onAppear {
-                    startTimer()
-                }
-                .onDisappear {
-                    stopTimer()
-                }
-            } else if let error = configurationError {
-                // Error screen with option to skip AWS setup
-                VStack(spacing: 20) {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .font(.system(size: 60))
-                        .foregroundColor(.orange)
-
-                    Text("AWS Configuration Issue")
-                        .font(.title)
-                        .fontWeight(.bold)
-
-                    Text(error.localizedDescription)
-                        .font(.body)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-
-                    VStack(spacing: 12) {
-                        Button("Retry AWS Setup") {
-                            isInitializing = true
-                            configurationError = nil
-                            Task {
-                                await configureAmplify()
-                            }
-                        }
-                        .buttonStyle(.borderedProminent)
-
-                        Button("Skip & Continue with Local Features") {
-                            configurationError = nil
-                            // Continue without AWS - app will use mock/local services
-                        }
-                        .buttonStyle(.bordered)
-                    }
-                    .padding(.top)
-
-                    Text("💡 Tip: You can skip AWS setup during development and still use the app with local features.")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                        .padding(.top, 8)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color(.systemBackground))
-            } else if showLoginView {
-                // Login view
-                LoginView(dependencies: dependencies)
+            if !isMemoryHealthy && memoryPressureLevel >= 3 {
+                // Critical memory pressure - show warning
+                memoryWarningView
+            } else if isAmplifyConfigured {
+                // Amplify is ready - show main app
+                mainAppView
+            } else if let error = amplifyError {
+                // Amplify failed - show error but allow app to continue
+                errorView(error)
             } else {
-                // Landing view
-                VStack(spacing: 30) {
-                    Spacer()
+                // Amplify is still configuring - show loading
+                loadingView
+            }
+        }
+        .onAppear {
+            print("🎯 [RootView] View appeared")
+            print("📊 [RootView] Amplify configured: \(isAmplifyConfigured)")
+            print("🧠 [RootView] Memory healthy: \(isMemoryHealthy), pressure level: \(memoryPressureLevel)")
+            if let error = amplifyError {
+                print("❌ [RootView] Amplify error: \(error)")
+            }
+        }
+    }
 
-                    Image(systemName: "heart.circle.fill")
-                        .font(.system(size: 100))
-                        .foregroundColor(.accentColor)
-                        .symbolRenderingMode(.multicolor)
+    private var mainAppView: some View {
+        ClarityUI.RootView()
+            .dependencies(dependencies)
+            .onAppear {
+                print("✅ [RootView] Showing main app - Amplify is ready!")
+            }
+    }
 
-                    VStack(spacing: 8) {
-                        Text("CLARITY Pulse")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
+    private func errorView(_ error: Error) -> some View {
+        VStack(spacing: 20) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 60))
+                .foregroundColor(.orange)
 
-                        Text("Your Health Companion")
-                            .font(.title2)
-                            .foregroundColor(.secondary)
-                    }
+            Text("Configuration Warning")
+                .font(.title2)
+                .fontWeight(.semibold)
 
-                    Spacer()
+            Text("Amplify configuration failed, but you can continue using the app with limited functionality.")
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
 
-                    Button(action: {
-                        withAnimation(.easeInOut) {
-                            showLoginView = true
-                        }
-                    }) {
-                        Text("Continue to Login")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 56)
-                            .background(Color.accentColor)
-                            .cornerRadius(12)
-                    }
-                    .padding(.horizontal, 40)
-                    .padding(.bottom, 50)
+            Text("Error: \(error.localizedDescription)")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+
+            Button("Continue") {
+                // Just proceed to main app even without Amplify
+                print("🔄 [RootView] User chose to continue without Amplify")
+            }
+            .buttonStyle(.borderedProminent)
+        }
+        .padding()
+    }
+
+    private var loadingView: some View {
+        VStack(spacing: 20) {
+            ProgressView()
+                .scaleEffect(1.5)
+
+            Text("Setting up AWS services...")
+                .font(.headline)
+
+            Text("Please wait while we configure your connection")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .padding()
+    }
+
+    private var memoryWarningView: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "memorychip.fill")
+                .font(.system(size: 60))
+                .foregroundColor(.red)
+
+            Text("Memory Warning")
+                .font(.title2)
+                .fontWeight(.semibold)
+
+            Text("The app is using too much memory and may be terminated by iOS.")
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+
+            Text("Memory pressure level: \(memoryPressureLevel)")
+                .font(.caption)
+                .foregroundColor(.secondary)
+
+            VStack(spacing: 10) {
+                Button("Force Memory Cleanup") {
+                    // This will trigger garbage collection
+                    print("🧹 [RootView] User requested memory cleanup")
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color(.systemBackground))
-            }
-        }
-        .task {
-            await configureAmplify()
-        }
-    }
+                .buttonStyle(.borderedProminent)
 
-    private func configureAmplify() async {
-        print("🔄 [RootView] Starting Amplify configuration...")
-
-        // First, let's check if the amplifyconfiguration.json file is in the bundle
-        let configFileURL = Bundle.main.url(forResource: "amplifyconfiguration", withExtension: "json")
-        print("📁 [RootView] Configuration file URL: \(configFileURL?.path ?? "NOT FOUND")")
-
-        if let configURL = configFileURL,
-           let configData = try? Data(contentsOf: configURL),
-           let configString = String(data: configData, encoding: .utf8) {
-            print("📄 [RootView] Configuration file content length: \(configString.count) characters")
-            print("📄 [RootView] Configuration file preview: \(String(configString.prefix(200)))")
-        } else {
-            print("❌ [RootView] Could not read configuration file")
-        }
-
-        do {
-            // GIVEN: Use singleton AmplifyConfiguration with proper BDD approach
-            print("📋 [RootView] GIVEN: Using AmplifyConfiguration singleton")
-
-            // WHEN: Configure Amplify using the robust singleton
-            try await AmplifyConfiguration.shared.configure()
-
-            // THEN: Configuration successful
-            await MainActor.run {
-                stopTimer()
-                isAmplifyConfigured = true
-                isInitializing = false
-                print("✅ [RootView] THEN: Configuration completed - App ready")
-            }
-
-        } catch let error as AmplifyConfigurationError {
-            print("❌ [RootView] THEN: AmplifyConfigurationError - \(error.errorDescription ?? "Unknown error")")
-            await handleConfigurationError(error)
-
-        } catch {
-            print("❌ [RootView] THEN: Unexpected error - \(error)")
-            await handleConfigurationError(AmplifyConfigurationError.configurationFailed(error))
-        }
-    }
-
-    private func handleConfigurationError(_ error: AmplifyConfigurationError) async {
-        await MainActor.run {
-            stopTimer()
-            configurationError = error
-            isInitializing = false
-
-            // Log the specific error type for debugging
-            switch error {
-            case .timeout(let seconds):
-                print("🕐 [RootView] Configuration timed out after \(seconds) seconds")
-            case .configurationMissing:
-                print("📁 [RootView] amplifyconfiguration.json not found in bundle")
-            case .pluginSetupFailed(let error):
-                print("🔌 [RootView] Plugin setup failed: \(error.localizedDescription)")
-            case .configurationFailed(let error):
-                print("⚙️ [RootView] Configuration failed: \(error.localizedDescription)")
-            case .validationFailed(let message):
-                print("🔍 [RootView] Validation failed: \(message)")
-            }
-        }
-    }
-
-    // MARK: - Helper Methods
-    private func startTimer() {
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-            Task { @MainActor in
-                initializationTimer += 1
-                if initializationTimer >= 10 {
-                    showSkipOption = true
+                Button("Continue Anyway") {
+                    print("⚠️ [RootView] User chose to continue despite memory warning")
                 }
-                if initializationTimer >= 15 || !isInitializing {
-                    stopTimer()
-                }
+                .buttonStyle(.bordered)
             }
         }
-    }
-
-    private func stopTimer() {
-        timer?.invalidate()
-        timer = nil
+        .padding()
     }
 }

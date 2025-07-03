@@ -89,10 +89,7 @@ public final class AppDependencyConfigurator {
             return SwiftDataPersistence(container: modelContainer)
         }
 
-        // AWS Amplify Configuration - Singleton
-        container.register(AmplifyConfigurable.self) {
-            AmplifyConfiguration.shared
-        }
+        // AWS Amplify Configuration - Now handled in AppDelegate
     }
 
         // MARK: - Data Layer Configuration

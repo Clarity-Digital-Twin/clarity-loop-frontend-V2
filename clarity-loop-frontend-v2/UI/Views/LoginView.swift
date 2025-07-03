@@ -9,25 +9,29 @@ import SwiftUI
 import ClarityDomain
 import ClarityCore
 
+#if canImport(UIKit)
+import UIKit
+#endif
+
 public struct LoginView: View {
     @Environment(\.authenticationService) private var authService
     @Environment(AppState.self) private var appState
-    
+
     @State private var email = ""
     @State private var password = ""
     @FocusState private var focusedField: Field?
-    
+
     // For backwards compatibility with existing initializer
     private let dependencies: Dependencies?
-    
+
     public init(dependencies: Dependencies? = nil) {
         self.dependencies = dependencies
     }
-    
+
     private enum Field {
         case email, password
     }
-    
+
     public var body: some View {
         NavigationStack {
             ScrollView {
@@ -40,7 +44,7 @@ public struct LoginView: View {
                 .padding(.bottom, 32)
             }
             .scrollBounceBehavior(.basedOnSize)
-            .background(Color(.systemBackground))
+            .background(backgroundColor)
             .ignoresSafeArea(.keyboard)
         }
         .alert("Login Failed", isPresented: .constant(authService?.error != nil)) {
@@ -54,7 +58,7 @@ public struct LoginView: View {
         }
         .onChange(of: authService?.isAuthenticated ?? false) { _, isAuthenticated in
             // Handle authentication state changes
-            if isAuthenticated, 
+            if isAuthenticated,
                let authService = authService,
                let user = authService.currentUser {
                 // Update app state
@@ -66,21 +70,21 @@ public struct LoginView: View {
             }
         }
     }
-    
+
     // MARK: - View Components
-    
+
     private var logoHeader: some View {
         VStack(spacing: 16) {
             Image(systemName: "heart.circle.fill")
                 .font(.system(size: 100))
                 .foregroundStyle(.tint)
                 .symbolRenderingMode(.multicolor)
-            
+
             VStack(spacing: 8) {
                 Text("CLARITY Pulse")
                     .font(.largeTitle)
                     .fontWeight(.bold)
-                
+
                 Text("Your Health Companion")
                     .font(.title3)
                     .foregroundStyle(.secondary)
@@ -88,7 +92,7 @@ public struct LoginView: View {
         }
         .padding(.top, 60)
     }
-    
+
     private var loginForm: some View {
         VStack(spacing: 20) {
             emailField
@@ -98,32 +102,34 @@ public struct LoginView: View {
         }
         .padding(.horizontal, 32)
     }
-    
+
     private var emailField: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Email")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
-            
+
             TextField("Enter your email", text: $email)
                 .textFieldStyle(.roundedBorder)
+#if os(iOS)
                 .keyboardType(.emailAddress)
                 .textInputAutocapitalization(.never)
+#endif
                 .autocorrectionDisabled()
-                .focused($focusedField, equals: .email)
+                .focused($focusedField, equals: Field.email)
                 .disabled(authService?.isLoading ?? false)
         }
     }
-    
+
     private var passwordField: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Password")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
-            
+
             SecureField("Enter your password", text: $password)
                 .textFieldStyle(.roundedBorder)
-                .focused($focusedField, equals: .password)
+                .focused($focusedField, equals: Field.password)
                 .disabled(authService?.isLoading ?? false)
                 .onSubmit {
                     if canLogin {
@@ -134,7 +140,7 @@ public struct LoginView: View {
                 }
         }
     }
-    
+
     private var loginButton: some View {
         Button(action: {
             Task {
@@ -158,7 +164,7 @@ public struct LoginView: View {
         }
         .disabled(!canLogin || (authService?.isLoading ?? false))
     }
-    
+
     private var forgotPasswordButton: some View {
         Button("Forgot Password?") {
             // TODO: Implement forgot password
@@ -166,12 +172,12 @@ public struct LoginView: View {
         .font(.subheadline)
         .foregroundStyle(.tint)
     }
-    
+
     private var signUpLink: some View {
         HStack {
             Text("Don't have an account?")
                 .foregroundStyle(.secondary)
-            
+
             Button("Sign Up") {
                 // TODO: Navigate to sign up
             }
@@ -180,25 +186,34 @@ public struct LoginView: View {
         }
         .font(.subheadline)
     }
-    
+
     // MARK: - Private Properties
-    
+
     private var canLogin: Bool {
         !email.isEmpty && !password.isEmpty && email.contains("@")
     }
-    
+
+    private var backgroundColor: Color {
+#if os(iOS)
+        if let uiColor = UIColor.systemBackground as UIColor? {
+            return Color(uiColor)
+        }
+#endif
+        return Color(red: 0.95, green: 0.95, blue: 0.97) // Light gray fallback
+    }
+
     // MARK: - Private Methods
-    
+
     private func performLogin() async {
         // Dismiss keyboard
         focusedField = nil
-        
+
         // Perform login
         guard let authService else {
             print("❌ AuthenticationService not available")
             return
         }
-        
+
         await authService.login(email: email, password: password)
     }
 }

@@ -38,61 +38,65 @@ protocol ArticleRepositoryProtocol: Sendable {
 /// - Proper error handling
 @Observable
 final class ArticleListViewModel: BaseViewModel<[Article]> {
-    
+
     // MARK: - Properties
-    
+
     private let repository: ArticleRepositoryProtocol
     private var currentPage = 1
     private let pageSize = 20
-    
+
     /// Search query for filtering articles
     private(set) var searchQuery = ""
-    
+
     /// Whether more articles can be loaded
     private(set) var hasMorePages = true
-    
+
     /// Whether currently loading more articles (for pagination)
     private(set) var isLoadingMore = false
-    
+
     // MARK: - Initialization
-    
+
     init(repository: ArticleRepositoryProtocol) {
         self.repository = repository
         super.init()
     }
-    
+
     // MARK: - Override Methods
-    
+
     /// Load initial articles
     override func loadData() async throws -> [Article]? {
         // Reset pagination
         currentPage = 1
         hasMorePages = true
-        
+
         // Load based on search query
+        let articles: [Article]
         if searchQuery.isEmpty {
-            return try await repository.fetchArticles(page: currentPage, pageSize: pageSize)
+            articles = try await repository.fetchArticles(page: currentPage, pageSize: pageSize)
         } else {
-            return try await repository.searchArticles(query: searchQuery)
+            articles = try await repository.searchArticles(query: searchQuery)
         }
+
+        // Return nil if empty to trigger .empty state
+        return articles.isEmpty ? nil : articles
     }
-    
+
     // MARK: - Public Methods
-    
+
     /// Search for articles with the given query
     @MainActor
     func search(query: String) async {
         searchQuery = query
         await load() // Reload with new search query
     }
-    
+
     /// Clear search and reload all articles
     @MainActor
     func clearSearch() async {
         searchQuery = ""
         await load()
     }
-    
+
     /// Load more articles (pagination)
     @MainActor
     func loadMore() async {
@@ -103,17 +107,17 @@ final class ArticleListViewModel: BaseViewModel<[Article]> {
               case .success(let currentArticles) = viewState else {
             return
         }
-        
+
         isLoadingMore = true
         defer { isLoadingMore = false }
-        
+
         do {
             let nextPage = currentPage + 1
             let moreArticles = try await repository.fetchArticles(
                 page: nextPage,
                 pageSize: pageSize
             )
-            
+
             if moreArticles.isEmpty {
                 hasMorePages = false
             } else {
@@ -127,7 +131,7 @@ final class ArticleListViewModel: BaseViewModel<[Article]> {
             print("Failed to load more articles: \(error)")
         }
     }
-    
+
     /// Refresh articles (pull to refresh)
     @MainActor
     override func reload() async {
@@ -144,11 +148,11 @@ import SwiftUI
 struct ArticleListView: View {
     @State private var viewModel: ArticleListViewModel
     @State private var searchText = ""
-    
+
     init(repository: ArticleRepositoryProtocol) {
         self._viewModel = State(wrappedValue: ArticleListViewModel(repository: repository))
     }
-    
+
     var body: some View {
         NavigationStack {
             Group {
@@ -158,18 +162,18 @@ struct ArticleListView: View {
                         .onAppear {
                             Task { await viewModel.load() }
                         }
-                    
+
                 case .loading:
                     ProgressView("Loading articles...")
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    
+
                 case .success(let articles):
                     ScrollView {
                         LazyVStack(spacing: 16) {
                             ForEach(articles) { article in
                                 ArticleRow(article: article)
                             }
-                            
+
                             // Load more indicator
                             if viewModel.hasMorePages && viewModel.searchQuery.isEmpty {
                                 if viewModel.isLoadingMore {
@@ -189,12 +193,12 @@ struct ArticleListView: View {
                     .refreshable {
                         await viewModel.reload()
                     }
-                    
+
                 case .error(let error):
                     ArticleErrorView(error: error) {
                         Task { await viewModel.reload() }
                     }
-                    
+
                 case .empty:
                     ContentUnavailableView(
                         viewModel.searchQuery.isEmpty ? "No Articles" : "No Results",
@@ -225,20 +229,20 @@ struct ArticleListView: View {
 
 private struct ArticleRow: View {
     let article: Article
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(article.title)
                 .font(.headline)
-            
+
             Text(article.author)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
-            
+
             Text(article.content)
                 .font(.body)
                 .lineLimit(2)
-            
+
             HStack {
                 ForEach(article.tags, id: \.self) { tag in
                     Text(tag)
@@ -260,21 +264,21 @@ private struct ArticleRow: View {
 private struct ArticleErrorView: View {
     let error: Error
     let retry: () -> Void
-    
+
     var body: some View {
         VStack(spacing: 16) {
             Image(systemName: "exclamationmark.triangle")
                 .font(.largeTitle)
                 .foregroundStyle(.red)
-            
+
             Text("Something went wrong")
                 .font(.headline)
-            
+
             Text(error.localizedDescription)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
-            
+
             Button("Try Again", action: retry)
                 .buttonStyle(.borderedProminent)
         }

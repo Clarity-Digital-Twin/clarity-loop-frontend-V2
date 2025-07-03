@@ -179,14 +179,14 @@ public protocol AmplifyConfigurable {
     func configure() async throws
 }
 
-public final class AmplifyConfiguration: AmplifyConfigurable {
+public final class AmplifyConfiguration: AmplifyConfigurable, @unchecked Sendable {
     public init() {}
 
-    public func configure() async throws {
+    nonisolated public func configure() async throws {
         do {
             try Amplify.add(plugin: AWSCognitoAuthPlugin())
             try Amplify.add(plugin: AWSAPIPlugin())
-            
+
             // Configure using default amplifyconfiguration.json from bundle
             try Amplify.configure()
             print("✅ Amplify configured successfully")
@@ -196,4 +196,3 @@ public final class AmplifyConfiguration: AmplifyConfigurable {
         }
     }
 }
-

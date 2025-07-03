@@ -40,7 +40,7 @@ struct RootView: View {
                             .foregroundColor(.secondary)
 
                         if initializationTimer > 0 {
-                            Text("⏱️ \(max(0, 10 - initializationTimer))s")
+                            Text("⏱️ \(max(0, 15 - initializationTimer))s")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                                 .monospacedDigit()
@@ -51,7 +51,7 @@ struct RootView: View {
                         Button("Skip AWS Setup") {
                             stopTimer()
                             isInitializing = false
-                            configurationError = TimeoutError(seconds: 10)
+                            configurationError = AmplifyConfigurationError.timeout(15)
                         }
                         .buttonStyle(.bordered)
                         .padding(.top)
@@ -162,43 +162,46 @@ struct RootView: View {
         print("🔄 Starting Amplify configuration...")
 
         do {
-            // Use a more robust timeout mechanism
-            try await withThrowingTaskGroup(of: Void.self) { group in
-                // Add the Amplify configuration task
-                group.addTask {
-                    let amplifyConfig = AmplifyConfiguration()
-                    try await amplifyConfig.configure()
-                    print("✅ Amplify configured successfully in RootView")
-                }
+            // GIVEN: Use singleton AmplifyConfiguration with proper BDD approach
+            print("📋 [RootView] GIVEN: Using AmplifyConfiguration singleton")
 
-                // Add timeout task
-                group.addTask {
-                    try await Task.sleep(nanoseconds: 30_000_000_000) // 30 seconds
-                    throw TimeoutError(seconds: 30)
-                }
+            // WHEN: Configure Amplify using the robust singleton
+            try await AmplifyConfiguration.shared.configure()
 
-                // Wait for the first one to complete
-                try await group.next()
-
-                // Cancel all remaining tasks
-                group.cancelAll()
-            }
-
-            // If we get here, Amplify was configured successfully
+            // THEN: Configuration successful
             await MainActor.run {
                 stopTimer()
                 isAmplifyConfigured = true
                 isInitializing = false
-                print("📌 RootView state updated - isInitializing: \(isInitializing), isAmplifyConfigured: \(isAmplifyConfigured)")
+                print("✅ [RootView] THEN: Configuration completed - App ready")
             }
 
+        } catch let error as AmplifyConfigurationError {
+            print("❌ [RootView] THEN: AmplifyConfigurationError - \(error.errorDescription ?? "Unknown error")")
+            await handleConfigurationError(error)
+
         } catch {
-            print("❌ Failed to configure Amplify: \(error)")
-            await MainActor.run {
-                stopTimer()
-                configurationError = error
-                isInitializing = false
-                print("📌 RootView error state - isInitializing: \(isInitializing), error: \(error)")
+            print("❌ [RootView] THEN: Unexpected error - \(error)")
+            await handleConfigurationError(AmplifyConfigurationError.amplifyConfigurationError(error))
+        }
+    }
+
+    private func handleConfigurationError(_ error: AmplifyConfigurationError) async {
+        await MainActor.run {
+            stopTimer()
+            configurationError = error
+            isInitializing = false
+
+            // Log the specific error type for debugging
+            switch error {
+            case .timeout(let seconds):
+                print("🕐 [RootView] Configuration timed out after \(seconds) seconds")
+            case .configurationFileNotFound:
+                print("📁 [RootView] amplifyconfiguration.json not found in bundle")
+            case .missingAuthConfiguration:
+                print("🔐 [RootView] Auth configuration missing from config file")
+            default:
+                print("⚠️ [RootView] Other configuration error: \(error.errorDescription ?? "Unknown")")
             }
         }
     }
@@ -211,7 +214,7 @@ struct RootView: View {
                 if initializationTimer >= 10 {
                     showSkipOption = true
                 }
-                if initializationTimer >= 30 || !isInitializing {
+                if initializationTimer >= 15 || !isInitializing {
                     stopTimer()
                 }
             }
@@ -221,14 +224,5 @@ struct RootView: View {
     private func stopTimer() {
         timer?.invalidate()
         timer = nil
-    }
-}
-
-// MARK: - Timeout Error
-private struct TimeoutError: LocalizedError {
-    let seconds: TimeInterval
-
-    var errorDescription: String? {
-        return "Configuration timed out after \(Int(seconds)) seconds. You can skip AWS setup and continue with local features."
     }
 }

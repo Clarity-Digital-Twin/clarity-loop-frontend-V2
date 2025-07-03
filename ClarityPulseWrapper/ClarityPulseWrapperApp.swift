@@ -11,7 +11,7 @@ import ClarityCore
 import ClarityDomain
 import ClarityData
 import ClarityUI
-// import Amplify // TEMPORARILY DISABLED
+import Amplify
 
 @main
 struct ClarityPulseWrapperApp: App {
@@ -28,7 +28,7 @@ struct ClarityPulseWrapperApp: App {
 
         print("✅ Dependencies configured successfully")
         print("📱 ClarityPulseWrapperApp initialized")
-        
+
         // Debug: Check if amplifyconfiguration.json is in bundle
         if let path = Bundle.main.path(forResource: "amplifyconfiguration", ofType: "json") {
             print("✅ amplifyconfiguration.json found at: \(path)")

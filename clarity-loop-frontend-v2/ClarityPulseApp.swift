@@ -63,16 +63,27 @@ struct ClarityPulseApp: App {
 
     private func initializeAmplify() async {
         do {
-            // Configure Amplify directly without using DI to avoid actor isolation issues
-            let amplifyConfig = AmplifyConfiguration()
-            try await amplifyConfig.configure()
-            print("✅ Amplify configured successfully in app startup")
+            // Use the robust singleton AmplifyConfiguration with full error handling
+            print("🔄 [ClarityPulseApp] Starting Amplify initialization...")
+            try await AmplifyConfiguration.shared.configure()
+            print("✅ [ClarityPulseApp] Amplify configured successfully in app startup")
 
             await MainActor.run {
                 amplifyConfigured = true
             }
+        } catch AmplifyConfigurationError.timeout(let seconds) {
+            print("⏰ [ClarityPulseApp] Amplify configuration timed out after \(seconds) seconds")
+            // Still allow app to continue - user can try to use it
+            await MainActor.run {
+                amplifyConfigured = true
+            }
+        } catch AmplifyConfigurationError.configurationMissing {
+            print("📄 [ClarityPulseApp] Amplify configuration file missing")
+            await MainActor.run {
+                amplifyConfigured = true
+            }
         } catch {
-            print("❌ Failed to configure Amplify: \(error)")
+            print("❌ [ClarityPulseApp] Failed to configure Amplify: \(error)")
             // Still allow app to continue - user can try to use it
             await MainActor.run {
                 amplifyConfigured = true

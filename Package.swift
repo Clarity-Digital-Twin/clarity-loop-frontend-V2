@@ -129,7 +129,8 @@ let package = Package(
                 "Mocks/MockTokenStorage.swift",
                 "Security/ComprehensiveSecurityTests.swift",
                 "Security/EncryptedHealthMetricTests.swift",
-                "Shared"
+                "Shared",
+                "Infrastructure/AmplifyConfigurationBDDTests.swift"
             ]
         )
         // Temporarily disabled test targets for git push:

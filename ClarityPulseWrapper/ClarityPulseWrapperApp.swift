@@ -20,431 +20,298 @@ struct ClarityPulseWrapperApp: App {
         WindowGroup {
             Group {
                 if isAmplifyConfigured {
-                    // Show working auth UI
-                    ClarityAuthView()
-        } else {
-                    // Show configuration status with debugging
-                    VStack(spacing: 20) {
-                        Image(systemName: "brain.head.profile")
-                            .font(.system(size: 60))
-                            .foregroundColor(.blue)
-
-                        Text("CLARITY Digital Twin")
-                            .font(.title)
-                            .fontWeight(.bold)
-
-                        Text(configurationStep)
-                            .font(.body)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
-
-                        if let error = amplifyError {
-                            Text("Error: \(error.localizedDescription)")
-                                .foregroundColor(.red)
-                                .font(.caption)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal)
-                        }
-
-                        ProgressView()
-                            .scaleEffect(1.5)
+                    // ✅ Once Amplify is ready, show the simple authenticated app
+                    AuthenticatedApp()
+                } else if let error = amplifyError {
+                    // ❌ Show error but allow proceeding
+                    ErrorView(error: error) {
+                        // Proceed without Amplify
+                        isAmplifyConfigured = true
                     }
-                    .padding()
+                } else {
+                    // ⏳ Still configuring Amplify
+                    LoadingView(step: configurationStep)
                 }
             }
-            .onAppear {
-                configureAmplify()
+            .task {
+                await configureAmplify()
             }
         }
     }
 
-    private func configureAmplify() {
+    private func configureAmplify() async {
         print("🔧 [AMPLIFY] Starting configuration...")
-        configurationStep = "Configuring Amplify..."
+        configurationStep = "Adding plugins..."
 
         do {
             try Amplify.add(plugin: AWSCognitoAuthPlugin())
             print("🔧 [AMPLIFY] Added Cognito plugin")
-            configurationStep = "Added Cognito plugin..."
 
+            configurationStep = "Loading configuration..."
             try Amplify.configure()
             print("🔧 [AMPLIFY] Configuration completed successfully!")
-            configurationStep = "Amplify configured successfully!"
 
-            DispatchQueue.main.async {
-                self.isAmplifyConfigured = true
+            await MainActor.run {
+                isAmplifyConfigured = true
             }
-
         } catch {
             print("❌ [AMPLIFY] Configuration failed: \(error)")
-            configurationStep = "Configuration failed: \(error.localizedDescription)"
-            DispatchQueue.main.async {
-                self.amplifyError = error
+            await MainActor.run {
+                amplifyError = error
             }
         }
     }
 }
 
-// MARK: - Auth View with Full Debug Logging
-struct ClarityAuthView: View {
-    @State private var currentUser: String = ""
-    @State private var isSignedIn = false
-    @State private var authStep = "Checking auth state..."
-    @State private var showSignIn = false
-    @State private var showSignUp = false
+// 🎯 Simple authenticated app without heavy dependencies
+struct AuthenticatedApp: View {
+    @State private var authService = SimpleAuthService()
 
     var body: some View {
-        NavigationView {
-            VStack(spacing: 30) {
-                // Header
-                VStack(spacing: 15) {
-                    Image(systemName: "brain.head.profile")
-                        .font(.system(size: 80))
-                        .foregroundColor(.blue)
-
-                    Text("CLARITY")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-
-                    Text("Digital Twin Platform")
-                        .font(.title3)
-                        .foregroundColor(.secondary)
-                }
-
-                // Auth Status
-                VStack(spacing: 15) {
-                    Text(authStep)
-                        .font(.body)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-
-                    if isSignedIn {
-                        VStack(spacing: 10) {
-                            Text("✅ Successfully Authenticated")
-                                .foregroundColor(.green)
-                                .font(.headline)
-
-                            Text("User: \(currentUser)")
-                                .font(.body)
-                                .foregroundColor(.secondary)
-
-                            Button("Sign Out") {
-                                signOut()
-                            }
-                            .foregroundColor(.red)
-                        }
-                    } else {
-                        VStack(spacing: 15) {
-                            Button("Sign In") {
-                                showSignIn = true
-                            }
-                            .buttonStyle(.borderedProminent)
-                            .font(.headline)
-
-                            Button("Create Account") {
-                                showSignUp = true
-                            }
-                            .buttonStyle(.bordered)
-                        }
-                    }
-                }
-
-                Spacer()
-            }
-            .padding()
-            .navigationBarHidden(true)
-            .onAppear {
-                checkAuthState()
-            }
-            .sheet(isPresented: $showSignIn) {
-                SignInView { success in
-                    if success {
-                        showSignIn = false
-                        checkAuthState()
-                    }
-                }
-            }
-            .sheet(isPresented: $showSignUp) {
-                SignUpView { success in
-                    if success {
-                        showSignUp = false
-                        checkAuthState()
-                    }
-                }
+        Group {
+            if authService.isAuthenticated {
+                // 🎉 User is logged in - show simple dashboard
+                SimpleDashboard()
+                    .environmentObject(authService)
+            } else {
+                // 🔐 User needs to log in
+                SimpleLoginView()
+                    .environmentObject(authService)
             }
         }
-    }
-
-    private func checkAuthState() {
-        print("🔐 [AUTH] Checking current auth state...")
-        authStep = "Checking authentication..."
-
-        Task {
-            do {
-                let session = try await Amplify.Auth.fetchAuthSession()
-                print("🔐 [AUTH] Session fetched: \(session.isSignedIn)")
-
-                if session.isSignedIn {
-                    let user = try await Amplify.Auth.getCurrentUser()
-                    print("🔐 [AUTH] Current user: \(user.username)")
-
-                    DispatchQueue.main.async {
-                        self.currentUser = user.username
-                        self.isSignedIn = true
-                        self.authStep = "Authentication verified!"
-                    }
-                } else {
-                    print("🔐 [AUTH] No current session")
-                    DispatchQueue.main.async {
-                        self.isSignedIn = false
-                        self.authStep = "Please sign in to continue"
-                    }
-                }
-            } catch {
-                print("❌ [AUTH] Error checking auth state: \(error)")
-                DispatchQueue.main.async {
-                    self.authStep = "Auth check failed: \(error.localizedDescription)"
-                    self.isSignedIn = false
-                }
-            }
-        }
-    }
-
-    private func signOut() {
-        print("🔐 [AUTH] Starting sign out...")
-        authStep = "Signing out..."
-
-        Task {
-            do {
-                _ = try await Amplify.Auth.signOut()
-                print("🔐 [AUTH] Sign out successful")
-
-                DispatchQueue.main.async {
-                    self.isSignedIn = false
-                    self.currentUser = ""
-                    self.authStep = "Signed out successfully"
-                }
-            } catch {
-                print("❌ [AUTH] Sign out failed: \(error)")
-                DispatchQueue.main.async {
-                    self.authStep = "Sign out failed: \(error.localizedDescription)"
-                }
-            }
+        .task {
+            await authService.checkAuthState()
         }
     }
 }
 
-// MARK: - Sign In View
-struct SignInView: View {
-    @State private var email = ""
+// 🔐 Lightweight login view
+struct SimpleLoginView: View {
+    @EnvironmentObject var authService: SimpleAuthService
+    @State private var username = ""
     @State private var password = ""
     @State private var isLoading = false
     @State private var errorMessage = ""
 
-    let onSuccess: (Bool) -> Void
-
     var body: some View {
-        NavigationView {
-            VStack(spacing: 20) {
-                Text("Sign In")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .padding(.bottom)
+        VStack(spacing: 20) {
+            Text("CLARITY Digital Twin")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .padding(.bottom, 40)
 
-                VStack(spacing: 15) {
-                    TextField("Email", text: $email)
-                        .keyboardType(.emailAddress)
-                        .autocapitalization(.none)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
+            VStack(spacing: 16) {
+                TextField("Username", text: $username)
+                    .textFieldStyle(.roundedBorder)
 
-                    SecureField("Password", text: $password)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                }
+                SecureField("Password", text: $password)
+                    .textFieldStyle(.roundedBorder)
 
                 if !errorMessage.isEmpty {
                     Text(errorMessage)
                         .foregroundColor(.red)
                         .font(.caption)
-                        .multilineTextAlignment(.center)
                 }
 
-                Button(action: signIn) {
+                Button(action: login) {
                     if isLoading {
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle(tint: .white))
                     } else {
                         Text("Sign In")
-                            .fontWeight(.semibold)
                     }
                 }
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.blue)
-                .foregroundColor(.white)
-                .cornerRadius(10)
-                .disabled(isLoading || email.isEmpty || password.isEmpty)
-
-                Spacer()
+                .buttonStyle(.borderedProminent)
+                .disabled(username.isEmpty || password.isEmpty || isLoading)
             }
-            .padding()
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        onSuccess(false)
-                    }
-                }
-            }
+            .padding(.horizontal, 40)
         }
+        .padding()
     }
 
-    private func signIn() {
-        print("🔐 [SIGNIN] Attempting sign in for email: \(email)")
+    private func login() {
         isLoading = true
         errorMessage = ""
 
         Task {
             do {
-                let result = try await Amplify.Auth.signIn(username: email, password: password)
-                print("🔐 [SIGNIN] Sign in result: \(result)")
-
-                if result.isSignedIn {
-                    print("🔐 [SIGNIN] Successfully signed in!")
-                    DispatchQueue.main.async {
-                        self.isLoading = false
-                        self.onSuccess(true)
-                    }
-                } else {
-                    print("🔐 [SIGNIN] Sign in incomplete, next step: \(result.nextStep)")
-                    DispatchQueue.main.async {
-                        self.isLoading = false
-                        self.errorMessage = "Sign in incomplete: \(result.nextStep)"
-                    }
-                }
+                try await authService.signIn(username: username, password: password)
             } catch {
-                print("❌ [SIGNIN] Sign in failed: \(error)")
-                DispatchQueue.main.async {
-                    self.isLoading = false
-                    self.errorMessage = error.localizedDescription
+                await MainActor.run {
+                    errorMessage = error.localizedDescription
+                    isLoading = false
                 }
             }
         }
     }
 }
 
-// MARK: - Sign Up View
-struct SignUpView: View {
-    @State private var email = ""
-    @State private var password = ""
-    @State private var confirmPassword = ""
-    @State private var isLoading = false
-    @State private var errorMessage = ""
-    @State private var successMessage = ""
-
-    let onSuccess: (Bool) -> Void
+// 🎉 Simple dashboard to verify navigation works
+struct SimpleDashboard: View {
+    @EnvironmentObject var authService: SimpleAuthService
 
     var body: some View {
         NavigationView {
-            VStack(spacing: 20) {
-                Text("Create Account")
+            VStack(spacing: 30) {
+                Text("🎉 Welcome to CLARITY!")
                     .font(.largeTitle)
                     .fontWeight(.bold)
-                    .padding(.bottom)
+                    .multilineTextAlignment(.center)
 
-                VStack(spacing: 15) {
-                    TextField("Email", text: $email)
-                        .keyboardType(.emailAddress)
-                        .autocapitalization(.none)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                Text("Authentication successful!")
+                    .font(.title2)
+                    .foregroundColor(.green)
 
-                    SecureField("Password", text: $password)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-
-                    SecureField("Confirm Password", text: $confirmPassword)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                }
-
-                if !errorMessage.isEmpty {
-                    Text(errorMessage)
-                        .foregroundColor(.red)
+                if let userId = authService.currentUser {
+                    Text("User ID: \(userId)")
                         .font(.caption)
-                        .multilineTextAlignment(.center)
+                        .foregroundColor(.secondary)
+                        .padding()
+                        .background(.gray.opacity(0.1))
+                        .cornerRadius(8)
                 }
 
-                if !successMessage.isEmpty {
-                    Text(successMessage)
-                        .foregroundColor(.green)
-                        .font(.caption)
-                        .multilineTextAlignment(.center)
-                }
-
-                Button(action: signUp) {
-                    if isLoading {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                    } else {
-                        Text("Create Account")
-                            .fontWeight(.semibold)
+                VStack(spacing: 16) {
+                    NavigationLink("📊 Dashboard") {
+                        Text("Dashboard Content")
+                            .font(.title)
                     }
+                    .buttonStyle(.bordered)
+
+                    NavigationLink("💬 Messages") {
+                        Text("Messages Content")
+                            .font(.title)
+                    }
+                    .buttonStyle(.bordered)
+
+                    NavigationLink("⚙️ Settings") {
+                        Text("Settings Content")
+                            .font(.title)
+                    }
+                    .buttonStyle(.bordered)
                 }
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.green)
-                .foregroundColor(.white)
-                .cornerRadius(10)
-                .disabled(isLoading || email.isEmpty || password.isEmpty || password != confirmPassword)
 
                 Spacer()
-            }
-            .padding()
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        onSuccess(false)
+
+                Button("Sign Out") {
+                    Task {
+                        await authService.signOut()
                     }
                 }
+                .buttonStyle(.borderedProminent)
             }
+            .padding()
+            .navigationTitle("CLARITY")
+            .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+}
+
+// ⚠️ Error view that allows proceeding
+struct ErrorView: View {
+    let error: Error
+    let onContinue: () -> Void
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 60))
+                .foregroundColor(.orange)
+
+            Text("Configuration Error")
+                .font(.title2)
+                .fontWeight(.semibold)
+
+            Text("AWS configuration failed, but you can continue with limited functionality.")
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+
+            Text(error.localizedDescription)
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+
+            Button("Continue Anyway", action: onContinue)
+                .buttonStyle(.borderedProminent)
+        }
+        .padding()
+    }
+}
+
+// ⏳ Loading view
+struct LoadingView: View {
+    let step: String
+
+    var body: some View {
+        VStack(spacing: 20) {
+            ProgressView()
+                .scaleEffect(1.5)
+
+            Text("Setting up CLARITY...")
+                .font(.headline)
+
+            Text(step)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+        }
+        .padding()
+    }
+}
+
+// 🔐 Lightweight auth service without heavy dependencies
+@MainActor
+class SimpleAuthService: ObservableObject {
+    @Published var isAuthenticated = false
+    @Published var currentUser: String?
+
+    func checkAuthState() async {
+        print("🔐 [AUTH] Checking current auth state...")
+
+        do {
+            let session = try await Amplify.Auth.fetchAuthSession()
+            if session.isSignedIn {
+                // Get user details
+                let user = try await Amplify.Auth.getCurrentUser()
+                isAuthenticated = true
+                currentUser = user.userId
+                print("🔐 [AUTH] User is signed in: \(user.userId)")
+            } else {
+                isAuthenticated = false
+                currentUser = nil
+                print("🔐 [AUTH] No current session")
+            }
+        } catch {
+            print("❌ [AUTH] Error checking auth state: \(error)")
+            isAuthenticated = false
+            currentUser = nil
         }
     }
 
-    private func signUp() {
-        print("🔐 [SIGNUP] Attempting sign up for email: \(email)")
-        isLoading = true
-        errorMessage = ""
-        successMessage = ""
+    func signIn(username: String, password: String) async throws {
+        print("🔐 [AUTH] Attempting sign in for: \(username)")
 
-        Task {
-            do {
-                let result = try await Amplify.Auth.signUp(
-                    username: email,
-                    password: password,
-                    options: AuthSignUpRequest.Options(userAttributes: [
-                        AuthUserAttribute(.email, value: email)
-                    ])
-                )
+        let result = try await Amplify.Auth.signIn(
+            username: username,
+            password: password
+        )
 
-                print("🔐 [SIGNUP] Sign up result: \(result)")
+        if result.isSignedIn {
+            let user = try await Amplify.Auth.getCurrentUser()
+            isAuthenticated = true
+            currentUser = user.userId
+            print("✅ [AUTH] Sign in successful: \(user.userId)")
+        }
+    }
 
-                DispatchQueue.main.async {
-                    self.isLoading = false
-
-                    if result.isSignUpComplete {
-                        self.successMessage = "Account created successfully!"
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                            self.onSuccess(true)
-                        }
-                    } else {
-                        self.successMessage = "Please check your email for verification code"
-                    }
-                }
-            } catch {
-                print("❌ [SIGNUP] Sign up failed: \(error)")
-                DispatchQueue.main.async {
-                    self.isLoading = false
-                    self.errorMessage = error.localizedDescription
-                    }
-                }
+    func signOut() async {
+        do {
+            _ = try await Amplify.Auth.signOut()
+            isAuthenticated = false
+            currentUser = nil
+            print("👋 [AUTH] Sign out successful")
+        } catch {
+            print("❌ [AUTH] Sign out error: \(error)")
         }
     }
 }

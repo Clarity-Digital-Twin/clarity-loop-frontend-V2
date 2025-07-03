@@ -9,6 +9,7 @@ import SwiftUI
 import ClarityCore
 import ClarityDomain
 import ClarityUI
+import ClarityData
 
 struct RootView: View {
     @Environment(AppState.self) private var appState
@@ -16,9 +17,9 @@ struct RootView: View {
     @State private var isAmplifyConfigured = false
     @State private var configurationError: Error?
     @State private var showLoginView = false
-    
+
     let dependencies: Dependencies
-    
+
     var body: some View {
         Group {
             if isInitializing {
@@ -37,16 +38,16 @@ struct RootView: View {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.system(size: 60))
                         .foregroundColor(.red)
-                    
+
                     Text("Configuration Failed")
                         .font(.title)
                         .fontWeight(.bold)
-                    
+
                     Text(error.localizedDescription)
                         .font(.body)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
-                    
+
                     Button("Retry") {
                         isInitializing = true
                         configurationError = nil
@@ -66,24 +67,24 @@ struct RootView: View {
                 // Landing view
                 VStack(spacing: 30) {
                     Spacer()
-                    
+
                     Image(systemName: "heart.circle.fill")
                         .font(.system(size: 100))
                         .foregroundColor(.accentColor)
                         .symbolRenderingMode(.multicolor)
-                    
+
                     VStack(spacing: 8) {
                         Text("CLARITY Pulse")
                             .font(.largeTitle)
                             .fontWeight(.bold)
-                        
+
                         Text("Your Health Companion")
                             .font(.title2)
                             .foregroundColor(.secondary)
                     }
-                    
+
                     Spacer()
-                    
+
                     Button(action: {
                         withAnimation(.easeInOut) {
                             showLoginView = true
@@ -108,17 +109,16 @@ struct RootView: View {
             await configureAmplify()
         }
     }
-    
+
     private func configureAmplify() async {
         print("🔄 Starting Amplify configuration...")
         do {
-            if let amplifyConfig = dependencies.resolve(AmplifyConfigurable.self) {
-                try await amplifyConfig.configure()
-                print("✅ Amplify configured successfully")
-            } else {
-                print("⚠️ AmplifyConfigurable not found in dependencies, skipping...")
-            }
-            
+            // FIXED: Use direct configuration like ClarityPulseApp instead of dependency injection
+            // This avoids the hanging issue with dependency resolution
+            let amplifyConfig = AmplifyConfiguration()
+            try await amplifyConfig.configure()
+            print("✅ Amplify configured successfully in RootView")
+
             await MainActor.run {
                 isAmplifyConfigured = true
                 isInitializing = false

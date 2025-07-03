@@ -10,6 +10,23 @@ import SwiftUI
 import Amplify
 import AWSCognitoAuthPlugin
 
+// 🎯 Test minimal module access first
+#if canImport(ClarityDomain)
+import ClarityDomain
+#endif
+
+#if canImport(ClarityCore)
+import ClarityCore
+#endif
+
+#if canImport(ClarityData)
+import ClarityData
+#endif
+
+#if canImport(ClarityUI)
+import ClarityUI
+#endif
+
 // 🎯 Timeout protection following Swift Concurrency best practices
 enum AuthTimeout: Error {
     case timeout
@@ -26,403 +43,332 @@ struct ClarityPulseWrapperApp: App {
         WindowGroup {
             Group {
                 if isAmplifyConfigured {
-                    // ✅ Once Amplify is ready, show the authenticated app
-                    AuthenticatedApp()
+                    // ✅ Use the sophisticated dependency injection system
+                    #if canImport(ClarityCore) && canImport(ClarityData) && canImport(ClarityUI)
+                    RealClarityApp()
+                    #else
+                    SimpleClarityApp()
+                    #endif
                 } else if let error = amplifyError {
                     // ❌ Show error but allow retry
-                    ErrorView(error: error) {
-                        configureAmplify()
+                    VStack(spacing: 20) {
+                        Image(systemName: "exclamationmark.triangle")
+                            .font(.system(size: 50))
+                            .foregroundColor(.orange)
+
+                        Text("Configuration Error")
+                            .font(.title2)
+                            .fontWeight(.semibold)
+
+                        Text(error.localizedDescription)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+
+                        Button("Retry") {
+                            Task { await configureAmplify() }
+                        }
+                        .buttonStyle(.borderedProminent)
                     }
+                    .padding()
                 } else {
-                    // 🔄 Show loading while configuring
-                    LoadingView(step: configurationStep)
+                    // ⏳ Show configuration progress
+                    VStack(spacing: 16) {
+                        ProgressView()
+                            .scaleEffect(1.2)
+                        Text(configurationStep)
+                            .font(.headline)
+                    }
+                    .padding()
                 }
             }
-            .onAppear {
-                configureAmplify()
+            .task {
+                await configureAmplify()
             }
         }
     }
 
-    private func configureAmplify() {
-        Task {
-            await MainActor.run {
-                amplifyError = nil
-                configurationStep = "Configuring Amplify..."
-            }
+    // MARK: - Amplify Configuration with Timeout Protection
 
-            do {
-                try Amplify.add(plugin: AWSCognitoAuthPlugin())
-                try Amplify.configure()
-
-                await MainActor.run {
-                    print("✅ [AMPLIFY] Configured successfully")
-                    isAmplifyConfigured = true
-                }
-            } catch {
-                await MainActor.run {
-                    print("❌ [AMPLIFY] Configuration failed: \(error)")
-                    amplifyError = error
-                }
-            }
-        }
-    }
-}
-
-// 🔐 Best practice auth service with timeout protection and cooperative cancellation
-@MainActor
-class SimpleAuthService: ObservableObject {
-    @Published var isAuthenticated = false
-    @Published var isCheckingAuth = true
-    @Published var currentUser: String?
-
-    func checkAuthState() async {
-        print("🔐 [AUTH] Starting authentication check with timeout protection...")
-        isCheckingAuth = true
+    @MainActor
+    private func configureAmplify() async {
+        configurationStep = "Configuring Amplify..."
 
         do {
-            // 🎯 BEST PRACTICE: Use timeout protection with TaskGroup racing
-            let authResult = try await withTimeout(seconds: 8.0) {
-                return try await Amplify.Auth.fetchAuthSession()
-            }
-
-            if authResult.isSignedIn {
-                // Get user details with timeout protection
-                let userResult = try await withTimeout(seconds: 5.0) {
-                    return try await Amplify.Auth.getCurrentUser()
+            // 🎯 Use timeout protection for Amplify configuration
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                // Add configuration task
+                group.addTask {
+                    try await Amplify.configure()
+                    print("🔧 [AMPLIFY] Amplify configured successfully")
                 }
 
-                currentUser = userResult.username
-                isAuthenticated = true
-                print("🔐 [AUTH] ✅ User is signed in: \(userResult.username)")
-            } else {
-                isAuthenticated = false
-                currentUser = nil
-                print("🔐 [AUTH] ❌ User is not signed in")
+                // Add timeout task (15 seconds for configuration)
+                group.addTask {
+                    try await Task.sleep(for: .seconds(15))
+                    throw AuthTimeout.timeout
+                }
+
+                // Wait for first task to complete
+                do {
+                    try await group.next()
+                    group.cancelAll() // Cancel remaining tasks
+
+                    self.isAmplifyConfigured = true
+                    print("✅ [AMPLIFY] Configuration completed successfully")
+
+                } catch AuthTimeout.timeout {
+                    group.cancelAll()
+                    throw AuthTimeout.timeout
+                }
             }
+
         } catch AuthTimeout.timeout {
-            print("🔐 [AUTH] ⏰ Authentication check timed out - treating as not authenticated")
-            isAuthenticated = false
-            currentUser = nil
-        } catch AuthTimeout.cancelled {
-            print("🔐 [AUTH] 🚫 Authentication check was cancelled")
-            isAuthenticated = false
-            currentUser = nil
+            print("⏰ [AMPLIFY] Configuration timed out after 15 seconds")
+            amplifyError = NSError(domain: "AmplifyTimeout", code: 1,
+                                   userInfo: [NSLocalizedDescriptionKey: "Amplify configuration timed out. Please check your network connection."])
         } catch {
-            print("🔐 [AUTH] ❌ Authentication check failed: \(error)")
-            isAuthenticated = false
-            currentUser = nil
+            print("❌ [AMPLIFY] Configuration failed: \(error)")
+            amplifyError = error
         }
-
-        isCheckingAuth = false
-        print("🔐 [AUTH] Authentication check completed. Authenticated: \(isAuthenticated)")
-    }
-
-    func signIn(username: String, password: String) async throws {
-        print("🔐 [AUTH] Attempting sign in for user: \(username)")
-
-        // Check if already authenticated to avoid AuthError 5
-        if isAuthenticated {
-            print("🔐 [AUTH] ⚠️ User already authenticated, skipping sign-in")
-            return
-        }
-
-        // 🎯 BEST PRACTICE: Timeout protection for sign-in
-        let result = try await withTimeout(seconds: 15.0) {
-            return try await Amplify.Auth.signIn(username: username, password: password)
-        }
-
-        if result.isSignedIn {
-            await checkAuthState() // Refresh auth state
-            print("🔐 [AUTH] ✅ Sign in successful")
-        } else {
-            print("🔐 [AUTH] ⚠️ Sign in requires additional steps: \(result.nextStep)")
-        }
-    }
-
-    func signOut() async throws {
-        print("🔐 [AUTH] Signing out...")
-
-        // 🎯 BEST PRACTICE: Timeout protection for sign-out
-        _ = try await withTimeout(seconds: 10.0) {
-            return await Amplify.Auth.signOut()
-        }
-
-        isAuthenticated = false
-        currentUser = nil
-        print("🔐 [AUTH] ✅ Signed out successfully")
     }
 }
 
-// 🎯 BEST PRACTICE: Timeout implementation using TaskGroup racing pattern
-func withTimeout<T>(
-    seconds: TimeInterval,
-    operation: @escaping @Sendable () async throws -> T
-) async throws -> T {
-    return try await withThrowingTaskGroup(of: T.self) { group in
-        let deadline = Date(timeIntervalSinceNow: seconds)
+// MARK: - Real Clarity App (Full System)
 
-        // Start actual work
-        group.addTask {
-            try await operation()
-        }
-
-        // Start timeout task with deadline-based sleep
-        group.addTask {
-            let interval = deadline.timeIntervalSinceNow
-            if interval > 0 {
-                try await Task.sleep(nanoseconds: UInt64(interval * 1_000_000_000))
-            }
-            // 🎯 Check for cancellation before throwing timeout
-            try Task.checkCancellation()
-            throw AuthTimeout.timeout
-        }
-
-        // First task to complete wins
-        defer { group.cancelAll() }
-        return try await group.next()!
-    }
-}
-
-// 🔄 Loading view
-struct LoadingView: View {
-    let step: String
-
+#if canImport(ClarityCore) && canImport(ClarityData) && canImport(ClarityUI)
+struct RealClarityApp: View {
     var body: some View {
-        VStack(spacing: 20) {
-            ProgressView()
-                .scaleEffect(1.5)
-            Text(step)
-                .foregroundColor(.secondary)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(.systemBackground))
+        // 🚀 Use the existing sophisticated dependency system
+        MainTabView()
+            .configuredDependencies() // This method comes from AppDependencies+SwiftUI.swift
     }
 }
+#endif
 
-// ❌ Error view with retry
-struct ErrorView: View {
-    let error: Error
-    let retry: () -> Void
+// MARK: - Simple Clarity App (Fallback)
 
+struct SimpleClarityApp: View {
     var body: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "exclamationmark.triangle")
-                .font(.system(size: 50))
-                .foregroundColor(.orange)
-
-            Text("Configuration Error")
-                .font(.headline)
-
-            Text(error.localizedDescription)
-                .multilineTextAlignment(.center)
-                .foregroundColor(.secondary)
-
-            Button("Retry", action: retry)
-                .buttonStyle(.borderedProminent)
-        }
-        .padding()
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(.systemBackground))
+        // ✅ Simple fallback if modules aren't available
+        SimpleAuthenticatedApp()
     }
 }
 
-// 🏠 Main authenticated app
-struct AuthenticatedApp: View {
-    @StateObject private var authService = SimpleAuthService()
+// MARK: - Simple Authentication System (Fallback)
+
+struct SimpleAuthenticatedApp: View {
+    @StateObject private var authService = SimpleAmplifyAuthService()
 
     var body: some View {
         Group {
             if authService.isCheckingAuth {
-                VStack(spacing: 20) {
+                VStack(spacing: 16) {
                     ProgressView()
-                        .scaleEffect(1.5)
+                        .scaleEffect(1.2)
                     Text("Checking authentication...")
-                        .foregroundColor(.secondary)
+                        .font(.headline)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color(.systemBackground))
-                .task {
-                    await authService.checkAuthState()
-                }
+                .padding()
             } else if authService.isAuthenticated {
-                DashboardView()
+                SimpleDashboard()
                     .environmentObject(authService)
             } else {
-                LoginView()
+                SimpleLoginView()
                     .environmentObject(authService)
             }
         }
+        .task {
+            await authService.checkAuthState()
+        }
     }
 }
 
-// 🔐 Login view
-struct LoginView: View {
-    @EnvironmentObject private var authService: SimpleAuthService
+// 🔐 Simple auth service with timeout protection
+@MainActor
+class SimpleAmplifyAuthService: ObservableObject {
+    @Published var isAuthenticated = false
+    @Published var isCheckingAuth = true
+    @Published var currentUser: String?
+    @Published var errorMessage: String?
+
+    func checkAuthState() async {
+        print("🔐 [AUTH] Starting authentication check...")
+        isCheckingAuth = true
+        errorMessage = nil
+
+        do {
+            // 🎯 Add timeout protection (8 seconds max)
+            try await withThrowingTaskGroup(of: Bool.self) { group in
+                // Add auth check task
+                group.addTask {
+                    let session = try await Amplify.Auth.fetchAuthSession()
+                    if session.isSignedIn {
+                        // Get user details
+                        let user = try await Amplify.Auth.getCurrentUser()
+                        await MainActor.run {
+                            self.currentUser = user.userId
+                            self.isAuthenticated = true
+                        }
+                        print("🔐 [AUTH] User is signed in: \(user.userId)")
+                        return true
+                    } else {
+                        await MainActor.run {
+                            self.isAuthenticated = false
+                            self.currentUser = nil
+                        }
+                        print("🔐 [AUTH] User is not signed in")
+                        return false
+                    }
+                }
+
+                // Add timeout task
+                group.addTask {
+                    try await Task.sleep(for: .seconds(8))
+                    print("⏰ [AUTH] Authentication check timed out")
+                    return false
+                }
+
+                // Get first result
+                if let result = try await group.next() {
+                    group.cancelAll()
+                    await MainActor.run {
+                        self.isAuthenticated = result
+                    }
+                }
+            }
+
+        } catch {
+            print("❌ [AUTH] Auth check failed: \(error)")
+            await MainActor.run {
+                self.isAuthenticated = false
+                self.currentUser = nil
+                self.errorMessage = "Authentication check failed"
+            }
+        }
+
+        await MainActor.run {
+            self.isCheckingAuth = false
+        }
+    }
+
+    func signIn(username: String, password: String) async {
+        // ✅ Prevent duplicate login attempts (fixes AuthError 5)
+        guard !isAuthenticated else {
+            print("🔐 [AUTH] User is already authenticated, skipping login")
+            return
+        }
+
+        do {
+            print("🔐 [AUTH] Attempting sign in for: \(username)")
+            let result = try await Amplify.Auth.signIn(username: username, password: password)
+
+            if result.isSignedIn {
+                await checkAuthState() // Refresh auth state
+                print("✅ [AUTH] Sign in successful")
+            } else {
+                print("⚠️ [AUTH] Sign in requires additional steps: \(result.nextStep)")
+            }
+        } catch {
+            print("❌ [AUTH] Sign in failed: \(error)")
+            await MainActor.run {
+                self.errorMessage = error.localizedDescription
+            }
+        }
+    }
+
+    func signOut() async {
+        do {
+            print("🔐 [AUTH] Signing out...")
+            _ = try await Amplify.Auth.signOut()
+            await MainActor.run {
+                self.isAuthenticated = false
+                self.currentUser = nil
+                self.errorMessage = nil
+            }
+            print("✅ [AUTH] Sign out successful")
+        } catch {
+            print("❌ [AUTH] Sign out failed: \(error)")
+            await MainActor.run {
+                self.errorMessage = error.localizedDescription
+            }
+        }
+    }
+}
+
+// 📱 Simple Login View
+struct SimpleLoginView: View {
+    @EnvironmentObject private var authService: SimpleAmplifyAuthService
     @State private var username = ""
     @State private var password = ""
-    @State private var isLoading = false
-    @State private var errorMessage = ""
 
     var body: some View {
-        VStack(spacing: 30) {
-            Text("CLARITY")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .foregroundColor(.blue)
+        NavigationView {
+            VStack(spacing: 30) {
+                Text("CLARITY")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
 
-            VStack(spacing: 20) {
-                TextField("Username", text: $username)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                VStack(spacing: 20) {
+                    TextField("Username", text: $username)
+                        .textFieldStyle(.roundedBorder)
+                        .autocapitalization(.none)
 
-                SecureField("Password", text: $password)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    SecureField("Password", text: $password)
+                        .textFieldStyle(.roundedBorder)
 
-                if !errorMessage.isEmpty {
-                    Text(errorMessage)
-                        .foregroundColor(.red)
-                        .font(.caption)
-                }
-
-                Button(action: signIn) {
-                    HStack {
-                        if isLoading {
-                            ProgressView()
-                                .scaleEffect(0.8)
-                        }
-                        Text(isLoading ? "Signing In..." : "Sign In")
+                    if let error = authService.errorMessage {
+                        Text(error)
+                            .foregroundColor(.red)
+                            .font(.caption)
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                }
-                .disabled(isLoading || username.isEmpty || password.isEmpty)
-            }
-            .padding(.horizontal, 40)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(.systemBackground))
-    }
 
-    private func signIn() {
-        Task {
-            await MainActor.run {
-                isLoading = true
-                errorMessage = ""
-            }
-
-            do {
-                try await authService.signIn(username: username, password: password)
-            } catch {
-                await MainActor.run {
-                    if let authError = error as? AuthError {
-                        switch authError {
-                        case .notAuthorized:
-                            errorMessage = "Invalid username or password"
-                        default:
-                            errorMessage = "Sign in failed: \(authError.localizedDescription)"
+                    Button("Sign In") {
+                        Task {
+                            await authService.signIn(username: username, password: password)
                         }
-                    } else {
-                        errorMessage = "Sign in failed: \(error.localizedDescription)"
                     }
-                    print("🔐 [AUTH] Sign in error: \(error)")
+                    .buttonStyle(.borderedProminent)
+                    .disabled(username.isEmpty || password.isEmpty)
                 }
             }
-
-            await MainActor.run {
-                isLoading = false
-            }
+            .padding()
+            .navigationTitle("Login")
         }
     }
 }
 
-// 📊 Dashboard view
-struct DashboardView: View {
-    @EnvironmentObject private var authService: SimpleAuthService
+// 📊 Simple Dashboard
+struct SimpleDashboard: View {
+    @EnvironmentObject private var authService: SimpleAmplifyAuthService
 
     var body: some View {
         NavigationView {
             VStack(spacing: 30) {
                 Text("Welcome to CLARITY")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
+                    .font(.title)
+                    .fontWeight(.semibold)
 
-                if let username = authService.currentUser {
-                    Text("Hello, \(username)!")
-                        .font(.title2)
+                if let userId = authService.currentUser {
+                    Text("Signed in as: \(userId)")
+                        .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
 
-                VStack(spacing: 20) {
-                    DashboardCard(
-                        icon: "chart.line.uptrend.xyaxis",
-                        title: "Analytics",
-                        description: "View your data insights"
-                    )
-
-                    DashboardCard(
-                        icon: "person.2.circle",
-                        title: "Collaboration",
-                        description: "Work with your team"
-                    )
-
-                    DashboardCard(
-                        icon: "gear.circle",
-                        title: "Settings",
-                        description: "Configure your preferences"
-                    )
-                }
-                .padding(.horizontal)
+                Text("Dashboard functionality will appear here")
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(.secondary)
 
                 Spacer()
+
+                Button("Sign Out") {
+                    Task {
+                        await authService.signOut()
+                    }
+                }
+                .buttonStyle(.bordered)
             }
             .padding()
             .navigationTitle("Dashboard")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Sign Out") {
-                        Task {
-                            try? await authService.signOut()
-                        }
-                    }
-                    .foregroundColor(.red)
-                }
-            }
         }
-    }
-}
-
-// 📋 Dashboard card component
-struct DashboardCard: View {
-    let icon: String
-    let title: String
-    let description: String
-
-    var body: some View {
-        HStack(spacing: 15) {
-            Image(systemName: icon)
-                .font(.system(size: 24))
-                .foregroundColor(.blue)
-                .frame(width: 40)
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.headline)
-                Text(description)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-
-            Spacer()
-
-            Image(systemName: "chevron.right")
-                .foregroundColor(.secondary)
-        }
-        .padding()
-        .background(Color(.secondarySystemBackground))
-        .cornerRadius(12)
     }
 }

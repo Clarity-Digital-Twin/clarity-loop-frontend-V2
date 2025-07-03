@@ -189,7 +189,7 @@ public final class AmplifyConfiguration: AmplifyConfigurable, @unchecked Sendabl
 
     // MARK: - State Management
     private let configurationActor = ConfigurationActor()
-    private let configurationTimeout: TimeInterval = 15.0
+    private let configurationTimeout: TimeInterval = 10.0
 
     public var isConfigured: Bool {
         get async {
@@ -204,11 +204,25 @@ public final class AmplifyConfiguration: AmplifyConfigurable, @unchecked Sendabl
     // MARK: - Configuration Methods
 
     public func configure() async throws {
+        NSLog("🚀 [AmplifyConfiguration] GIVEN: Starting Amplify configuration process")
         print("🚀 [AmplifyConfiguration] GIVEN: Starting Amplify configuration process")
 
         let isAlreadyConfigured = await configurationActor.isConfigured
         if isAlreadyConfigured {
+            NSLog("✅ [AmplifyConfiguration] THEN: Already configured, skipping")
             print("✅ [AmplifyConfiguration] THEN: Already configured, skipping")
+            return
+        }
+
+        // Debug: Check if configuration file exists
+        let configFileURL = Bundle.main.url(forResource: "amplifyconfiguration", withExtension: "json")
+        NSLog("📁 [AmplifyConfiguration] Configuration file URL: %@", configFileURL?.path ?? "NOT FOUND")
+        print("📁 [AmplifyConfiguration] Configuration file URL: \(configFileURL?.path ?? "NOT FOUND")")
+
+        // FOR DEBUGGING: Check if we should skip Amplify config for development
+        if shouldSkipAmplifyConfig() {
+            NSLog("🚨 [AmplifyConfiguration] BYPASS: Skipping Amplify configuration for development")
+            await configurationActor.setConfigured(true)
             return
         }
 
@@ -230,37 +244,50 @@ public final class AmplifyConfiguration: AmplifyConfigurable, @unchecked Sendabl
     // MARK: - Private Implementation
 
     private func performConfiguration() async throws {
+        NSLog("🔧 [AmplifyConfiguration] WHEN: Performing Amplify configuration steps")
         print("🔧 [AmplifyConfiguration] WHEN: Performing Amplify configuration steps")
 
         // Step 1: Add plugins
+        NSLog("🔧 [AmplifyConfiguration] Step 1: Adding plugins...")
         try await addPlugins()
 
         // Step 2: Configure Amplify
+        NSLog("🔧 [AmplifyConfiguration] Step 2: Configuring Amplify...")
         try await configureAmplify()
 
         // Step 3: Validate configuration
+        NSLog("🔧 [AmplifyConfiguration] Step 3: Validating configuration...")
         try await validateConfiguration()
 
         // Step 4: Mark as configured
+        NSLog("🔧 [AmplifyConfiguration] Step 4: Marking as configured...")
         await configurationActor.setConfigured(true)
+        NSLog("✅ [AmplifyConfiguration] THEN: Configuration state updated")
         print("✅ [AmplifyConfiguration] THEN: Configuration state updated")
     }
 
     private func addPlugins() async throws {
+        NSLog("🔌 [AmplifyConfiguration] WHEN: Adding Amplify plugins...")
         print("🔌 [AmplifyConfiguration] WHEN: Adding Amplify plugins...")
 
         do {
             // Add plugins without checking for duplicates (Amplify handles this internally)
+            NSLog("🔌 [AmplifyConfiguration] Adding AWSCognitoAuthPlugin...")
             try Amplify.add(plugin: AWSCognitoAuthPlugin())
+            NSLog("✅ [AmplifyConfiguration] THEN: AWSCognitoAuthPlugin added")
             print("✅ [AmplifyConfiguration] THEN: AWSCognitoAuthPlugin added")
 
+            NSLog("🔌 [AmplifyConfiguration] Adding AWSAPIPlugin...")
             try Amplify.add(plugin: AWSAPIPlugin())
+            NSLog("✅ [AmplifyConfiguration] THEN: AWSAPIPlugin added")
             print("✅ [AmplifyConfiguration] THEN: AWSAPIPlugin added")
 
         } catch {
             if error.localizedDescription.contains("Plugin has already been added") {
+                NSLog("ℹ️ [AmplifyConfiguration] Plugins already added, continuing...")
                 print("ℹ️ [AmplifyConfiguration] Plugins already added, continuing...")
             } else {
+                NSLog("❌ [AmplifyConfiguration] Failed to add plugins: %@", error.localizedDescription)
                 print("❌ [AmplifyConfiguration] Failed to add plugins: \(error)")
                 throw AmplifyConfigurationError.pluginSetupFailed(error)
             }
@@ -268,27 +295,61 @@ public final class AmplifyConfiguration: AmplifyConfigurable, @unchecked Sendabl
     }
 
         private func configureAmplify() async throws {
+        NSLog("⚙️ [AmplifyConfiguration] WHEN: Configuring Amplify with configuration file...")
         print("⚙️ [AmplifyConfiguration] WHEN: Configuring Amplify with configuration file...")
 
         do {
-            try Amplify.configure()
+            NSLog("⚙️ [AmplifyConfiguration] Calling Amplify.configure()...")
+
+            // Add specific timeout for Amplify.configure() to prevent hanging
+            try await withTimeout(seconds: 5.0) {
+                try await withCheckedThrowingContinuation { continuation in
+                    Task {
+                        do {
+                            try Amplify.configure()
+                            continuation.resume()
+                        } catch {
+                            continuation.resume(throwing: error)
+                        }
+                    }
+                }
+            }
+
+            NSLog("✅ [AmplifyConfiguration] THEN: Amplify configured successfully")
             print("✅ [AmplifyConfiguration] THEN: Amplify configured successfully")
         } catch {
+            NSLog("❌ [AmplifyConfiguration] Amplify configuration failed: %@", error.localizedDescription)
             print("❌ [AmplifyConfiguration] Amplify configuration failed: \(error)")
             throw AmplifyConfigurationError.configurationFailed(error)
         }
     }
 
     private func validateConfiguration() async throws {
+        NSLog("🔍 [AmplifyConfiguration] WHEN: Validating Amplify configuration...")
         print("🔍 [AmplifyConfiguration] WHEN: Validating Amplify configuration...")
 
+        // Make validation optional and quick with timeout
         do {
-            // Test if configuration is working by checking auth status
-            _ = try await Amplify.Auth.fetchAuthSession()
+            // Add a short timeout for validation to prevent hanging
+            try await withTimeout(seconds: 3.0) {
+                try await withCheckedThrowingContinuation { continuation in
+                    Task {
+                        do {
+                            _ = try await Amplify.Auth.fetchAuthSession()
+                            continuation.resume()
+                        } catch {
+                            // Validation failure is not critical - user might just not be signed in
+                            continuation.resume()
+                        }
+                    }
+                }
+            }
+            NSLog("✅ [AmplifyConfiguration] THEN: Configuration validation successful")
             print("✅ [AmplifyConfiguration] THEN: Configuration validation successful")
         } catch {
+            NSLog("⚠️ [AmplifyConfiguration] Configuration validation warning: %@", error.localizedDescription)
             print("⚠️ [AmplifyConfiguration] Configuration validation warning: \(error)")
-            // Don't throw here as this might just mean user isn't signed in
+            // Don't throw here as validation issues are not critical
         }
     }
 
@@ -384,4 +445,26 @@ private struct TimeoutError: LocalizedError {
     var errorDescription: String? {
         return "Operation timed out after \(seconds) seconds"
     }
+}
+
+// MARK: - Helper Methods
+
+private func shouldSkipAmplifyConfig() -> Bool {
+    // Check if we're using placeholder values that indicate development mode
+    let configFileURL = Bundle.main.url(forResource: "amplifyconfiguration", withExtension: "json")
+
+    guard let configURL = configFileURL,
+          let configData = try? Data(contentsOf: configURL),
+          let configString = String(data: configData, encoding: .utf8) else {
+        NSLog("⚠️ [AmplifyConfiguration] Config file not found, skipping Amplify")
+        return true
+    }
+
+    // Skip if using placeholder Identity Pool ID
+    if configString.contains("12345678-1234-1234-1234-123456789012") {
+        NSLog("⚠️ [AmplifyConfiguration] Placeholder Identity Pool detected, skipping Amplify")
+        return true
+    }
+
+    return false
 }

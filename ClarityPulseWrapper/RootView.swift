@@ -159,7 +159,20 @@ struct RootView: View {
     }
 
     private func configureAmplify() async {
-        print("🔄 Starting Amplify configuration...")
+        print("🔄 [RootView] Starting Amplify configuration...")
+
+        // First, let's check if the amplifyconfiguration.json file is in the bundle
+        let configFileURL = Bundle.main.url(forResource: "amplifyconfiguration", withExtension: "json")
+        print("📁 [RootView] Configuration file URL: \(configFileURL?.path ?? "NOT FOUND")")
+
+        if let configURL = configFileURL,
+           let configData = try? Data(contentsOf: configURL),
+           let configString = String(data: configData, encoding: .utf8) {
+            print("📄 [RootView] Configuration file content length: \(configString.count) characters")
+            print("📄 [RootView] Configuration file preview: \(String(configString.prefix(200)))")
+        } else {
+            print("❌ [RootView] Could not read configuration file")
+        }
 
         do {
             // GIVEN: Use singleton AmplifyConfiguration with proper BDD approach
@@ -182,7 +195,7 @@ struct RootView: View {
 
         } catch {
             print("❌ [RootView] THEN: Unexpected error - \(error)")
-            await handleConfigurationError(AmplifyConfigurationError.amplifyConfigurationError(error))
+            await handleConfigurationError(AmplifyConfigurationError.configurationFailed(error))
         }
     }
 
@@ -196,12 +209,14 @@ struct RootView: View {
             switch error {
             case .timeout(let seconds):
                 print("🕐 [RootView] Configuration timed out after \(seconds) seconds")
-            case .configurationFileNotFound:
+            case .configurationMissing:
                 print("📁 [RootView] amplifyconfiguration.json not found in bundle")
-            case .missingAuthConfiguration:
-                print("🔐 [RootView] Auth configuration missing from config file")
-            default:
-                print("⚠️ [RootView] Other configuration error: \(error.errorDescription ?? "Unknown")")
+            case .pluginSetupFailed(let error):
+                print("🔌 [RootView] Plugin setup failed: \(error.localizedDescription)")
+            case .configurationFailed(let error):
+                print("⚙️ [RootView] Configuration failed: \(error.localizedDescription)")
+            case .validationFailed(let message):
+                print("🔍 [RootView] Validation failed: \(message)")
             }
         }
     }

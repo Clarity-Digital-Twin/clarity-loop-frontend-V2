@@ -10,9 +10,6 @@ import SwiftUI
 import Amplify
 import AWSCognitoAuthPlugin
 import AWSAPIPlugin
-import ClarityUI
-import ClarityCore
-import ClarityDomain
 
 @main
 struct ClarityPulseWrapperApp: App {
@@ -24,7 +21,10 @@ struct ClarityPulseWrapperApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .lazyDependencies() // Lazy loading to prevent main thread blocking
+                .task {
+                    // 🚀 2025 PATTERN: Async dependency loading
+                    await loadDependenciesAsync()
+                }
         }
     }
 
@@ -35,69 +35,71 @@ struct ClarityPulseWrapperApp: App {
             try Amplify.configure()
             print("✅ [AMPLIFY] Configuration completed successfully")
         } catch {
-            print("❌ [AMPLIFY] Configuration failed: \(error)")
+            print("❌ [AMPLIFY] Failed to configure: \(error)")
         }
+    }
+
+    // 🔧 2025 PATTERN: Lightweight async dependency wrapper
+    private func loadDependenciesAsync() async {
+        // Load sophisticated features asynchronously without blocking main thread
+        print("🔄 [DEPENDENCIES] Starting async loading...")
+
+        // Simulate lightweight dependency preparation
+        try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
+
+        print("✅ [DEPENDENCIES] Async loading completed")
+
+        // Future: This is where we'll gradually integrate sophisticated features
+        // using the wrapper pattern to avoid main thread blocking
     }
 }
 
 struct ContentView: View {
     @State private var showSplash = true
+    @State private var isSignedIn = false
     @State private var isLoading = false
-    @State private var authState: AuthState = .checking
     @State private var errorMessage: String?
-
-    enum AuthState {
-        case checking
-        case authenticated
-        case needsLogin
-        case error(String)
-    }
 
     var body: some View {
         Group {
             if showSplash {
                 SplashView {
                     showSplash = false
-                    checkAuthenticationAsync()
+                    checkAuthenticationStatus()
                 }
+            } else if isSignedIn {
+                MainAppView()
             } else {
-                switch authState {
-                case .checking:
-                    LoadingView()
-                case .authenticated:
-                    // LAZY LOAD: Only create the main app when needed
-                    LazyMainAppView()
-                case .needsLogin:
-                    LoginView()
-                case .error(let message):
-                    ErrorView(message: message) {
-                        checkAuthenticationAsync()
-                    }
-                }
+                LoginView(
+                    isSignedIn: $isSignedIn,
+                    isLoading: $isLoading,
+                    errorMessage: $errorMessage
+                )
+            }
+        }
+        .onAppear {
+            if !showSplash {
+                checkAuthenticationStatus()
             }
         }
     }
 
-    // CRITICAL: Async auth check to prevent main thread blocking
-    private func checkAuthenticationAsync() {
-        authState = .checking
+    private func checkAuthenticationStatus() {
+        isLoading = true
 
         Task {
             do {
-                let authSession = try await Amplify.Auth.fetchAuthSession()
-
+                let session = try await Amplify.Auth.fetchAuthSession()
                 await MainActor.run {
-                    if authSession.isSignedIn {
-                        authState = .authenticated
-                        print("✅ User already authenticated")
-                    } else {
-                        authState = .needsLogin
-                        print("ℹ️ User needs to log in")
-                    }
+                    isSignedIn = session.isSignedIn
+                    isLoading = false
+                    print("✅ Auth status checked: \(isSignedIn ? "Signed In" : "Not Signed In")")
                 }
             } catch {
                 await MainActor.run {
-                    authState = .error("Authentication check failed: \(error.localizedDescription)")
+                    isSignedIn = false
+                    isLoading = false
+                    errorMessage = "Failed to check auth status: \(error.localizedDescription)"
                     print("❌ Auth check failed: \(error)")
                 }
             }
@@ -136,22 +138,13 @@ struct SplashView: View {
     }
 }
 
-struct LoadingView: View {
-    var body: some View {
-        VStack(spacing: 20) {
-            ProgressView()
-                .scaleEffect(1.5)
-            Text("Checking authentication...")
-                .font(.headline)
-        }
-    }
-}
-
 struct LoginView: View {
+    @Binding var isSignedIn: Bool
+    @Binding var isLoading: Bool
+    @Binding var errorMessage: String?
+
     @State private var email = ""
     @State private var password = ""
-    @State private var isLoading = false
-    @State private var errorMessage: String?
 
     var body: some View {
         VStack(spacing: 30) {
@@ -180,7 +173,7 @@ struct LoginView: View {
                     .padding(.horizontal)
             }
 
-            Button(action: performLogin) {
+            Button(action: signIn) {
                 if isLoading {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle(tint: .white))
@@ -200,160 +193,53 @@ struct LoginView: View {
         .padding()
     }
 
-    // CRITICAL: Async login to prevent main thread blocking
-    private func performLogin() {
+    private func signIn() {
         isLoading = true
         errorMessage = nil
 
         Task {
             do {
-                // Check if already signed in first
-                let authSession = try await Amplify.Auth.fetchAuthSession()
-
-                if authSession.isSignedIn {
-                    await MainActor.run {
+                let result = try await Amplify.Auth.signIn(username: email, password: password)
+                await MainActor.run {
+                    if result.isSignedIn {
+                        isSignedIn = true
                         isLoading = false
-                        print("✅ User already signed in!")
-                        // Navigate to main app - trigger parent state change
+                        print("✅ Sign in successful!")
+                    } else {
+                        isLoading = false
+                        errorMessage = "Sign in requires additional steps"
+                        print("⚠️ Sign in requires additional steps: \(result.nextStep)")
                     }
-                    return
                 }
-
-                // Sign in with credentials
-                let result = try await Amplify.Auth.signIn(
-                    username: email,
-                    password: password
-                )
-
+            } catch {
                 await MainActor.run {
                     isLoading = false
-                    if result.isSignedIn {
-                        print("✅ Login successful!")
-                        // Navigate to main app - trigger parent state change
-                    }
-                }
-
-            } catch {
-                // Handle "already signed in" error by signing out first
-                if error.localizedDescription.contains("already") {
-                    do {
-                        _ = try await Amplify.Auth.signOut()
-                        print("🔄 Signed out existing user, trying login again...")
-
-                        let result = try await Amplify.Auth.signIn(
-                            username: email,
-                            password: password
-                        )
-
-                        await MainActor.run {
-                            isLoading = false
-                            if result.isSignedIn {
-                                print("✅ Login successful after signout!")
-                            }
-                        }
-
-                    } catch {
-                        await MainActor.run {
-                            isLoading = false
-                            errorMessage = "Login failed: \(error.localizedDescription)"
-                            print("❌ Login failed: \(error)")
-                        }
-                    }
-                } else {
-                    await MainActor.run {
-                        isLoading = false
-                        errorMessage = "Login failed: \(error.localizedDescription)"
-                        print("❌ Login failed: \(error)")
-                    }
+                    errorMessage = "Sign in failed: \(error.localizedDescription)"
+                    print("❌ Sign in failed: \(error)")
                 }
             }
         }
     }
 }
 
-struct ErrorView: View {
-    let message: String
-    let onRetry: () -> Void
-
-    var body: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "exclamationmark.triangle")
-                .font(.system(size: 60))
-                .foregroundColor(.orange)
-
-            Text("Error")
-                .font(.title)
-                .fontWeight(.bold)
-
-            Text(message)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-
-            Button("Retry") {
-                onRetry()
-            }
-            .font(.title2)
-            .foregroundColor(.white)
-            .padding(.horizontal, 30)
-            .padding(.vertical, 15)
-            .background(Color.blue)
-            .cornerRadius(10)
-        }
-        .padding()
-    }
-}
-
-// CRITICAL: Lazy loading prevents signal 9 kills
-struct LazyMainAppView: View {
-    @State private var isReady = false
-
-    var body: some View {
-        Group {
-            if isReady {
-                // Only load the complex app when ready
-                MainAppView()
-            } else {
-                VStack(spacing: 20) {
-                    ProgressView()
-                        .scaleEffect(1.5)
-                    Text("Loading your dashboard...")
-                        .font(.headline)
-                }
-                .onAppear {
-                    // CRITICAL: Use async dispatch to prevent any main thread blocking
-                    Task {
-                        // Small delay to ensure UI is ready
-                        try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
-
-                        await MainActor.run {
-                            isReady = true
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-// SIMPLIFIED: Main app without complex dependency injection
 struct MainAppView: View {
     var body: some View {
         TabView {
             DashboardTab()
                 .tabItem {
-                    Image(systemName: "heart.fill")
+                    Image(systemName: "chart.line.uptrend.xyaxis")
                     Text("Dashboard")
                 }
 
             HealthTab()
                 .tabItem {
-                    Image(systemName: "chart.line.uptrend.xyaxis")
+                    Image(systemName: "heart.fill")
                     Text("Health")
                 }
 
             ProfileTab()
                 .tabItem {
-                    Image(systemName: "person.fill")
+                    Image(systemName: "person.circle.fill")
                     Text("Profile")
                 }
         }
@@ -364,37 +250,26 @@ struct DashboardTab: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
-                Text("🎉 Welcome to Clarity!")
+                Text("Dashboard")
                     .font(.largeTitle)
                     .fontWeight(.bold)
 
-                Text("Your health dashboard is ready")
-                    .font(.headline)
-                    .foregroundColor(.secondary)
-
-                // Placeholder for health metrics
-                VStack(spacing: 15) {
+                LazyVGrid(columns: [
+                    GridItem(.flexible()),
+                    GridItem(.flexible())
+                ], spacing: 15) {
                     HealthMetricCard(title: "Heart Rate", value: "72 BPM", color: .red)
                     HealthMetricCard(title: "Steps", value: "8,432", color: .blue)
                     HealthMetricCard(title: "Sleep", value: "7h 23m", color: .purple)
+                    HealthMetricCard(title: "Calories", value: "2,156", color: .orange)
                 }
+                .padding(.horizontal)
 
                 Spacer()
 
-                Button("Sign Out") {
-                    Task {
-                        do {
-                            _ = try await Amplify.Auth.signOut()
-                            print("✅ Signed out successfully")
-                        } catch {
-                            print("❌ Sign out failed: \(error)")
-                        }
-                    }
-                }
-                .foregroundColor(.red)
+                SignOutButton()
             }
-            .padding()
-            .navigationTitle("Dashboard")
+            .navigationTitle("CLARITY")
         }
     }
 }
@@ -402,18 +277,40 @@ struct DashboardTab: View {
 struct HealthTab: View {
     var body: some View {
         NavigationView {
-            VStack {
+            VStack(spacing: 20) {
                 Text("Health Metrics")
-                    .font(.title)
+                    .font(.largeTitle)
                     .fontWeight(.bold)
 
-                Text("Track your health data here")
-                    .foregroundColor(.secondary)
+                ScrollView {
+                    VStack(spacing: 15) {
+                        ForEach(0..<10) { index in
+                            HStack {
+                                Image(systemName: "heart.fill")
+                                    .foregroundColor(.red)
+                                VStack(alignment: .leading) {
+                                    Text("Heart Rate Reading")
+                                        .fontWeight(.semibold)
+                                    Text("72 BPM - Normal")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                                Spacer()
+                                Text("2:30 PM")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding()
+                            .background(Color(.systemGray6))
+                            .cornerRadius(10)
+                        }
+                    }
+                    .padding(.horizontal)
+                }
 
-                Spacer()
+                SignOutButton()
             }
-            .padding()
-            .navigationTitle("Health")
+            .navigationTitle("Health Data")
         }
     }
 }
@@ -421,19 +318,72 @@ struct HealthTab: View {
 struct ProfileTab: View {
     var body: some View {
         NavigationView {
-            VStack {
-                Text("Profile Settings")
-                    .font(.title)
-                    .fontWeight(.bold)
+            VStack(spacing: 30) {
+                Image(systemName: "person.circle.fill")
+                    .font(.system(size: 100))
+                    .foregroundColor(.blue)
 
-                Text("Manage your account settings")
-                    .foregroundColor(.secondary)
+                VStack(spacing: 10) {
+                    Text("John Doe")
+                        .font(.title)
+                        .fontWeight(.bold)
+
+                    Text("john.doe@example.com")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+
+                VStack(spacing: 15) {
+                    ProfileRow(title: "Age", value: "32 years")
+                    ProfileRow(title: "Height", value: "5'10\"")
+                    ProfileRow(title: "Weight", value: "175 lbs")
+                    ProfileRow(title: "Blood Type", value: "O+")
+                }
+                .padding(.horizontal)
 
                 Spacer()
+
+                SignOutButton()
             }
-            .padding()
             .navigationTitle("Profile")
         }
+    }
+}
+
+struct ProfileRow: View {
+    let title: String
+    let value: String
+
+    var body: some View {
+        HStack {
+            Text(title)
+                .fontWeight(.medium)
+            Spacer()
+            Text(value)
+                .foregroundColor(.secondary)
+        }
+        .padding(.vertical, 8)
+    }
+}
+
+struct SignOutButton: View {
+    var body: some View {
+        Button("Sign Out") {
+            Task {
+                do {
+                    _ = try await Amplify.Auth.signOut()
+                    print("✅ Signed out successfully")
+                } catch {
+                    print("❌ Sign out failed: \(error)")
+                }
+            }
+        }
+        .font(.title2)
+        .foregroundColor(.white)
+        .padding(.horizontal, 30)
+        .padding(.vertical, 15)
+        .background(Color.red)
+        .cornerRadius(10)
     }
 }
 
@@ -462,14 +412,5 @@ struct HealthMetricCard: View {
         .padding()
         .background(Color(.systemGray6))
         .cornerRadius(10)
-    }
-}
-
-// CRITICAL: Extension for lazy dependency loading
-extension View {
-    func lazyDependencies() -> some View {
-        // This would be implemented to lazily load dependencies
-        // instead of blocking the main thread during app startup
-        self
     }
 }

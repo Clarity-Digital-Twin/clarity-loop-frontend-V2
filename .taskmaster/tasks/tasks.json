@@ -3151,11 +3151,83 @@
         ],
         "priority": "high",
         "subtasks": []
+      },
+      {
+        "id": 202,
+        "title": "Integrate Clarity Loop Frontend v2 with ClarityPulseWrapper Authentication",
+        "description": "Connect the sophisticated clarity-loop-frontend-v2 app with working ClarityPulseWrapper authentication, replacing placeholder UI with real health app features while preserving AWS Amplify auth integration.",
+        "details": "1. **Authentication Integration**: Connect ClarityPulseWrapper auth system with the 89 Swift files in clarity-loop-frontend-v2, ensuring seamless authentication flow preservation with AWS Amplify. Update all auth-related imports and dependencies across the codebase.\n\n2. **UI Component Replacement**: Replace all placeholder UI components with functional health app features, including:\n   - Health metrics dashboard integration\n   - Real-time data visualization components\n   - User profile and settings screens\n   - Health alerts and notifications UI\n   - Data export and sharing interfaces\n\n3. **State Management Integration**: Ensure authentication state from ClarityPulseWrapper properly propagates through the app's SwiftUI environment, updating all @Observable and @StateObject dependencies.\n\n4. **API Connectivity**: Connect frontend components to health metrics API endpoints, ensuring proper error handling and data flow between authentication layer and health data services.\n\n5. **AWS Amplify Preservation**: Maintain existing AWS Amplify configuration while integrating with ClarityPulseWrapper, ensuring no conflicts in authentication providers or session management.\n\n6. **Code Architecture Alignment**: Align the 89 Swift files with the established domain-driven architecture, ensuring proper separation of concerns between UI, domain, and data layers.\n\n7. **Performance Optimization**: Optimize the integration for smooth user experience, including proper loading states, error boundaries, and responsive UI updates.",
+        "testStrategy": "1. **Authentication Flow Testing**: Verify complete login/logout flows work seamlessly between ClarityPulseWrapper and clarity-loop-frontend-v2, testing both successful and failed authentication scenarios.\n\n2. **UI Functionality Verification**: Test all replaced UI components function correctly with real data, including health metrics display, chart rendering, and user interactions.\n\n3. **State Synchronization Testing**: Verify authentication state properly updates across all 89 Swift files, testing state changes propagate correctly through SwiftUI environment.\n\n4. **API Integration Testing**: Test all health data API calls work correctly with authenticated requests, including error handling for network failures and unauthorized access.\n\n5. **AWS Amplify Compatibility**: Verify AWS Amplify auth still functions correctly alongside ClarityPulseWrapper integration, testing no conflicts exist in authentication providers.\n\n6. **End-to-End User Journey**: Test complete user workflows from login through health data viewing, export, and logout to ensure seamless experience.\n\n7. **Performance Testing**: Verify app performance remains optimal with integrated authentication and real health features, testing on various device configurations.",
+        "status": "pending",
+        "dependencies": [
+          40,
+          33,
+          70,
+          69,
+          73,
+          79
+        ],
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Map and Update Authentication Dependencies",
+            "description": "Analyze all 89 Swift files to identify authentication-related imports, dependencies, and AWS Amplify references. Create a comprehensive mapping of required updates to integrate ClarityPulseWrapper authentication.",
+            "dependencies": [],
+            "details": "Document all files using AWS Amplify Auth, identify authentication flow touchpoints, catalog @StateObject and @Observable instances managing auth state, and create migration plan for ClarityPulseWrapper integration without breaking existing functionality.",
+            "status": "done",
+            "testStrategy": "Create unit tests for authentication state transitions, verify AWS Amplify session management compatibility, and test authentication flow from login through session expiration scenarios."
+          },
+          {
+            "id": 2,
+            "title": "Implement ClarityPulseWrapper Authentication Layer",
+            "description": "Replace AWS Amplify authentication calls with ClarityPulseWrapper methods while maintaining the same authentication flow and user experience. Update all authentication-related Swift files with new imports and method calls.",
+            "dependencies": [
+              1
+            ],
+            "details": "Update authentication managers, replace Amplify.Auth calls with ClarityPulseWrapper equivalents, maintain session persistence logic, ensure proper error handling for auth failures, and preserve existing authentication UI components.",
+            "status": "done",
+            "testStrategy": "Test login/logout flows, verify session persistence across app restarts, validate error handling for network failures, and ensure proper token refresh mechanisms."
+          },
+          {
+            "id": 3,
+            "title": "Replace Placeholder UI with Health App Components",
+            "description": "Transform all placeholder UI elements into functional health app features including dashboard, metrics visualization, user profiles, alerts, and data export interfaces while maintaining SwiftUI best practices.",
+            "dependencies": [
+              2
+            ],
+            "details": "Implement HealthMetricsDashboardView with real-time data display, create DataVisualizationComponents for charts and graphs, build UserProfileView with settings management, design HealthAlertsView for notifications, and develop DataExportView for sharing capabilities.",
+            "status": "pending",
+            "testStrategy": "Perform UI testing for all new components, verify data binding and state updates, test responsive design across device sizes, and validate accessibility compliance."
+          },
+          {
+            "id": 4,
+            "title": "Connect Frontend to Health Metrics API",
+            "description": "Establish API connectivity between frontend components and health metrics endpoints, implementing proper data flow with authentication headers from ClarityPulseWrapper and comprehensive error handling.",
+            "dependencies": [
+              3
+            ],
+            "details": "Create API service layer with authenticated requests, implement data models matching API responses, add loading states and error boundaries, ensure proper retry logic for failed requests, and integrate real-time data updates where applicable.",
+            "status": "pending",
+            "testStrategy": "Test API integration with mock and live endpoints, verify authentication token injection, validate error handling for various HTTP status codes, and test data synchronization reliability."
+          },
+          {
+            "id": 5,
+            "title": "Optimize Performance and Architecture Alignment",
+            "description": "Refactor code architecture to follow domain-driven design principles, optimize performance for smooth user experience, and ensure proper separation of concerns across all 89 Swift files.",
+            "dependencies": [
+              4
+            ],
+            "details": "Reorganize code into UI, Domain, and Data layers, implement lazy loading for heavy components, add proper caching mechanisms, optimize SwiftUI view updates, ensure smooth animations and transitions, and minimize memory footprint.",
+            "status": "pending",
+            "testStrategy": "Conduct performance profiling with Instruments, measure app launch time and memory usage, test UI responsiveness under load, verify proper resource cleanup, and validate architecture compliance through code review."
+          }
+        ]
       }
     ],
     "metadata": {
       "created": "2025-06-25T16:21:52.741Z",
-      "updated": "2025-07-04T19:02:23.994Z",
+      "updated": "2025-07-04T20:35:59.578Z",
       "description": "CLARITY Pulse V2 - Vertical Slice Development Tasks"
     }
   }

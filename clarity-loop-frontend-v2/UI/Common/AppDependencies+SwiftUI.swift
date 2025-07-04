@@ -134,6 +134,20 @@ public final class AppDependencyConfigurator {
     // MARK: - UI Layer Configuration
 
     private func configureUILayer(_ container: Dependencies) {
+        // Authentication Service (observable wrapper for UI) - Create on main actor
+        container.register(AuthenticationService.self) { dependencies in
+            let authService = dependencies.require(AuthServiceProtocol.self)
+            let userRepository = dependencies.require(UserRepositoryProtocol.self)
+
+            // Create on main actor
+            return MainActor.assumeIsolated {
+                AuthenticationService(
+                    authService: authService,
+                    userRepository: userRepository
+                )
+            }
+        }
+
         // Register ViewModelFactories
         container.register(LoginViewModelFactory.self) { dependencies in
             DefaultLoginViewModelFactory(
@@ -161,6 +175,7 @@ public extension View {
         return self
             .dependencies(dependencies)
             .authService(dependencies.require(AuthServiceProtocol.self))
+            .authenticationService(dependencies.require(AuthenticationService.self))
             .userRepository(dependencies.require(UserRepositoryProtocol.self))
             .healthMetricRepository(dependencies.require(HealthMetricRepositoryProtocol.self))
             .apiClient(dependencies.require(APIClientProtocol.self))

@@ -3137,11 +3137,25 @@
         ],
         "status": "pending",
         "subtasks": []
+      },
+      {
+        "id": 201,
+        "title": "Fix iOS App SIGKILL Crashes and Build Issues",
+        "description": "Resolve iOS app crashes caused by SIGKILL terminations due to DYLD library loading issues and main thread blocking during initialization.",
+        "details": "1. Clean Xcode derived data and build artifacts:\n   - Delete ~/Library/Developer/Xcode/DerivedData\n   - Clean build folder (Cmd+Shift+K)\n   - Reset package caches\n\n2. Fix DYLD library loading issues:\n   - Audit dynamic library dependencies in project settings\n   - Ensure proper framework embedding and signing\n   - Check for circular dependencies in linked frameworks\n   - Verify deployment target compatibility\n\n3. Resolve main thread blocking during initialization:\n   - Identify synchronous operations blocking the main thread\n   - Move heavy initialization tasks to background queues\n   - Implement proper async/await patterns for startup tasks\n   - Use Task.detached for CPU-intensive work\n\n4. Fix Swift concurrency issues in UI tests:\n   - Replace completion handlers with async/await\n   - Add @MainActor annotations to UI-related classes\n   - Use MainActor.run for UI updates from background contexts\n   - Implement proper actor isolation for shared state\n\n5. Implement crash prevention measures:\n   - Add watchdog timer for app launch\n   - Implement graceful degradation for failed initializations\n   - Add comprehensive error handling and logging\n   - Monitor memory usage during startup",
+        "testStrategy": "1. Verify crash resolution:\n   - Run app multiple times to ensure consistent startup\n   - Monitor crash logs for SIGKILL terminations\n   - Test on various iOS versions and device types\n   - Verify app launches within acceptable time limits\n\n2. Test build stability:\n   - Perform clean builds from scratch\n   - Verify successful archive and distribution builds\n   - Test on different Xcode versions if applicable\n\n3. Validate concurrency fixes:\n   - Run UI tests to ensure no main thread violations\n   - Use Xcode's Main Thread Checker instrument\n   - Verify proper async/MainActor usage with static analysis\n   - Test concurrent operations don't cause deadlocks\n\n4. Performance validation:\n   - Measure app launch time improvements\n   - Monitor memory usage during initialization\n   - Verify no performance regressions in core functionality",
+        "status": "done",
+        "dependencies": [
+          38,
+          61
+        ],
+        "priority": "high",
+        "subtasks": []
       }
     ],
     "metadata": {
       "created": "2025-06-25T16:21:52.741Z",
-      "updated": "2025-06-30T16:40:08.209Z",
+      "updated": "2025-07-04T19:02:23.994Z",
       "description": "CLARITY Pulse V2 - Vertical Slice Development Tasks"
     }
   }

@@ -17,7 +17,7 @@
 		6884F59BEFB71A2ACF4088E5 /* ClarityCore in Frameworks */ = {isa = PBXBuildFile; productRef = BF8256B2BDE57299E192DF95 /* ClarityCore */; };
 		723183E5F63A2D7B7835B341 /* BaseUITestCaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E830616814363E749B4760 /* BaseUITestCaseTests.swift */; };
 
-		8EA3BFD28B905CE1DA581E53 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_E61D43A0-665A-495C-B222-330391CABE78" /* RootView.swift */; };
+
 		9AAAFB474A7A6332ED680050 /* LoginScreenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87343A307196F5C14E519FC6 /* LoginScreenTests.swift */; };
 		9C0DA5714658C54FBA436FFD /* LoginScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E295632CD6C45851670B673 /* LoginScreen.swift */; };
 		AADDCCAC7FB5C040AD961EC0 /* BaseUITestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21C1304D9B98C10E3B1D521 /* BaseUITestCase.swift */; };
@@ -56,7 +56,7 @@
 
 		"TEMP_B2472BEC-3F36-43EB-9FFA-FE102E0418F8" /* ClarityPulseWrapperApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClarityPulseWrapperApp.swift; sourceTree = "<group>"; };
 
-		"TEMP_E61D43A0-665A-495C-B222-330391CABE78" /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+
 		AMPLIFYFILE123456789ABC /* amplifyconfiguration.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = amplifyconfiguration.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -110,7 +110,6 @@
 			isa = PBXGroup;
 			children = (
 				"TEMP_B2472BEC-3F36-43EB-9FFA-FE102E0418F8" /* ClarityPulseWrapperApp.swift */,
-				"TEMP_E61D43A0-665A-495C-B222-330391CABE78" /* RootView.swift */,
 				AMPLIFYFILE123456789ABC /* amplifyconfiguration.json */,
 			);
 			name = "Recovered References";
@@ -277,7 +276,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				604CBF540633FC21367DDD7E /* ClarityPulseWrapperApp.swift in Sources */,
-				8EA3BFD28B905CE1DA581E53 /* RootView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

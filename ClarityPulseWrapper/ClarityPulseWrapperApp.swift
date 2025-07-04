@@ -9,6 +9,7 @@
 import SwiftUI
 import Amplify
 import AWSCognitoAuthPlugin
+import AWSAPIPlugin
 
 // 🎯 Test minimal module access first
 #if canImport(ClarityDomain)
@@ -31,6 +32,41 @@ import ClarityUI
 enum AuthTimeout: Error {
     case timeout
     case cancelled
+}
+
+enum ConfigurationError: Error, LocalizedError {
+    case missingFile
+    case invalidJSON
+    
+    var errorDescription: String? {
+        switch self {
+        case .missingFile:
+            return "amplifyconfiguration.json is missing from bundle"
+        case .invalidJSON:
+            return "amplifyconfiguration.json contains invalid JSON"
+        }
+    }
+}
+
+// Helper function for timeout protection
+func withTimeout<T>(seconds: TimeInterval, operation: @escaping () async throws -> T) async throws -> T {
+    try await withThrowingTaskGroup(of: T.self) { group in
+        group.addTask {
+            try await operation()
+        }
+        
+        group.addTask {
+            try await Task.sleep(for: .seconds(seconds))
+            throw AuthTimeout.timeout
+        }
+        
+        guard let result = try await group.next() else {
+            throw AuthTimeout.timeout
+        }
+        
+        group.cancelAll()
+        return result
+    }
 }
 
 @main
@@ -91,44 +127,98 @@ struct ClarityPulseWrapperApp: App {
 
     @MainActor
     private func configureAmplify() async {
-        configurationStep = "Configuring Amplify..."
+        configurationStep = "Validating configuration..."
 
         do {
-            // 🎯 Use timeout protection for Amplify configuration
-            try await withThrowingTaskGroup(of: Void.self) { group in
-                // Add configuration task
-                group.addTask {
-                    try await Amplify.configure()
-                    print("🔧 [AMPLIFY] Amplify configured successfully")
-                }
+            // 🎯 STEP 0: Assert configuration file exists
+            guard let configURL = Bundle.main.url(forResource: "amplifyconfiguration", withExtension: "json") else {
+                throw ConfigurationError.missingFile
+            }
+            print("✅ [AMPLIFY] Found config file at: \(configURL)")
+            
+            // Validate JSON is readable
+            let configData = try Data(contentsOf: configURL)
+            _ = try JSONSerialization.jsonObject(with: configData, options: [])
+            print("✅ [AMPLIFY] Config JSON is valid, size: \(configData.count) bytes")
+            
+            // Enable verbose logging for diagnostics
+            Amplify.Logging.logLevel = .verbose
+            print("🔍 [AMPLIFY] Verbose logging enabled")
+            
+            configurationStep = "Adding Amplify plugins..."
+            
+            // 🎯 STEP 1: Add required plugins in correct order
+            try Amplify.add(plugin: AWSCognitoAuthPlugin())
+            try Amplify.add(plugin: AWSAPIPlugin())
+            print("✅ [AMPLIFY] Added AWSCognitoAuthPlugin and AWSAPIPlugin")
 
-                // Add timeout task (15 seconds for configuration)
+            configurationStep = "Configuring Amplify..."
+
+            // 🎯 STEP 2: Configure Amplify with proper timeout protection
+            // Since Amplify.configure() is synchronous and might block, we need a different approach
+            let configurationCompleted = try await withThrowingTaskGroup(of: Bool.self) { group in
+                // Configuration task
                 group.addTask {
-                    try await Task.sleep(for: .seconds(15))
+                    // Run on a background thread to avoid blocking main thread
+                    await Task.detached(priority: .userInitiated) {
+                        do {
+                            try Amplify.configure()
+                            print("✅ [AMPLIFY] Amplify configured successfully")
+                            return true
+                        } catch {
+                            print("❌ [AMPLIFY] Configuration error: \(error)")
+                            throw error
+                        }
+                    }.value
+                }
+                
+                // Timeout task - 30 seconds for cold start with JWKS fetch
+                group.addTask {
+                    try await Task.sleep(for: .seconds(30))
+                    print("⏰ [AMPLIFY] Configuration timeout reached after 30 seconds")
                     throw AuthTimeout.timeout
                 }
+                
+                // Get the first result (either success or timeout)
+                let result = try await group.next()!
+                
+                // Cancel remaining tasks
+                group.cancelAll()
+                
+                return result
+            }
 
-                // Wait for first task to complete
-                do {
-                    try await group.next()
-                    group.cancelAll() // Cancel remaining tasks
-
-                    self.isAmplifyConfigured = true
-                    print("✅ [AMPLIFY] Configuration completed successfully")
-
-                } catch AuthTimeout.timeout {
-                    group.cancelAll()
-                    throw AuthTimeout.timeout
-                }
+            // 🎯 STEP 3: Verify configuration by checking session
+            configurationStep = "Verifying configuration..."
+            let startTime = Date()
+            
+            do {
+                let session = try await Amplify.Auth.fetchAuthSession()
+                let elapsed = Date().timeIntervalSince(startTime)
+                print("✅ [AMPLIFY] Session check completed in \(elapsed)s")
+                print("📊 [AMPLIFY] Is signed in: \(session.isSignedIn)")
+                
+                self.isAmplifyConfigured = true
+                print("🎉 [AMPLIFY] Configuration completed successfully!")
+            } catch {
+                print("⚠️ [AMPLIFY] Session fetch failed after configure: \(error)")
+                print("⚠️ [AMPLIFY] This may indicate a configuration issue")
+                // Still mark as configured to allow app to continue
+                self.isAmplifyConfigured = true
             }
 
         } catch AuthTimeout.timeout {
-            print("⏰ [AMPLIFY] Configuration timed out after 15 seconds")
-            amplifyError = NSError(domain: "AmplifyTimeout", code: 1,
-                                   userInfo: [NSLocalizedDescriptionKey: "Amplify configuration timed out. Please check your network connection."])
+            print("⏰ [AMPLIFY] Configuration timed out after 30 seconds")
+            print("⚠️ [AMPLIFY] Continuing without AWS services - app will work in offline mode")
+            amplifyError = AuthTimeout.timeout
+            // Still mark as configured to allow app to continue
+            self.isAmplifyConfigured = true
         } catch {
             print("❌ [AMPLIFY] Configuration failed: \(error)")
+            print("❌ [AMPLIFY] Error details: \(error.localizedDescription)")
             amplifyError = error
+            // For non-timeout errors, also continue but log the error
+            self.isAmplifyConfigured = true
         }
     }
 }

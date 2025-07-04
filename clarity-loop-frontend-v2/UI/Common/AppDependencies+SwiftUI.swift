@@ -216,12 +216,7 @@ public final class AmplifyConfiguration: AmplifyConfigurable, @unchecked Sendabl
         NSLog("📁 [AmplifyConfiguration] Configuration file URL: %@", configFileURL?.path ?? "NOT FOUND")
         print("📁 [AmplifyConfiguration] Configuration file URL: \(configFileURL?.path ?? "NOT FOUND")")
 
-        // FOR DEBUGGING: Check if we should skip Amplify config for development
-        if shouldSkipAmplifyConfig() {
-            NSLog("🚨 [AmplifyConfiguration] BYPASS: Skipping Amplify configuration for development")
-            await configurationActor.setConfigured(true)
-            return
-        }
+        // No bypasses - always configure Amplify properly
 
         // Timeout protection
         try await withTimeout(seconds: configurationTimeout) {
@@ -445,23 +440,3 @@ private struct TimeoutError: LocalizedError {
 }
 
 // MARK: - Helper Methods
-
-private func shouldSkipAmplifyConfig() -> Bool {
-    // Check if we're using placeholder values that indicate development mode
-    let configFileURL = Bundle.main.url(forResource: "amplifyconfiguration", withExtension: "json")
-
-    guard let configURL = configFileURL,
-          let configData = try? Data(contentsOf: configURL),
-          let configString = String(data: configData, encoding: .utf8) else {
-        NSLog("⚠️ [AmplifyConfiguration] Config file not found, skipping Amplify")
-        return true
-    }
-
-    // Skip if using placeholder Identity Pool ID
-    if configString.contains("12345678-1234-1234-1234-123456789012") {
-        NSLog("⚠️ [AmplifyConfiguration] Placeholder Identity Pool detected, skipping Amplify")
-        return true
-    }
-
-    return false
-}

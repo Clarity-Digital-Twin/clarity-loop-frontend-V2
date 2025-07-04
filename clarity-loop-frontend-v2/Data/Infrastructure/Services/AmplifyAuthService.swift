@@ -15,11 +15,28 @@ import ClarityDomain
 public final class AmplifyAuthService: AuthServiceProtocol, @unchecked Sendable {
 
     public init() {}
+    
+    // MARK: - Private Helper
+    
+    private func ensureAmplifyConfigured() async throws {
+        // Check if Amplify is configured
+        do {
+            _ = try await Amplify.Auth.fetchAuthSession()
+            // If we get here, Amplify is configured
+        } catch {
+            // If Amplify is not configured, we can't authenticate
+            print("⚠️ AmplifyAuthService: Amplify not configured - operating in offline mode")
+            throw ClarityDomain.AuthError.unknown("Authentication service not available - offline mode")
+        }
+    }
 
     // MARK: - AuthServiceProtocol Implementation
 
     public func login(email: String, password: String) async throws -> AuthToken {
         do {
+            // Ensure Amplify is configured
+            try await ensureAmplifyConfigured()
+            
             print("🔐 AmplifyAuthService: Attempting login for \(email)")
 
             // Use Amplify to sign in
@@ -67,6 +84,9 @@ public final class AmplifyAuthService: AuthServiceProtocol, @unchecked Sendable 
     }
 
     public func logout() async throws {
+        // Ensure Amplify is configured
+        try await ensureAmplifyConfigured()
+        
         print("🔐 AmplifyAuthService: Attempting logout")
         _ = await Amplify.Auth.signOut()
         print("✅ AmplifyAuthService: Successfully logged out")
@@ -74,6 +94,9 @@ public final class AmplifyAuthService: AuthServiceProtocol, @unchecked Sendable 
 
     public func refreshToken(_ refreshToken: String) async throws -> AuthToken {
         do {
+            // Ensure Amplify is configured
+            try await ensureAmplifyConfigured()
+            
             print("🔐 AmplifyAuthService: Attempting token refresh")
 
             // Amplify handles token refresh automatically, so we just fetch the current session
@@ -102,6 +125,9 @@ public final class AmplifyAuthService: AuthServiceProtocol, @unchecked Sendable 
     @MainActor
     public func getCurrentUser() async throws -> User? {
         do {
+            // Ensure Amplify is configured
+            try await ensureAmplifyConfigured()
+            
             print("🔐 AmplifyAuthService: Attempting to get current user")
 
             let authUser = try await Amplify.Auth.getCurrentUser()
